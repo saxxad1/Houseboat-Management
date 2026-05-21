@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-inter: 'Inter', sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 210 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 20% 10%;
+    --primary: 197 80% 30%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 195 30% 94%;
+    --secondary-foreground: 197 80% 20%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 210 15% 45%;
+    --accent: 38 90% 55%;
+    --accent-foreground: 38 90% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 20% 88%;
+    --input: 210 20% 88%;
+    --ring: 197 80% 35%;
+    --radius: 0.75rem;
+
+    /* Custom brand tokens */
+    --water-50: 195 100% 97%;
+    --water-100: 195 95% 92%;
+    --water-200: 195 85% 82%;
+    --water-300: 195 80% 68%;
+    --water-400: 195 78% 52%;
+    --water-500: 197 80% 38%;
+    --water-600: 197 80% 30%;
+    --water-700: 197 75% 22%;
+    --water-800: 197 70% 16%;
+    --water-900: 197 65% 10%;
+
+    --teal-50: 173 80% 96%;
+    --teal-500: 173 58% 40%;
+    --teal-600: 173 58% 32%;
+
+    --amber-50: 38 100% 97%;
+    --amber-400: 38 90% 55%;
+    --amber-500: 35 90% 48%;
+    --amber-600: 32 85% 40%;
+
+    --wood-50: 30 40% 97%;
+    --wood-100: 30 35% 92%;
+    --wood-300: 30 30% 75%;
+    --wood-500: 28 35% 48%;
+    --wood-700: 26 40% 30%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-inter), 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-24 px-4;
+  }
+
+  .container-max {
+    @apply max-w-7xl mx-auto;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+  }
+
+  .btn-primary {
+    @apply bg-[hsl(197,80%,30%)] text-white hover:bg-[hsl(197,80%,22%)] transition-all duration-200 font-semibold;
+  }
+
+  .btn-accent {
+    @apply bg-[hsl(38,90%,55%)] text-white hover:bg-[hsl(35,90%,48%)] transition-all duration-200 font-semibold;
+  }
+
+  .gradient-water {
+    background: linear-gradient(135deg, hsl(197, 80%, 30%) 0%, hsl(173, 58%, 40%) 100%);
+  }
+
+  .gradient-sunset {
+    background: linear-gradient(135deg, hsl(35, 90%, 48%) 0%, hsl(197, 80%, 38%) 100%);
+  }
+
+  .text-water {
+    color: hsl(197, 80%, 30%);
+  }
+
+  .text-amber-brand {
+    color: hsl(35, 90%, 48%);
+  }
+
+  .text-shadow-soft {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+  }
+
+  .text-shadow-strong {
+    text-shadow:
+      0 3px 14px rgba(0, 0, 0, 0.75),
+      0 1px 2px rgba(0, 0, 0, 0.85);
+  }
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(197, 80%, 50%);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(197, 80%, 38%);
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}

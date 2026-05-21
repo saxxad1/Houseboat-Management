@@ -1,0 +1,491 @@
+// ============================================================
+// HOUSEBOAT DATA FILE
+// Edit this file to change all content across the website.
+// Change name, images, prices, contact, rooms, packages, etc.
+// ============================================================
+
+export const siteConfig = {
+  name: "কুহেলিকা",
+  nameEn: "Kuhelika",
+  tagline: "টাঙ্গুয়ার হাওরের বুকে স্বপ্নের এক রাত",
+  description:
+    "টাঙ্গুয়ার হাওরের নীল জলের বুকে ভাসমান বিলাসবহুল হাউসবোটে অনুভব করুন প্রকৃতির অপরূপ সৌন্দর্য। পরিবার, বন্ধু বা কর্পোরেট গ্রুপের জন্য আদর্শ একটি অবিস্মরণীয় অভিজ্ঞতা।",
+  location: "টাঙ্গুয়ার হাওর, সুনামগঞ্জ, সিলেট",
+  locationEn: "Tanguar Haor, Sunamganj, Sylhet",
+  phone: "+880 1700-000000",
+  whatsapp: "8801700000000",
+  email: "info@kuhelika.com",
+  facebook: "https://facebook.com/kuhelika",
+  totalCabins: 6,
+  totalCapacity: 24,
+  startingPrice: "৳৩,৫০০",
+  mapEmbedUrl:
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d57856.93!2d91.05!3d25.08!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3751b19b2e000001%3A0x0!2sTanguar%20Haor!5e0!3m2!1sen!2sbd!4v1700000000000",
+};
+
+export const navLinks = [
+  { label: "হোম", href: "#home" },
+  { label: "আমাদের সম্পর্কে", href: "#about" },
+  { label: "কেবিন", href: "#cabins" },
+  { label: "প্যাকেজ", href: "#packages" },
+  { label: "ভ্রমণ পরিকল্পনা", href: "#itinerary" },
+  { label: "গ্যালারি", href: "#gallery" },
+  { label: "সুবিধাসমূহ", href: "#facilities" },
+  { label: "প্রশ্নোত্তর", href: "#faq" },
+  { label: "যোগাযোগ", href: "#contact" },
+];
+
+export const aboutContent = {
+  title: "কুহেলিকা সম্পর্কে",
+  subtitle: "টাঙ্গুয়ার হাওরে আপনাকে স্বাগতম",
+  story:
+    "কুহেলিকা একটি বিলাসবহুল হাউসবোট যা টাঙ্গুয়ার হাওরের অপরূপ সৌন্দর্যের মাঝে আপনাকে একটি অবিস্মরণীয় অভিজ্ঞতা প্রদান করতে প্রস্তুত। ২০২০ সালে প্রতিষ্ঠিত এই হাউসবোটটি আজ পর্যন্ত হাজারো পর্যটকের মনে আনন্দের স্মৃতি তৈরি করেছে।",
+  highlights: [
+    {
+      icon: "Users",
+      title: "পরিবার, বন্ধু ও কর্পোরেট",
+      desc: "পরিবার, বন্ধুমহল বা অফিস টিমের জন্য একদম উপযুক্ত।",
+    },
+    {
+      icon: "Star",
+      title: "বিলাসবহুল কেবিন",
+      desc: "এসি ও নন-এসি উভয় কেবিন সুবিধা সহ আরামদায়ক থাকার ব্যবস্থা।",
+    },
+    {
+      icon: "Utensils",
+      title: "সুস্বাদু খাবার",
+      desc: "তাজা মাছ ও স্থানীয় রান্নায় পরিবেশন করা হয় প্রতিটি মিল।",
+    },
+    {
+      icon: "Shield",
+      title: "নিরাপত্তা ও আরাম",
+      desc: "অভিজ্ঞ ক্রু, লাইফ জ্যাকেট ও সার্বক্ষণিক নিরাপত্তা নিশ্চিত।",
+    },
+  ],
+  suitableFor: ["পরিবার", "বন্ধু গ্রুপ", "দম্পতি", "কর্পোরেট টিম", "ফটোগ্রাফার", "প্রকৃতিপ্রেমী"],
+};
+
+export const cabins = [
+  {
+    id: 1,
+    name: "রাজহাঁস কেবিন",
+    nameEn: "Royal Suite",
+    image: "https://images.pexels.com/photos/1001965/pexels-photo-1001965.jpeg?auto=compress&cs=tinysrgb&w=800",
+    bedType: "ডাবল বেড",
+    capacity: 2,
+    hasWashroom: true,
+    hasAC: true,
+    pricePerNight: 4500,
+    size: "২৫০ বর্গফুট",
+    features: ["এসি", "এনসুইট বাথরুম", "ব্যালকনি", "হাওর ভিউ"],
+    available: true,
+    badge: "Premium",
+  },
+  {
+    id: 2,
+    name: "পদ্মা কেবিন",
+    nameEn: "Padma Suite",
+    image: "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=800",
+    bedType: "টুইন বেড",
+    capacity: 2,
+    hasWashroom: true,
+    hasAC: true,
+    pricePerNight: 4000,
+    size: "২২০ বর্গফুট",
+    features: ["এসি", "প্রাইভেট বাথরুম", "পানির ভিউ"],
+    available: true,
+    badge: "Popular",
+  },
+  {
+    id: 3,
+    name: "মেঘনা কেবিন",
+    nameEn: "Meghna Suite",
+    image: "https://images.pexels.com/photos/1579253/pexels-photo-1579253.jpeg?auto=compress&cs=tinysrgb&w=800",
+    bedType: "ডাবল বেড",
+    capacity: 3,
+    hasWashroom: true,
+    hasAC: false,
+    pricePerNight: 3500,
+    size: "২০০ বর্গফুট",
+    features: ["ফ্যান", "প্রাইভেট বাথরুম", "ডেকের ভিউ"],
+    available: true,
+    badge: "",
+  },
+  {
+    id: 4,
+    name: "সুরমা কেবিন",
+    nameEn: "Surma Suite",
+    image: "https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=800",
+    bedType: "টুইন বেড",
+    capacity: 2,
+    hasWashroom: false,
+    hasAC: false,
+    pricePerNight: 3000,
+    size: "১৮০ বর্গফুট",
+    features: ["ফ্যান", "শেয়ার্ড বাথরুম"],
+    available: true,
+    badge: "",
+  },
+  {
+    id: 5,
+    name: "হাওর ফ্যামিলি স্যুট",
+    nameEn: "Family Suite",
+    image: "https://images.pexels.com/photos/1743229/pexels-photo-1743229.jpeg?auto=compress&cs=tinysrgb&w=800",
+    bedType: "ডাবল + টুইন বেড",
+    capacity: 4,
+    hasWashroom: true,
+    hasAC: true,
+    pricePerNight: 7500,
+    size: "৩৮০ বর্গফুট",
+    features: ["এসি", "প্রাইভেট বাথরুম", "লাউঞ্জ", "হাওর ভিউ"],
+    available: false,
+    badge: "Family",
+  },
+  {
+    id: 6,
+    name: "বর্ষা ডিলাক্স",
+    nameEn: "Barsha Deluxe",
+    image: "https://images.pexels.com/photos/2631746/pexels-photo-2631746.jpeg?auto=compress&cs=tinysrgb&w=800",
+    bedType: "ডাবল বেড",
+    capacity: 2,
+    hasWashroom: true,
+    hasAC: true,
+    pricePerNight: 5000,
+    size: "২৮০ বর্গফুট",
+    features: ["এসি", "এনসুইট বাথরুম", "রুফটপ অ্যাক্সেস", "সানসেট ভিউ"],
+    available: true,
+    badge: "Deluxe",
+  },
+];
+
+export const packages = [
+  {
+    id: 1,
+    title: "১ রাত ২ দিন প্যাকেজ",
+    titleEn: "1 Night 2 Days",
+    duration: "১ রাত ২ দিন",
+    price: 8500,
+    priceNote: "প্রতি জনের জন্য",
+    maxGuests: 20,
+    meals: "সকাল, দুপুর ও রাতের খাবার",
+    popular: false,
+    color: "sky",
+    includes: [
+      "হাউসবোটে রাত্রিযাপন",
+      "৩ বেলা খাবার",
+      "টাঙ্গুয়ার হাওর সাইটসিং",
+      "ওয়াচ টাওয়ার ভিজিট",
+      "সানসেট ক্রুজ",
+      "লাইফ জ্যাকেট",
+      "অভিজ্ঞ গাইড",
+    ],
+    spots: ["টাঙ্গুয়ার হাওর", "ওয়াচ টাওয়ার", "পাখির চর"],
+    badge: "",
+  },
+  {
+    id: 2,
+    title: "২ রাত ৩ দিন প্যাকেজ",
+    titleEn: "2 Nights 3 Days",
+    duration: "২ রাত ৩ দিন",
+    price: 14000,
+    priceNote: "প্রতি জনের জন্য",
+    maxGuests: 20,
+    meals: "সকাল, দুপুর ও রাতের খাবার",
+    popular: true,
+    color: "teal",
+    includes: [
+      "২ রাত হাউসবোটে থাকা",
+      "৬ বেলা খাবার",
+      "সম্পূর্ণ হাওর পরিভ্রমণ",
+      "নীলাদ্রি লেক ভিজিট",
+      "সানরাইজ ও সানসেট ক্রুজ",
+      "BBQ নাইট",
+      "লাইভ মিউজিক",
+      "লাইফ জ্যাকেট ও গাইড",
+    ],
+    spots: ["টাঙ্গুয়ার হাওর", "নীলাদ্রি লেক", "ওয়াচ টাওয়ার", "পাখির চর", "লালারচর"],
+    badge: "সবচেয়ে জনপ্রিয়",
+  },
+  {
+    id: 3,
+    title: "ফুল ডে ট্যুর",
+    titleEn: "Full Day Tour",
+    duration: "১ দিন",
+    price: 4500,
+    priceNote: "প্রতি জনের জন্য",
+    maxGuests: 25,
+    meals: "দুপুর ও বিকেলের খাবার",
+    popular: false,
+    color: "amber",
+    includes: [
+      "দিনব্যাপী হাওর ভ্রমণ",
+      "দুপুরের খাবার",
+      "বিকেলের নাস্তা",
+      "ওয়াচ টাওয়ার",
+      "লাইফ জ্যাকেট",
+      "গাইড সার্ভিস",
+    ],
+    spots: ["টাঙ্গুয়ার হাওর", "ওয়াচ টাওয়ার"],
+    badge: "",
+  },
+  {
+    id: 4,
+    title: "ফ্যামিলি প্যাকেজ",
+    titleEn: "Family Package",
+    duration: "১ রাত ২ দিন",
+    price: 28000,
+    priceNote: "৪-৬ জনের পরিবারের জন্য",
+    maxGuests: 6,
+    meals: "সকাল, দুপুর ও রাতের খাবার",
+    popular: false,
+    color: "emerald",
+    includes: [
+      "ফ্যামিলি স্যুট কেবিন",
+      "৩ বেলা বিশেষ পারিবারিক খাবার",
+      "শিশু বান্ধব ব্যবস্থা",
+      "ফ্যামিলি ফটোশুট",
+      "হাওর সাইটসিং",
+      "সানসেট ক্রুজ",
+      "লাইফ জ্যাকেট ও গাইড",
+    ],
+    spots: ["টাঙ্গুয়ার হাওর", "ওয়াচ টাওয়ার", "পাখির চর"],
+    badge: "পরিবারের জন্য",
+  },
+  {
+    id: 5,
+    title: "গ্রুপ প্যাকেজ",
+    titleEn: "Group Package",
+    duration: "২ রাত ৩ দিন",
+    price: 120000,
+    priceNote: "১৫-২০ জনের গ্রুপের জন্য",
+    maxGuests: 20,
+    meals: "সকাল, দুপুর ও রাতের খাবার",
+    popular: false,
+    color: "orange",
+    includes: [
+      "পুরো বোট বুকিং",
+      "৬ বেলা খাবার",
+      "সম্পূর্ণ হাওর পরিভ্রমণ",
+      "BBQ ও ক্যাম্পফায়ার",
+      "গান ও মিউজিক সেশন",
+      "গ্রুপ ফটোশুট",
+      "কাস্টম কেক অর্ডার",
+      "বিশেষ ডেকোরেশন",
+    ],
+    spots: ["টাঙ্গুয়ার হাওর", "নীলাদ্রি লেক", "ওয়াচ টাওয়ার", "লালারচর"],
+    badge: "গ্রুপ ডিল",
+  },
+  {
+    id: 6,
+    title: "কর্পোরেট প্যাকেজ",
+    titleEn: "Corporate Package",
+    duration: "১ রাত ২ দিন",
+    price: 90000,
+    priceNote: "১০-১৫ জনের টিমের জন্য",
+    maxGuests: 15,
+    meals: "সকাল, দুপুর ও রাতের খাবার",
+    popular: false,
+    color: "slate",
+    includes: [
+      "পুরো বোট বুকিং",
+      "৩ বেলা কর্পোরেট মিল",
+      "টিম বিল্ডিং অ্যাক্টিভিটি",
+      "কনফারেন্স সেটআপ",
+      "প্রজেক্টর ও স্ক্রিন",
+      "হাওর সাইটসিং",
+      "বিশেষ ফটোশুট",
+      "সার্টিফিকেট অর্ডার",
+    ],
+    spots: ["টাঙ্গুয়ার হাওর", "ওয়াচ টাওয়ার"],
+    badge: "Corporate",
+  },
+];
+
+export const itinerary = [
+  {
+    day: 1,
+    title: "প্রথম দিন – আগমন ও হাওরে প্রবেশ",
+    timeline: [
+      { time: "সকাল ৮টা", event: "সুনামগঞ্জ শহর থেকে রওনা", icon: "MapPin" },
+      { time: "সকাল ১০টা", event: "তাহিরপুর ঘাটে পৌঁছানো ও বোর্ডিং", icon: "Ship" },
+      { time: "সকাল ১১টা", event: "স্বাগত পানীয় ও কেবিনে চেক-ইন", icon: "Coffee" },
+      { time: "দুপুর ১২টা", event: "তাজা মাছের দুপুরের খাবার", icon: "Utensils" },
+      { time: "বিকেল ৩টা", event: "হাওরের ভেতর দিয়ে নৌকা ভ্রমণ", icon: "Waves" },
+      { time: "বিকেল ৫টা", event: "ওয়াচ টাওয়ার পরিদর্শন", icon: "Eye" },
+      { time: "সন্ধ্যা ৬টা", event: "সূর্যাস্ত উপভোগ ও ছাদে আড্ডা", icon: "Sunset" },
+      { time: "রাত ৮টা", event: "BBQ ডিনার ও লাইভ মিউজিক", icon: "Music" },
+      { time: "রাত ১০টা", event: "আকাশভরা তারার নিচে রাত্রিযাপন", icon: "Moon" },
+    ],
+  },
+  {
+    day: 2,
+    title: "দ্বিতীয় দিন – হাওর অন্বেষণ ও প্রত্যাবর্তন",
+    timeline: [
+      { time: "সকাল ৬টা", event: "সূর্যোদয় দেখা ও সকালের চা", icon: "Sun" },
+      { time: "সকাল ৮টা", event: "সকালের নাস্তা", icon: "Coffee" },
+      { time: "সকাল ১০টা", event: "পাখির চর ও নীলাদ্রি লেক ভিজিট", icon: "Bird" },
+      { time: "দুপুর ১২টা", event: "দুপুরের খাবার", icon: "Utensils" },
+      { time: "দুপুর ২টা", event: "লালারচর ও স্থানীয় জেলে পাড়া পরিদর্শন", icon: "Fish" },
+      { time: "বিকেল ৪টা", event: "চেক-আউট ও তাহিরপুর ঘাটে ফিরে আসা", icon: "LogOut" },
+      { time: "বিকেল ৫টা", event: "সুনামগঞ্জ শহরে প্রত্যাবর্তন", icon: "Home" },
+    ],
+  },
+];
+
+export const facilities = [
+  { icon: "Bath", name: "এনসুইট বাথরুম", desc: "পরিষ্কার প্রাইভেট বাথরুম" },
+  { icon: "BedDouble", name: "আরামদায়ক বেড", desc: "উচ্চমানের গদি ও বালিশ" },
+  { icon: "ShieldCheck", name: "লাইফ জ্যাকেট", desc: "সকল যাত্রীর জন্য" },
+  { icon: "Utensils", name: "তাজা খাবার", desc: "স্থানীয় রান্না ও তাজা মাছ" },
+  { icon: "Wind", name: "রুফটপ সিটিং", desc: "ছাদে বসে হাওর উপভোগ" },
+  { icon: "Zap", name: "জেনারেটর ও সোলার", desc: "সার্বক্ষণিক বিদ্যুৎ" },
+  { icon: "Flame", name: "BBQ ব্যবস্থা", desc: "বিশেষ BBQ সেটআপ" },
+  { icon: "Music", name: "সাউন্ড সিস্টেম", desc: "মিউজিক ও বিনোদনের ব্যবস্থা" },
+  { icon: "Droplets", name: "বিশুদ্ধ পানি", desc: "ফিল্টার্ড পানীয় জল" },
+  { icon: "Phone", name: "নিরাপত্তা সাপোর্ট", desc: "২৪/৭ অভিজ্ঞ ক্রু টিম" },
+  { icon: "Baby", name: "শিশু বান্ধব", desc: "পরিবারের জন্য উপযুক্ত" },
+  { icon: "Map", name: "কাস্টম ট্যুর প্ল্যান", desc: "আপনার ইচ্ছামতো রুট" },
+];
+
+export const galleryImages = [
+  {
+    id: 1,
+    src: "https://images.pexels.com/photos/1001682/pexels-photo-1001682.jpeg?auto=compress&cs=tinysrgb&w=800",
+    alt: "হাউসবোটের বাইরের দৃশ্য",
+    category: "Exterior",
+  },
+  {
+    id: 2,
+    src: "https://images.pexels.com/photos/1179156/pexels-photo-1179156.jpeg?auto=compress&cs=tinysrgb&w=800",
+    alt: "টাঙ্গুয়ার হাওরের সানসেট",
+    category: "Landscape",
+  },
+  {
+    id: 3,
+    src: "https://images.pexels.com/photos/1743229/pexels-photo-1743229.jpeg?auto=compress&cs=tinysrgb&w=800",
+    alt: "কেবিন ইন্টেরিয়র",
+    category: "Interior",
+  },
+  {
+    id: 4,
+    src: "https://images.pexels.com/photos/3184183/pexels-photo-3184183.jpeg?auto=compress&cs=tinysrgb&w=800",
+    alt: "খাবারের আয়োজন",
+    category: "Food",
+  },
+  {
+    id: 5,
+    src: "https://images.pexels.com/photos/1822605/pexels-photo-1822605.jpeg?auto=compress&cs=tinysrgb&w=800",
+    alt: "রুফটপ ভিউ",
+    category: "Rooftop",
+  },
+  {
+    id: 6,
+    src: "https://images.pexels.com/photos/189349/pexels-photo-189349.jpeg?auto=compress&cs=tinysrgb&w=800",
+    alt: "হাওরের ল্যান্ডস্কেপ",
+    category: "Landscape",
+  },
+  {
+    id: 7,
+    src: "https://images.pexels.com/photos/2467285/pexels-photo-2467285.jpeg?auto=compress&cs=tinysrgb&w=800",
+    alt: "রাতের ডেক",
+    category: "Night",
+  },
+  {
+    id: 8,
+    src: "https://images.pexels.com/photos/3225529/pexels-photo-3225529.jpeg?auto=compress&cs=tinysrgb&w=800",
+    alt: "গ্রুপ ট্যুর",
+    category: "Group",
+  },
+  {
+    id: 9,
+    src: "https://images.pexels.com/photos/1320684/pexels-photo-1320684.jpeg?auto=compress&cs=tinysrgb&w=800",
+    alt: "সূর্যোদয়ের দৃশ্য",
+    category: "Landscape",
+  },
+];
+
+export const testimonials = [
+  {
+    id: 1,
+    name: "রাফিউল ইসলাম",
+    location: "ঢাকা",
+    rating: 5,
+    review:
+      "অসাধারণ একটি অভিজ্ঞতা! টাঙ্গুয়ার হাওরের সূর্যাস্ত এবং রাতের তারাভরা আকাশ জীবনে ভুলব না। খাবার এবং ক্রু সার্ভিস অত্যন্ত চমৎকার ছিল। পরিবার নিয়ে আবার আসব।",
+    date: "অক্টোবর ২০২৩",
+    avatar: "RI",
+  },
+  {
+    id: 2,
+    name: "সুমাইয়া খান",
+    location: "চট্টগ্রাম",
+    rating: 5,
+    review:
+      "আমাদের কর্পোরেট টিমের জন্য পারফেক্ট ট্যুর ছিল। সব কিছু সুশৃঙ্খল, পরিষ্কার কেবিন, দারুণ খাবার। কুহেলিকা টিম সত্যিই প্রফেশনাল। সবাইকে রেকমেন্ড করব।",
+    date: "নভেম্বর ২০২৩",
+    avatar: "SK",
+  },
+  {
+    id: 3,
+    name: "মোঃ তানভীর আহমেদ",
+    location: "সিলেট",
+    rating: 5,
+    review:
+      "বন্ধুদের নিয়ে ২ রাত ৩ দিনের প্যাকেজ নিয়েছিলাম। BBQ নাইট আর নীলাদ্রি লেক ছিল সেরা হাইলাইট। দাম অনুযায়ী সার্ভিস একদম ভালো। আবার আসব ইনশাআল্লাহ।",
+    date: "ডিসেম্বর ২০২৩",
+    avatar: "TA",
+  },
+  {
+    id: 4,
+    name: "নাফিসা বেগম",
+    location: "ময়মনসিংহ",
+    rating: 4,
+    review:
+      "পরিবার নিয়ে এসেছিলাম। ছেলেমেয়েরা অনেক মজা পেয়েছে। কেবিন পরিষ্কার, খাবার সুস্বাদু। ক্রু টিম খুব যত্নশীল ছিল। একটু আগে থেকে বুকিং দেওয়া ভালো।",
+    date: "জানুয়ারি ২০২৪",
+    avatar: "NB",
+  },
+];
+
+export const faqs = [
+  {
+    question: "অগ্রিম কত টাকা দিতে হবে?",
+    answer:
+      "বুকিং নিশ্চিত করতে মোট মূল্যের ৩০% অগ্রিম প্রদান করতে হবে। বাকি ৭০% চেক-ইনের দিন বোর্ডিংয়ের আগে পরিশোধ করতে হবে।",
+  },
+  {
+    question: "Cancellation Policy কী?",
+    answer:
+      "ট্যুরের ৭ দিন আগে বাতিল করলে সম্পূর্ণ অগ্রিম ফেরত দেওয়া হবে। ৩-৭ দিনের মধ্যে বাতিল করলে ৫০% ফেরত পাবেন। ৩ দিনের কম সময়ে বাতিল করলে অগ্রিম ফেরত দেওয়া হবে না।",
+  },
+  {
+    question: "খাবার কি প্যাকেজে অন্তর্ভুক্ত?",
+    answer:
+      "হ্যাঁ, সকল প্যাকেজে খাবার অন্তর্ভুক্ত। তাজা মাছ, ভর্তা, ভাজি, ডাল সহ পূর্ণ বাংলাদেশি মেনু পরিবেশন করা হয়। বিশেষ খাদ্যাভ্যাস থাকলে আগে জানাতে হবে।",
+  },
+  {
+    question: "পরিবার বা দম্পতির জন্য কি উপযুক্ত?",
+    answer:
+      "হ্যাঁ, আমাদের হাউসবোটটি পরিবার, দম্পতি এবং গ্রুপ সকলের জন্য উপযুক্ত। আমরা শিশুদের জন্য বিশেষ ব্যবস্থা এবং দম্পতিদের জন্য রোমান্টিক ডেকোরেশন করে দিই।",
+  },
+  {
+    question: "Pickup point কোথায়?",
+    answer:
+      "সুনামগঞ্জ শহর থেকে তাহিরপুর ঘাট পর্যন্ত পরিবহনের ব্যবস্থা আমরা করে দিই। সুনামগঞ্জ বাস স্ট্যান্ড বা সদর ঘাট থেকে পিকআপ দেওয়া হয় (অতিরিক্ত চার্জ প্রযোজ্য)।",
+  },
+  {
+    question: "Check-in ও Check-out সময় কখন?",
+    answer:
+      "Check-in: সকাল ১০টা। Check-out: পরের দিন বিকেল ৪টা। ফুল ডে ট্যুরের ক্ষেত্রে সকাল ৮টা থেকে সন্ধ্যা ৭টা পর্যন্ত।",
+  },
+  {
+    question: "আবহাওয়া খারাপ হলে কী হবে?",
+    answer:
+      "প্রাকৃতিক দুর্যোগ বা অতিরিক্ত ঝড়-বৃষ্টির কারণে ট্যুর বাতিল করতে হলে সম্পূর্ণ অর্থ ফেরত দেওয়া হবে অথবা অন্য তারিখে রিশিডিউল করার সুযোগ দেওয়া হবে।",
+  },
+  {
+    question: "পুরো বোট বুকিং করা যাবে কি?",
+    answer:
+      "হ্যাঁ, অবশ্যই! সর্বোচ্চ ২৪ জনের জন্য পুরো বোট এক্সক্লুসিভলি বুক করা যাবে। গ্রুপ ও কর্পোরেট প্যাকেজে বিশেষ ছাড়ও পাওয়া যায়।",
+  },
+];
