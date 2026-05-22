@@ -5,10 +5,14 @@ import { MessageCircle, X } from 'lucide-react';
 import { usePublicData } from '@/components/PublicDataProvider';
 
 export default function FloatingWhatsApp() {
-  const { siteConfig } = usePublicData();
+  const { siteConfig, activeSeason } = usePublicData();
   const [tooltip, setTooltip] = useState(true);
 
-  const message = encodeURIComponent(`আসসালামু আলাইকুম! আমি ${siteConfig.name} এর বিষয়ে জানতে চাই।`);
+  const message = encodeURIComponent(
+    activeSeason === 'padma'
+      ? `Hello, I want to book a Padma River event cruise for ${siteConfig.name}. Please confirm availability and package details.`
+      : `আসসালামু আলাইকুম! আমি ${siteConfig.name} এর হাওর/হাউসবোট বুকিং সম্পর্কে জানতে চাই।`
+  );
   const url = `https://wa.me/${siteConfig.whatsapp}?text=${message}`;
 
   return (
@@ -23,7 +27,7 @@ export default function FloatingWhatsApp() {
             <X className="w-2.5 h-2.5 text-slate-600" />
           </button>
           <p className="text-slate-700 text-xs sm:text-sm font-medium leading-tight">
-            হাওরে যেতে চান? WhatsApp করুন!
+            {activeSeason === 'padma' ? 'ইভেন্ট বুক করতে চান? WhatsApp করুন!' : 'হাওরে যেতে চান? WhatsApp করুন!'}
           </p>
           <div className="absolute -bottom-2 right-6 w-4 h-4 bg-white border-r border-b border-slate-100 rotate-45" />
         </div>

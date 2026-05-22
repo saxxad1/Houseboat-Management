@@ -10,6 +10,10 @@ export type PaymentMethod = 'cash' | 'bkash' | 'nagad' | 'bank' | 'other';
 export type IncomeCategory = 'booking' | 'food' | 'extra_guest' | 'bbq' | 'transport' | 'service' | 'other';
 export type ExpenseCategory = 'food' | 'staff_salary' | 'fuel' | 'maintenance' | 'cleaning' | 'transport' | 'marketing' | 'commission' | 'utility' | 'other';
 export type AvailabilityStatus = 'available' | 'partially_booked' | 'fully_booked' | 'blocked' | 'maintenance';
+export type SeasonType = 'haor' | 'padma';
+export type DisplayMode = 'cabin' | 'event_space';
+export type EventSlot = 'morning' | 'afternoon' | 'evening' | 'moonlight' | 'full_day' | 'custom';
+export type EventSlotStatus = 'available' | 'inquiry_pending' | 'booked' | 'blocked' | 'maintenance';
 
 export interface BaseRow {
   id: string;
@@ -40,6 +44,8 @@ export interface HouseboatSettings extends BaseRow {
   primary_color: string | null;
   secondary_color: string | null;
   logo_url: string | null;
+  active_season?: SeasonType | null;
+  season_updated_at?: string | null;
 }
 
 export interface Room extends BaseRow {
@@ -55,6 +61,8 @@ export interface Room extends BaseRow {
   facilities: string[];
   status: RoomStatus;
   sort_order: number;
+  season_type?: SeasonType;
+  display_mode?: DisplayMode;
 }
 
 export interface TourPackage extends BaseRow {
@@ -70,6 +78,9 @@ export interface TourPackage extends BaseRow {
   image_url: string | null;
   status: PackageStatus;
   sort_order: number;
+  season_type?: SeasonType;
+  suggested_time?: string | null;
+  best_for?: string | null;
 }
 
 export interface Customer extends BaseRow {
@@ -96,6 +107,16 @@ export interface Booking extends BaseRow {
   booking_status: BookingStatus;
   special_request: string | null;
   admin_note: string | null;
+  season_type?: SeasonType;
+  event_type?: string | null;
+  event_slot?: EventSlot | string | null;
+  event_date?: string | null;
+  event_start_time?: string | null;
+  event_end_time?: string | null;
+  food_package?: string | null;
+  decoration_required?: boolean;
+  sound_system_required?: boolean;
+  payment_method?: PaymentMethod | null;
 }
 
 export interface Payment extends BaseRow {
@@ -131,6 +152,9 @@ export interface AvailabilityBlock extends BaseRow {
   status: AvailabilityStatus;
   reason: string | null;
   note: string | null;
+  season_type?: SeasonType;
+  event_slot?: EventSlot | string | null;
+  slot_status?: EventSlotStatus | null;
 }
 
 export interface GalleryImage extends BaseRow {

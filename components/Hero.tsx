@@ -9,7 +9,7 @@ interface HeroProps {
 }
 
 export default function Hero({ onBookNow }: HeroProps) {
-  const { siteConfig, cabins } = usePublicData();
+  const { siteConfig, cabins, seasonData } = usePublicData();
 
   const scrollToSection = (id: string) => {
     const el = document.querySelector(id);
@@ -23,12 +23,16 @@ export default function Hero({ onBookNow }: HeroProps) {
     ? `৳${Math.min(...cabins.map((cabin) => cabin.pricePerNight)).toLocaleString()}`
     : siteConfig.startingPrice;
 
-  const stats = [
+  const defaultStats = [
     { icon: BedDouble, value: `${cabins.length || siteConfig.totalCabins} টি`, label: 'Premium Cabin' },
     { icon: Users, value: `${cabins.reduce((sum, cabin) => sum + cabin.capacity, 0) || siteConfig.totalCapacity} জন`, label: 'ক্যাপাসিটি' },
     { icon: Banknote, value: startingPrice, label: 'থেকে শুরু' },
     { icon: MapPin, value: 'Tanguar Haor', label: 'Sunamganj' },
   ];
+  const stats = (seasonData.hero.stats || defaultStats).map((stat, index) => ({
+    icon: defaultStats[index]?.icon || MapPin,
+    ...stat,
+  }));
 
   return (
     <section id="home" className="relative min-h-screen flex flex-col">
@@ -55,18 +59,18 @@ export default function Hero({ onBookNow }: HeroProps) {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-black/30 backdrop-blur-md border border-white/35 rounded-full px-3 py-1.5 mb-5">
             <MapPin className="w-3.5 h-3.5 text-[hsl(38,90%,65%)] flex-shrink-0" />
-            <span className="text-white text-xs sm:text-sm font-semibold truncate text-shadow-soft">{siteConfig.locationEn}</span>
+            <span className="text-white text-xs sm:text-sm font-semibold truncate text-shadow-soft">{seasonData.hero.locationBadge}</span>
           </div>
 
           {/* Title */}
           <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-3 max-w-4xl text-shadow-strong">
-            {siteConfig.name}
+            {seasonData.hero.title}
           </h1>
           <p className="text-lg sm:text-2xl md:text-3xl text-[hsl(38,95%,72%)] font-bold mb-4 max-w-3xl leading-snug text-shadow-strong">
-            {siteConfig.tagline}
+            {seasonData.hero.subtitle}
           </p>
           <p className="text-white/95 text-sm sm:text-base md:text-lg font-medium max-w-2xl leading-relaxed mb-8 text-shadow-soft">
-            {siteConfig.description}
+            {seasonData.hero.description}
           </p>
 
           {/* CTA Buttons */}
@@ -76,13 +80,13 @@ export default function Hero({ onBookNow }: HeroProps) {
               className="flex-1 xs:flex-none px-6 py-3.5 sm:px-8 sm:py-4 bg-[hsl(38,90%,55%)] hover:bg-[hsl(35,90%,48%)] text-white font-bold text-base sm:text-lg rounded-full shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px]"
             >
               <CalendarCheck className="w-5 h-5 flex-shrink-0" />
-              এখনই বুক করুন
+              {seasonData.hero.primaryCta}
             </button>
             <button
-              onClick={() => scrollToSection('#cabins')}
+              onClick={() => scrollToSection(seasonData.hero.secondaryTarget)}
               className="flex-1 xs:flex-none px-6 py-3.5 sm:px-8 sm:py-4 bg-black/25 hover:bg-black/35 backdrop-blur-md text-white font-bold text-base sm:text-lg rounded-full border border-white/40 hover:border-white/60 transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px] text-shadow-soft"
             >
-              কেবিন দেখুন
+              {seasonData.hero.secondaryCta}
             </button>
           </div>
 

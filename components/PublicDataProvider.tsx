@@ -7,6 +7,7 @@ import {
   packages as fallbackPackages,
   siteConfig as fallbackSiteConfig,
 } from '@/data/houseboatData';
+import { getSeasonalData, normalizeSeason, type SeasonType, type SeasonalContent } from '@/data/seasonalData';
 import {
   loadPublicHouseboatData,
   mapGalleryToPublic,
@@ -24,6 +25,8 @@ type PublicPackage = (typeof fallbackPackages)[number];
 type PublicGalleryImage = (typeof fallbackGalleryImages)[number];
 
 interface PublicDataContextValue {
+  activeSeason: SeasonType;
+  seasonData: SeasonalContent;
   siteConfig: PublicSiteConfig;
   cabins: PublicCabin[];
   packages: PublicPackage[];
@@ -33,8 +36,12 @@ interface PublicDataContextValue {
   loading: boolean;
 }
 
+const initialSeason = getSeasonalData('haor');
+
 const fallbackValue: PublicDataContextValue = {
-  siteConfig: { ...fallbackSiteConfig, logoUrl: '/logo-kuhelika-clean.png' },
+  activeSeason: 'haor',
+  seasonData: initialSeason,
+  siteConfig: { ...fallbackSiteConfig, ...initialSeason.site, logoUrl: '/logo-kuhelika-clean.png' },
   cabins: fallbackCabins,
   packages: fallbackPackages,
   galleryImages: fallbackGalleryImages,
@@ -51,15 +58,56 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     let mounted = true;
 
+    const applySeasonFallback = (season: SeasonType) => {
+      const seasonData = getSeasonalData(season);
+      setValue((current) => ({
+        ...current,
+        activeSeason: season,
+        seasonData,
+        siteConfig: {
+          ...current.siteConfig,
+          ...seasonData.site,
+          phone: current.siteConfig.phone || fallbackSiteConfig.phone,
+          whatsapp: current.siteConfig.whatsapp || fallbackSiteConfig.whatsapp,
+          email: current.siteConfig.email || fallbackSiteConfig.email,
+          facebook: current.siteConfig.facebook || fallbackSiteConfig.facebook,
+          logoUrl: current.siteConfig.logoUrl || '/logo-kuhelika-clean.png',
+        },
+        cabins: season === 'padma' ? [...seasonData.eventSpaces] as PublicCabin[] : [...seasonData.cabins] as PublicCabin[],
+        packages: [...seasonData.packages] as PublicPackage[],
+        galleryImages: [...seasonData.gallery.images] as PublicGalleryImage[],
+      }));
+    };
+
     async function load() {
       const data = await loadPublicHouseboatData();
-      if (!mounted || !data) return;
+      const localSeason = typeof window !== 'undefined'
+        ? normalizeSeason(window.localStorage.getItem('kuhelika-active-season'))
+        : 'haor';
+      if (!mounted || !data) {
+        applySeasonFallback(localSeason);
+        return;
+      }
+
+      const activeSeason = normalizeSeason(data.settings?.active_season || localSeason);
+      const seasonData = getSeasonalData(activeSeason);
+      const mappedRooms = mapRoomsToCabins(data.rooms, activeSeason);
+      const mappedPackages = mapPackagesToPublic(data.packages, activeSeason);
+      const mappedGallery = mapGalleryToPublic(data.gallery, activeSeason);
+      const mappedSettings = mapSettingsToSiteConfig(data.settings, seasonData);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('kuhelika-active-season', activeSeason);
+      }
 
       setValue({
-        siteConfig: mapSettingsToSiteConfig(data.settings),
-        cabins: mapRoomsToCabins(data.rooms),
-        packages: mapPackagesToPublic(data.packages),
-        galleryImages: mapGalleryToPublic(data.gallery),
+        activeSeason,
+        seasonData,
+        siteConfig: mappedSettings,
+        cabins: mappedRooms.length
+          ? mappedRooms as PublicCabin[]
+          : (activeSeason === 'padma' ? [...seasonData.eventSpaces] : [...seasonData.cabins]) as PublicCabin[],
+        packages: mappedPackages.length ? mappedPackages as PublicPackage[] : [...seasonData.packages] as PublicPackage[],
+        galleryImages: mappedGallery.length ? mappedGallery as PublicGalleryImage[] : [...seasonData.gallery.images] as PublicGalleryImage[],
         availability: data.availability,
         content: data.content,
         loading: false,
@@ -73,6 +121,37 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
 
     return () => {
       mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSeasonChange = () => {
+      const season = normalizeSeason(window.localStorage.getItem('kuhelika-active-season'));
+      const seasonData = getSeasonalData(season);
+      setValue((current) => ({
+        ...current,
+        activeSeason: season,
+        seasonData,
+        siteConfig: {
+          ...current.siteConfig,
+          ...seasonData.site,
+          phone: current.siteConfig.phone || fallbackSiteConfig.phone,
+          whatsapp: current.siteConfig.whatsapp || fallbackSiteConfig.whatsapp,
+          email: current.siteConfig.email || fallbackSiteConfig.email,
+          facebook: current.siteConfig.facebook || fallbackSiteConfig.facebook,
+          logoUrl: current.siteConfig.logoUrl || '/logo-kuhelika-clean.png',
+        },
+        cabins: season === 'padma' ? [...seasonData.eventSpaces] as PublicCabin[] : [...seasonData.cabins] as PublicCabin[],
+        packages: [...seasonData.packages] as PublicPackage[],
+        galleryImages: [...seasonData.gallery.images] as PublicGalleryImage[],
+      }));
+    };
+
+    window.addEventListener('kuhelika-season-change', handleSeasonChange);
+    window.addEventListener('storage', handleSeasonChange);
+    return () => {
+      window.removeEventListener('kuhelika-season-change', handleSeasonChange);
+      window.removeEventListener('storage', handleSeasonChange);
     };
   }, []);
 

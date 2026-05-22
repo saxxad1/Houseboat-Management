@@ -3,10 +3,9 @@
 import { Phone, MessageCircle, Mail, MapPin, Facebook, Heart } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { usePublicData } from '@/components/PublicDataProvider';
-import { navLinks } from '@/data/houseboatData';
 
 export default function Footer() {
-  const { siteConfig } = usePublicData();
+  const { siteConfig, activeSeason, seasonData } = usePublicData();
 
   const scrollTo = (href: string) => {
     const el = document.querySelector(href);
@@ -17,6 +16,15 @@ export default function Footer() {
   };
 
   const currentYear = new Date().getFullYear();
+  const whatsappMessage = encodeURIComponent(
+    activeSeason === 'padma'
+      ? `Hello, I want to book a Padma River event cruise for ${siteConfig.name}. Please confirm availability and package details.`
+      : `আসসালামু আলাইকুম! আমি ${siteConfig.name} এর হাওর/হাউসবোট বুকিং সম্পর্কে জানতে চাই।`
+  );
+  const whatsappUrl = `https://wa.me/${siteConfig.whatsapp}?text=${whatsappMessage}`;
+  const services = activeSeason === 'padma'
+    ? ['Slot Booking', 'Full Boat Event', 'Birthday Event', 'Corporate Event', 'Dinner Cruise', 'Custom Event']
+    : ['কেবিন বুকিং', 'Full Boat বুকিং', 'ফ্যামিলি প্যাকেজ', 'গ্রুপ ট্যুর', 'কর্পোরেট প্যাকেজ', 'কাস্টম ট্যুর'];
 
   return (
     <footer className="bg-[hsl(197,80%,10%)] text-white">
@@ -26,7 +34,7 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Logo className="mb-3 w-[142px] sm:mb-4 sm:w-[164px]" imageClassName="drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]" />
             <p className="text-white/60 text-sm leading-relaxed mb-4">
-              টাঙ্গুয়ার হাওরের নীল জলের বুকে ভাসমান বিলাসবহুল হাউসবোটে আপনাকে স্বাগতম।
+              {siteConfig.description}
             </p>
             <div className="flex gap-2.5 sm:gap-3">
               <a
@@ -39,7 +47,7 @@ export default function Footer() {
                 <Facebook className="w-4 h-4" />
               </a>
               <a
-                href={`https://wa.me/${siteConfig.whatsapp}`}
+                href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-emerald-600 transition-colors"
@@ -61,7 +69,7 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-xs uppercase tracking-widest text-white/40 mb-3 sm:mb-5">Quick Links</h3>
             <ul className="space-y-2">
-              {navLinks.slice(0, 6).map((link) => (
+              {seasonData.nav.links.slice(0, 6).map((link) => (
                 <li key={link.href}>
                   <button
                     onClick={() => scrollTo(link.href)}
@@ -78,12 +86,7 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-xs uppercase tracking-widest text-white/40 mb-3 sm:mb-5">সেবাসমূহ</h3>
             <ul className="space-y-2 text-white/70 text-xs sm:text-sm">
-              <li>কেবিন বুকিং</li>
-              <li>Full Boat বুকিং</li>
-              <li>ফ্যামিলি প্যাকেজ</li>
-              <li>গ্রুপ ট্যুর</li>
-              <li>কর্পোরেট প্যাকেজ</li>
-              <li>কাস্টম ট্যুর</li>
+              {services.map((service) => <li key={service}>{service}</li>)}
             </ul>
           </div>
 
@@ -98,7 +101,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href={`https://wa.me/${siteConfig.whatsapp}`} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 text-white/70 hover:text-white transition-colors text-xs sm:text-sm">
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 text-white/70 hover:text-white transition-colors text-xs sm:text-sm">
                   <MessageCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-emerald-400" />
                   <span>WhatsApp</span>
                 </a>

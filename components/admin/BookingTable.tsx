@@ -42,9 +42,10 @@ export default function BookingTable({
         <TableHeader>
           <TableRow>
             <TableHead>Code</TableHead>
+            <TableHead>Season</TableHead>
             <TableHead>Customer</TableHead>
             <TableHead>Date</TableHead>
-            <TableHead>Room/Type</TableHead>
+            <TableHead>Type / Slot</TableHead>
             <TableHead>Package</TableHead>
             <TableHead>Amount</TableHead>
             <TableHead>Payment</TableHead>
@@ -62,14 +63,21 @@ export default function BookingTable({
                 <TableRow key={booking.id}>
                   <TableCell className="font-semibold">{booking.booking_code}</TableCell>
                   <TableCell>
+                    <Badge variant="outline" className={(booking.season_type || 'haor') === 'padma' ? 'border-indigo-200 bg-indigo-50 text-indigo-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}>
+                      {(booking.season_type || 'haor') === 'padma' ? 'Padma' : 'Haor'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
                     <div className="font-medium">{customer?.full_name || 'Unknown'}</div>
                     <div className="text-xs text-slate-500">{customer?.phone}</div>
                   </TableCell>
                   <TableCell>
-                    <div>{booking.check_in_date}</div>
-                    <div className="text-xs text-slate-500">to {booking.check_out_date}</div>
+                    <div>{booking.event_date || booking.check_in_date}</div>
+                    <div className="text-xs text-slate-500">
+                      {(booking.season_type || 'haor') === 'padma' ? booking.event_slot || 'event slot' : `to ${booking.check_out_date}`}
+                    </div>
                   </TableCell>
-                  <TableCell>{booking.booking_type === 'full_boat' ? 'Full boat' : room?.name || '-'}</TableCell>
+                  <TableCell>{(booking.season_type || 'haor') === 'padma' ? booking.event_type || 'Event' : booking.booking_type === 'full_boat' ? 'Full boat' : room?.name || '-'}</TableCell>
                   <TableCell>{pkg?.title || '-'}</TableCell>
                   <TableCell>
                     <div>৳{Number(booking.total_amount).toLocaleString()}</div>
@@ -99,7 +107,7 @@ export default function BookingTable({
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={9} className="py-10 text-center text-slate-500">No bookings found</TableCell>
+              <TableCell colSpan={10} className="py-10 text-center text-slate-500">No bookings found</TableCell>
             </TableRow>
           )}
         </TableBody>

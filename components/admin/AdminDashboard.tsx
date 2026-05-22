@@ -4,9 +4,12 @@ import { useEffect, useMemo, useState } from 'react';
 import DashboardCards, { money } from '@/components/admin/DashboardCards';
 import IncomeExpenseChart from '@/components/admin/IncomeExpenseChart';
 import BookingTable from '@/components/admin/BookingTable';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { normalizeSeason, seasonMeta } from '@/data/seasonalData';
 import { fetchAdminDataset } from '@/lib/admin/data';
-import type { Booking, Customer, Expense, Income, Room, TourPackage } from '@/types/database';
+import type { Booking, Customer, Expense, HouseboatSettings, Income, Room, TourPackage } from '@/types/database';
 
 function monthKey(date: string) {
   return date.slice(0, 7);
@@ -27,6 +30,7 @@ export default function AdminDashboard() {
   const [packages, setPackages] = useState<TourPackage[]>([]);
   const [income, setIncome] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [settings, setSettings] = useState<HouseboatSettings[]>([]);
 
   const load = async () => {
     const data = await fetchAdminDataset();
@@ -36,11 +40,15 @@ export default function AdminDashboard() {
     setPackages(data.packages);
     setIncome(data.income);
     setExpenses(data.expenses);
+    setSettings(data.settings);
   };
 
   useEffect(() => {
     load();
   }, []);
+
+  const activeSeason = normalizeSeason(settings[0]?.active_season);
+  const meta = seasonMeta[activeSeason];
 
   const metrics = useMemo(() => {
     const currentMonth = thisMonth();
@@ -58,15 +66,17 @@ export default function AdminDashboard() {
       { label: 'Total Bookings', value: bookings.length, helper: 'All time', tone: 'blue' as const },
       { label: 'Pending Bookings', value: bookings.filter((booking) => booking.booking_status === 'pending').length, tone: 'amber' as const },
       { label: 'Confirmed Bookings', value: bookings.filter((booking) => booking.booking_status === 'confirmed').length, tone: 'green' as const },
-      { label: "Today's Bookings", value: bookings.filter((booking) => booking.check_in_date === currentDate).length, tone: 'blue' as const },
+      { label: activeSeason === 'padma' ? "Today's Events" : "Today's Bookings", value: bookings.filter((booking) => (booking.event_date || booking.check_in_date) === currentDate).length, tone: 'blue' as const },
       { label: 'Upcoming Bookings', value: bookings.filter((booking) => booking.check_in_date > currentDate && booking.booking_status !== 'cancelled').length, tone: 'blue' as const },
+      { label: 'Upcoming Padma Events', value: bookings.filter((booking) => (booking.season_type || 'haor') === 'padma' && (booking.event_date || booking.check_in_date) >= currentDate && booking.booking_status !== 'cancelled').length, tone: 'blue' as const },
+      { label: 'Upcoming Haor Bookings', value: bookings.filter((booking) => (booking.season_type || 'haor') === 'haor' && booking.check_in_date >= currentDate && booking.booking_status !== 'cancelled').length, tone: 'green' as const },
       { label: 'Monthly Income', value: money(monthlyIncome), tone: 'green' as const },
       { label: 'Monthly Expense', value: money(monthlyExpense), tone: 'red' as const },
       { label: 'Monthly Profit', value: money(monthlyIncome - monthlyExpense), tone: monthlyIncome - monthlyExpense >= 0 ? 'green' as const : 'red' as const },
       { label: 'Due Payments', value: money(due), tone: due > 0 ? 'amber' as const : 'green' as const },
       { label: 'Available Rooms Today', value: Math.max(rooms.length - bookedTodayRoomIds.size, 0), helper: `${rooms.length} total rooms`, tone: 'slate' as const },
     ];
-  }, [bookings, expenses, income, rooms]);
+  }, [activeSeason, bookings, expenses, income, rooms]);
 
   const chartData = useMemo(() => {
     const months = Array.from({ length: 6 }, (_, index) => {
@@ -102,6 +112,20 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-5">
+      <Card>
+        <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-slate-700">Active Season</span>
+              <Badge className="bg-[hsl(197,80%,30%)] text-white">{meta.adminName}</Badge>
+            </div>
+            <p className="mt-1 text-sm text-slate-500">{meta.location} · {meta.bookingMode}</p>
+          </div>
+          <Button asChild variant="outline">
+            <a href="/admin/season-settings">Quick Season Switch</a>
+          </Button>
+        </CardContent>
+      </Card>
       <DashboardCards cards={metrics} />
       <IncomeExpenseChart data={chartData} statusData={statusData} />
 

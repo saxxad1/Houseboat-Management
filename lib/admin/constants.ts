@@ -11,6 +11,7 @@ import {
   Package,
   ReceiptText,
   Settings,
+  ToggleLeft,
   Users,
   Wallet,
 } from 'lucide-react';
@@ -28,6 +29,7 @@ export const adminNavItems = [
   { href: '/admin/reports', label: 'Reports', labelBn: 'রিপোর্ট', icon: FileBarChart },
   { href: '/admin/gallery', label: 'Gallery', labelBn: 'গ্যালারি', icon: Camera },
   { href: '/admin/content', label: 'Website Content', labelBn: 'ওয়েবসাইট কনটেন্ট', icon: Image },
+  { href: '/admin/season-settings', label: 'Season Mode', labelBn: 'সিজন মোড', icon: ToggleLeft },
   { href: '/admin/settings', label: 'Settings', labelBn: 'সেটিংস', icon: Settings },
 ];
 
@@ -51,6 +53,10 @@ export const statusColors: Record<string, string> = {
   active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   inactive: 'bg-slate-50 text-slate-600 border-slate-200',
   maintenance: 'bg-amber-50 text-amber-700 border-amber-200',
+  haor: 'bg-sky-50 text-sky-700 border-sky-200',
+  padma: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+  cabin: 'bg-slate-50 text-slate-700 border-slate-200',
+  event_space: 'bg-violet-50 text-violet-700 border-violet-200',
   pending: 'bg-amber-50 text-amber-700 border-amber-200',
   confirmed: 'bg-sky-50 text-sky-700 border-sky-200',
   checked_in: 'bg-violet-50 text-violet-700 border-violet-200',
@@ -62,6 +68,8 @@ export const statusColors: Record<string, string> = {
   paid: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   refunded: 'bg-slate-50 text-slate-600 border-slate-200',
   available: 'bg-emerald-100 text-emerald-800',
+  inquiry_pending: 'bg-amber-100 text-amber-800',
+  booked: 'bg-red-100 text-red-800',
   partially_booked: 'bg-amber-100 text-amber-800',
   fully_booked: 'bg-red-100 text-red-800',
   blocked: 'bg-slate-200 text-slate-700',
@@ -104,6 +112,7 @@ export const pageTitles: Record<string, { title: string; subtitle: string }> = {
   '/admin/reports': { title: 'রিপোর্ট', subtitle: 'আয়-খরচ, লাভ, বাকি পেমেন্ট ও বুকিং রিপোর্ট' },
   '/admin/gallery': { title: 'গ্যালারি', subtitle: 'ওয়েবসাইটের ছবি আপলোড ও সাজান' },
   '/admin/content': { title: 'ওয়েবসাইট কনটেন্ট', subtitle: 'Hero, About, FAQ, CTA ও অন্যান্য টেক্সট' },
+  '/admin/season-settings': { title: 'সিজন মোড', subtitle: 'হাওর সিজন বা পদ্মা ইভেন্ট সিজন সক্রিয় করুন' },
   '/admin/settings': { title: 'সেটিংস', subtitle: 'ব্র্যান্ড, কন্ট্যাক্ট, পেমেন্ট ও রঙের সেটিংস' },
 };
 

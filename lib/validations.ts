@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 const optionalNumber = z.coerce.number().finite().min(0).optional().default(0);
+const booleanFromForm = z.preprocess((value) => value === 'true' || value === true, z.boolean());
 
 export const customerSchema = z.object({
   full_name: z.string().min(2, 'Customer name is required'),
@@ -27,6 +28,16 @@ export const bookingSchema = z
     booking_status: z.enum(['pending', 'confirmed', 'checked_in', 'checked_out', 'completed', 'cancelled']),
     special_request: z.string().optional(),
     admin_note: z.string().optional(),
+    season_type: z.enum(['haor', 'padma']).optional().default('haor'),
+    event_type: z.string().optional(),
+    event_slot: z.string().optional(),
+    event_date: z.string().optional(),
+    event_start_time: z.string().optional(),
+    event_end_time: z.string().optional(),
+    food_package: z.string().optional(),
+    decoration_required: booleanFromForm.optional().default(false),
+    sound_system_required: booleanFromForm.optional().default(false),
+    payment_method: z.enum(['cash', 'bkash', 'nagad', 'bank', 'other']).optional(),
   })
   .superRefine((value, ctx) => {
     if (value.check_out_date <= value.check_in_date) {
@@ -45,11 +56,19 @@ export const bookingSchema = z
       });
     }
 
-    if (value.booking_type === 'cabin_wise' && !value.room_id) {
+    if (value.season_type === 'haor' && value.booking_type === 'cabin_wise' && !value.room_id) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['room_id'],
         message: 'Select a room for cabin-wise booking',
+      });
+    }
+
+    if (value.season_type === 'padma' && (!value.event_date || !value.event_slot || !value.event_type)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['event_date'],
+        message: 'Event date, type and slot are required for Padma bookings',
       });
     }
   });

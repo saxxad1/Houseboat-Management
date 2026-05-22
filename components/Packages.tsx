@@ -17,8 +17,13 @@ const colorMap: Record<string, { bg: string; border: string; badge: string; btn:
   slate: { bg: 'bg-slate-50', border: 'border-slate-200', badge: 'bg-slate-200 text-slate-700', btn: 'bg-slate-700 hover:bg-slate-800' },
 };
 
+type PackageDisplayFields = {
+  priceDisplay?: string;
+};
+
 export default function Packages({ onBookNow }: PackagesProps) {
-  const { packages } = usePublicData();
+  const { packages, seasonData } = usePublicData();
+  const section = seasonData.packagesSection;
 
   return (
     <section id="packages" className="py-16 md:py-28 bg-white">
@@ -27,19 +32,20 @@ export default function Packages({ onBookNow }: PackagesProps) {
         <div className="text-center mb-10 md:mb-16">
           <div className="inline-flex items-center gap-2 bg-[hsl(195,95%,92%)] rounded-full px-4 py-1.5 mb-4">
             <Package className="w-4 h-4 text-[hsl(197,80%,30%)]" />
-            <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">আমাদের Packages</span>
+            <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">{section.badge}</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
-            ভ্রমণ প্যাকেজসমূহ
+            {section.title}
           </h2>
           <p className="text-slate-500 text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
-            আপনার বাজেট ও পছন্দমতো প্যাকেজ বেছে নিন। সব কিছু অন্তর্ভুক্ত।
+            {section.subtitle}
           </p>
           <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-4" />
         </div>
 
         <StaggerReveal className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" itemClassName="h-full">
           {packages.map((pkg) => {
+            const display = pkg as typeof pkg & PackageDisplayFields;
             const c = colorMap[pkg.color] || colorMap.sky;
             return (
               <div
@@ -72,7 +78,7 @@ export default function Packages({ onBookNow }: PackagesProps) {
                   {/* Price */}
                   <div className="mb-4">
                     <div className="text-2xl sm:text-3xl font-black text-[hsl(197,80%,28%)]">
-                      ৳{pkg.price.toLocaleString()}
+                      {display.priceDisplay || `৳${display.price.toLocaleString()}`}
                     </div>
                     <p className="text-slate-400 text-xs sm:text-sm mt-0.5">{pkg.priceNote}</p>
                   </div>
@@ -138,7 +144,7 @@ export default function Packages({ onBookNow }: PackagesProps) {
         </StaggerReveal>
 
         <p className="text-center text-slate-400 text-xs sm:text-sm mt-6 sm:mt-8">
-          * কাস্টম প্যাকেজের জন্য সরাসরি যোগাযোগ করুন। দলের আকার ও তারিখ অনুযায়ী বিশেষ ছাড় পাওয়া যায়।
+          {section.note}
         </p>
       </div>
     </section>

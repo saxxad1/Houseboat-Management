@@ -20,6 +20,7 @@ export function RoomsAdminPage() {
       searchKeys={['name', 'slug', 'bed_type']}
       columns={[
         { key: 'image_url', label: 'Image', type: 'image' },
+        { key: 'season_type', label: 'Season', type: 'status' },
         { key: 'name', label: 'Name' },
         { key: 'capacity', label: 'Capacity' },
         { key: 'price_per_night', label: 'Price', type: 'money' },
@@ -30,11 +31,13 @@ export function RoomsAdminPage() {
       fields={[
         { name: 'name', label: 'Room name', required: true },
         { name: 'slug', label: 'Slug', required: true },
+        { name: 'season_type', label: 'Season', type: 'select', options: [{ value: 'haor', label: 'Haor cabin' }, { value: 'padma', label: 'Padma event space' }] },
+        { name: 'display_mode', label: 'Display mode', type: 'select', options: [{ value: 'cabin', label: 'Cabin' }, { value: 'event_space', label: 'Event space' }] },
         { name: 'image_url', label: 'Room image', type: 'image', colSpan: 'full' },
         { name: 'description', label: 'Description', type: 'textarea' },
         { name: 'bed_type', label: 'Bed type' },
         { name: 'capacity', label: 'Capacity', type: 'number' },
-        { name: 'price_per_night', label: 'Price per night', type: 'number' },
+        { name: 'price_per_night', label: 'Price / starting quote', type: 'number' },
         { name: 'has_ac', label: 'AC available', type: 'boolean' },
         { name: 'has_attached_washroom', label: 'Attached washroom', type: 'boolean' },
         { name: 'facilities', label: 'Facilities (comma separated)', type: 'tags', colSpan: 'full' },
@@ -55,6 +58,7 @@ export function PackagesAdminPage() {
       storageFolder="packages"
       searchKeys={['title', 'duration', 'meal_info']}
       columns={[
+        { key: 'season_type', label: 'Season', type: 'status' },
         { key: 'title', label: 'Package' },
         { key: 'duration', label: 'Duration' },
         { key: 'price', label: 'Price', type: 'money' },
@@ -64,10 +68,13 @@ export function PackagesAdminPage() {
       fields={[
         { name: 'title', label: 'Title', required: true },
         { name: 'slug', label: 'Slug', required: true },
+        { name: 'season_type', label: 'Season', type: 'select', options: [{ value: 'haor', label: 'Haor package' }, { value: 'padma', label: 'Padma event package' }] },
         { name: 'image_url', label: 'Package image', type: 'image', colSpan: 'full' },
         { name: 'description', label: 'Description', type: 'textarea' },
         { name: 'duration', label: 'Duration' },
+        { name: 'suggested_time', label: 'Suggested time' },
         { name: 'price', label: 'Price', type: 'number' },
+        { name: 'best_for', label: 'Best for' },
         { name: 'max_guests', label: 'Max guests', type: 'number' },
         { name: 'included_services', label: 'Included services', type: 'tags', colSpan: 'full' },
         { name: 'meal_info', label: 'Meal info', type: 'textarea' },

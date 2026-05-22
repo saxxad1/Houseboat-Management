@@ -10,6 +10,8 @@ type Status = 'available' | 'partial' | 'full' | 'blocked';
 interface DayStatus {
   status: Status;
   availableCabins?: number;
+  availableSlots?: string[];
+  bookedSlots?: string[];
   price?: number;
 }
 
@@ -67,7 +69,7 @@ const weekdays = ['রবি', 'সোম', 'মঙ্গল', 'বুধ', 'ব
 const weekdaysMobile = ['র', 'সো', 'ম', 'বু', 'বৃ', 'শু', 'শ'];
 
 export default function AvailabilityCalendar() {
-  const { availability, cabins } = usePublicData();
+  const { availability, cabins, activeSeason, seasonData } = usePublicData();
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -89,9 +91,29 @@ export default function AvailabilityCalendar() {
 
   const availableCabinCount = cabins.filter((cabin) => cabin.available).length || cabins.length;
   const startingPrice = cabins.length ? Math.min(...cabins.map((cabin) => cabin.pricePerNight)) : 3500;
+  const isPadma = activeSeason === 'padma';
+  const eventSlots = isPadma && 'slots' in seasonData.availability
+    ? [...seasonData.availability.slots]
+    : [];
 
   const getDayData = (date: string): DayStatus => {
-    const blocks = availability.filter((block) => block.date === date);
+    const blocks = availability.filter((block) => block.date === date && (block.season_type || 'haor') === activeSeason);
+    if (isPadma) {
+      const blocked = blocks.some((block) => block.status === 'blocked' || block.status === 'maintenance' || block.slot_status === 'blocked' || block.slot_status === 'maintenance');
+      const bookedSlotKeys = blocks
+        .filter((block) => block.slot_status === 'booked' || block.status === 'fully_booked')
+        .map((block) => block.event_slot || 'custom');
+      const hasFullDay = bookedSlotKeys.includes('full_day') || blocks.some((block) => block.event_slot === 'full_day');
+      const pending = blocks.some((block) => block.slot_status === 'inquiry_pending' || block.status === 'partially_booked');
+      const status: Status = blocked ? 'blocked' : hasFullDay || bookedSlotKeys.length >= 4 ? 'full' : pending || bookedSlotKeys.length > 0 ? 'partial' : 'available';
+      return {
+        status,
+        availableCabins: Math.max(eventSlots.length - (hasFullDay ? eventSlots.length : bookedSlotKeys.length), 0),
+        availableSlots: status === 'blocked' || hasFullDay ? [] : eventSlots,
+        bookedSlots: hasFullDay ? ['Full Day Event'] : bookedSlotKeys,
+        price: status === 'full' || status === 'blocked' ? 0 : 30000,
+      };
+    }
     if (blocks.length) {
       const status = blocks.some((block) => block.status === 'maintenance' || block.status === 'blocked')
         ? 'blocked'
@@ -119,13 +141,13 @@ export default function AvailabilityCalendar() {
         <div className="text-center mb-10 md:mb-16">
           <div className="inline-flex items-center gap-2 bg-white border border-[hsl(195,85%,82%)] rounded-full px-4 py-1.5 mb-4">
             <Calendar className="w-4 h-4 text-[hsl(197,80%,30%)]" />
-            <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">Availability</span>
+            <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">{seasonData.availability.badge}</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
-            তারিখ ও উপলব্ধতা
+            {seasonData.availability.title}
           </h2>
           <p className="text-slate-500 text-sm sm:text-base md:text-lg max-w-xl mx-auto">
-            আপনার পছন্দের তারিখে কেবিনের উপলব্ধতা দেখুন।
+            {seasonData.availability.subtitle}
           </p>
           <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-4" />
         </div>
@@ -236,22 +258,29 @@ export default function AvailabilityCalendar() {
                   <div className="flex items-center justify-between p-2.5 sm:p-3 bg-slate-50 rounded-xl">
                     <div className="flex items-center gap-2">
                       <BedDouble className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(197,80%,38%)]" />
-                      <span className="text-xs sm:text-sm text-slate-600">উপলব্ধ কেবিন</span>
+                      <span className="text-xs sm:text-sm text-slate-600">{isPadma ? 'Available Slots' : 'উপলব্ধ কেবিন'}</span>
                     </div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-800">{selectedData.availableCabins} / {cabins.length || 6}</span>
+                    <span className="text-xs sm:text-sm font-bold text-slate-800">{selectedData.availableCabins} / {isPadma ? eventSlots.length : cabins.length || 6}</span>
                   </div>
 
                   <div className="flex items-center justify-between p-2.5 sm:p-3 bg-slate-50 rounded-xl">
                     <div className="flex items-center gap-2">
                       <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(197,80%,38%)]" />
-                      <span className="text-xs sm:text-sm text-slate-600">বুকড কেবিন</span>
+                      <span className="text-xs sm:text-sm text-slate-600">{isPadma ? 'Booked Slots' : 'বুকড কেবিন'}</span>
                     </div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-800">{(cabins.length || 6) - (selectedData.availableCabins || 0)} / {cabins.length || 6}</span>
+                    <span className="text-xs sm:text-sm font-bold text-slate-800">{(isPadma ? eventSlots.length : cabins.length || 6) - (selectedData.availableCabins || 0)} / {isPadma ? eventSlots.length : cabins.length || 6}</span>
                   </div>
+
+                  {isPadma && (
+                    <div className="p-2.5 sm:p-3 bg-slate-50 rounded-xl">
+                      <div className="text-xs text-slate-500 mb-1">Active Season</div>
+                      <div className="text-sm font-bold text-[hsl(197,80%,30%)]">Padma Event Season</div>
+                    </div>
+                  )}
 
                   {selectedData.price && selectedData.price > 0 && (
                     <div className="p-3 bg-[hsl(195,95%,92%)] rounded-xl">
-                      <div className="text-xs text-[hsl(197,80%,38%)] font-medium mb-1">শুরুর মূল্য (প্রতি রাত)</div>
+                      <div className="text-xs text-[hsl(197,80%,38%)] font-medium mb-1">{isPadma ? 'Starting Event Price' : 'শুরুর মূল্য (প্রতি রাত)'}</div>
                       <div className="text-xl sm:text-2xl font-black text-[hsl(197,80%,28%)]">
                         ৳{selectedData.price.toLocaleString()}
                       </div>

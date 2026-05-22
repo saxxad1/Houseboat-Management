@@ -9,11 +9,11 @@ import { StaggerReveal } from '@/components/ScrollReveal';
 const defaultCategories = ['সব', 'Exterior', 'Interior', 'Landscape', 'Food', 'Rooftop', 'Night', 'Group'];
 
 export default function Gallery() {
-  const { galleryImages } = usePublicData();
+  const { galleryImages, seasonData } = usePublicData();
   const [activeCategory, setActiveCategory] = useState('সব');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const categories = ['সব', ...Array.from(new Set(galleryImages.map((image) => image.category).filter(Boolean)))];
-  const visibleCategories = categories.length > 1 ? categories : defaultCategories;
+  const visibleCategories = categories.length > 1 ? categories : seasonData.gallery.categories || defaultCategories;
 
   const filtered = activeCategory === 'সব'
     ? galleryImages
@@ -39,10 +39,10 @@ export default function Gallery() {
             <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">Gallery</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
-            ফটো গ্যালারি
+            {seasonData.gallery.title}
           </h2>
           <p className="text-slate-500 text-sm sm:text-base md:text-lg max-w-xl mx-auto">
-            কুহেলিকার অপরূপ সৌন্দর্য অনুভব করুন।
+            {seasonData.gallery.subtitle}
           </p>
           <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-4" />
         </div>

@@ -22,10 +22,21 @@ const initialForm = {
   package: '',
   request: '',
   payment: 'bkash',
+  eventDate: '',
+  eventType: 'Birthday',
+  eventSlot: 'Morning Slot',
+  guestRange: '20-30',
+  foodPackage: 'Snacks Only',
+  decorationRequired: 'Discuss Later',
+  soundSystemRequired: 'Yes',
+};
+
+type PackageDisplayFields = {
+  priceDisplay?: string;
 };
 
 export default function BookingForm({ isOpen, onClose }: BookingFormProps) {
-  const { siteConfig, cabins, packages } = usePublicData();
+  const { siteConfig, cabins, packages, activeSeason, seasonData } = usePublicData();
   const [form, setForm] = useState(initialForm);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,10 +48,16 @@ export default function BookingForm({ isOpen, onClose }: BookingFormProps) {
     const newErrors: Record<string, string> = {};
     if (!form.name.trim()) newErrors.name = 'নাম দিন';
     if (!form.phone.trim()) newErrors.phone = 'ফোন নম্বর দিন';
-    if (!form.checkin) newErrors.checkin = 'Check-in তারিখ দিন';
-    if (!form.checkout) newErrors.checkout = 'Check-out তারিখ দিন';
-    if (form.checkin && form.checkout && form.checkout <= form.checkin) {
-      newErrors.checkout = 'Check-out তারিখ Check-in এর পরে দিন';
+    if (activeSeason === 'padma') {
+      if (!form.eventDate) newErrors.eventDate = 'ইভেন্ট তারিখ দিন';
+      if (!form.eventType) newErrors.eventType = 'ইভেন্ট ধরন সিলেক্ট করুন';
+      if (!form.eventSlot) newErrors.eventSlot = 'স্লট সিলেক্ট করুন';
+    } else {
+      if (!form.checkin) newErrors.checkin = 'Check-in তারিখ দিন';
+      if (!form.checkout) newErrors.checkout = 'Check-out তারিখ দিন';
+      if (form.checkin && form.checkout && form.checkout <= form.checkin) {
+        newErrors.checkout = 'Check-out তারিখ Check-in এর পরে দিন';
+      }
     }
     return newErrors;
   };
@@ -64,6 +81,7 @@ export default function BookingForm({ isOpen, onClose }: BookingFormProps) {
     try {
       await submitNetlifyForm('booking-request', {
         ...form,
+        season_type: activeSeason,
         submittedAt: new Date().toISOString(),
       });
       setSubmitted(true);
@@ -75,6 +93,25 @@ export default function BookingForm({ isOpen, onClose }: BookingFormProps) {
   };
 
   const buildWhatsappMessage = () => {
+    if (activeSeason === 'padma') {
+      const msg = `Hello, I want to book a Padma River event cruise.
+
+Name: ${form.name}
+Phone: ${form.phone}
+Event Date: ${form.eventDate}
+Event Type: ${form.eventType}
+Preferred Slot: ${form.eventSlot}
+Guests: ${form.guestRange}
+Package: ${form.package || 'Not selected'}
+Food Package: ${form.foodPackage}
+Decoration Required: ${form.decorationRequired}
+Sound System Required: ${form.soundSystemRequired}
+Special Request: ${form.request || 'None'}
+
+Please confirm availability and package details.`;
+      return encodeURIComponent(msg);
+    }
+
     const msg = `আসসালামু আলাইকুম,
 আমি *${siteConfig.name}* এ বুকিং করতে চাই।
 
@@ -122,8 +159,8 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
         <div className="sticky top-0 z-10 bg-gradient-to-r from-[hsl(197,80%,28%)] to-[hsl(173,58%,40%)] p-4 sm:p-6 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-white">বুকিং রিকোয়েস্ট</h2>
-              <p className="text-white/70 text-xs sm:text-sm mt-0.5">{siteConfig.name} · {siteConfig.locationEn}</p>
+              <h2 className="text-lg sm:text-xl font-bold text-white">{seasonData.bookingForm.title}</h2>
+              <p className="text-white/70 text-xs sm:text-sm mt-0.5">{seasonData.bookingForm.subtitle}</p>
             </div>
             <button
               onClick={handleClose}
@@ -140,9 +177,9 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-5 sm:mb-6">
               <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-600" />
             </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">বুকিং রিকোয়েস্ট পাঠানো হয়েছে!</h3>
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">{seasonData.bookingForm.success}</h3>
             <p className="text-slate-500 text-sm sm:text-base mb-5 sm:mb-6">
-              আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব। WhatsApp-এ সরাসরি কথা বলতে পারেন।
+              {seasonData.bookingForm.successDescription}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
@@ -227,71 +264,137 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
               />
             </div>
 
-            {/* Row: Dates */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div>
-                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                  <span className="flex items-center gap-1.5"><CalendarCheck className="w-3.5 h-3.5" />Check-in *</span>
-                </label>
-                <input
-                  name="checkin"
-                  type="date"
-                  value={form.checkin}
-                  onChange={(e) => { setForm({ ...form, checkin: e.target.value }); setErrors({ ...errors, checkin: '' }); }}
-                  className={`w-full px-3.5 sm:px-4 py-3 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px] ${errors.checkin ? 'border-red-400' : 'border-slate-200'}`}
-                />
-                {errors.checkin && <p className="text-red-500 text-xs mt-1">{errors.checkin}</p>}
-              </div>
-              <div>
-                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                  <span className="flex items-center gap-1.5"><CalendarCheck className="w-3.5 h-3.5" />Check-out *</span>
-                </label>
-                <input
-                  name="checkout"
-                  type="date"
-                  value={form.checkout}
-                  onChange={(e) => { setForm({ ...form, checkout: e.target.value }); setErrors({ ...errors, checkout: '' }); }}
-                  className={`w-full px-3.5 sm:px-4 py-3 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px] ${errors.checkout ? 'border-red-400' : 'border-slate-200'}`}
-                />
-                {errors.checkout && <p className="text-red-500 text-xs mt-1">{errors.checkout}</p>}
-              </div>
-            </div>
+            {activeSeason === 'padma' ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                      <span className="flex items-center gap-1.5"><CalendarCheck className="w-3.5 h-3.5" />Event Date *</span>
+                    </label>
+                    <input
+                      name="eventDate"
+                      type="date"
+                      value={form.eventDate}
+                      onChange={(e) => { setForm({ ...form, eventDate: e.target.value }); setErrors({ ...errors, eventDate: '' }); }}
+                      className={`w-full px-3.5 sm:px-4 py-3 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px] ${errors.eventDate ? 'border-red-400' : 'border-slate-200'}`}
+                    />
+                    {errors.eventDate && <p className="text-red-500 text-xs mt-1">{errors.eventDate}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Event Type *</label>
+                    <select
+                      name="eventType"
+                      value={form.eventType}
+                      onChange={(e) => setForm({ ...form, eventType: e.target.value })}
+                      className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                    >
+                      {seasonData.bookingForm.mode === 'padma' && seasonData.bookingForm.eventTypes.map((item) => (
+                        <option key={item} value={item}>{item}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
 
-            {/* Row: Guests & Booking Type */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div>
-                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                  <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />অতিথির সংখ্যা</span>
-                </label>
-                <select
-                  name="guests"
-                  value={form.guests}
-                  onChange={(e) => setForm({ ...form, guests: e.target.value })}
-                  className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
-                >
-                  {[1,2,3,4,5,6,8,10,12,15,20,24].map((n) => (
-                    <option key={n} value={n}>{n} জন</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                  <span className="flex items-center gap-1.5"><Anchor className="w-3.5 h-3.5" />বুকিং ধরন</span>
-                </label>
-                <select
-                  name="bookingType"
-                  value={form.bookingType}
-                  onChange={(e) => setForm({ ...form, bookingType: e.target.value })}
-                  className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
-                >
-                  <option value="cabin">কেবিন বুকিং</option>
-                  <option value="full">পুরো বোট (Full Boat)</option>
-                </select>
-              </div>
-            </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Preferred Slot *</label>
+                    <select
+                      name="eventSlot"
+                      value={form.eventSlot}
+                      onChange={(e) => setForm({ ...form, eventSlot: e.target.value })}
+                      className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                    >
+                      {seasonData.bookingForm.mode === 'padma' && seasonData.bookingForm.slots.map((item) => (
+                        <option key={item} value={item}>{item}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                      <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />Number of Guests *</span>
+                    </label>
+                    <select
+                      name="guestRange"
+                      value={form.guestRange}
+                      onChange={(e) => setForm({ ...form, guestRange: e.target.value })}
+                      className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                    >
+                      {seasonData.bookingForm.mode === 'padma' && seasonData.bookingForm.guestRanges.map((item) => (
+                        <option key={item} value={item}>{item}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Row: Dates */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                      <span className="flex items-center gap-1.5"><CalendarCheck className="w-3.5 h-3.5" />Check-in *</span>
+                    </label>
+                    <input
+                      name="checkin"
+                      type="date"
+                      value={form.checkin}
+                      onChange={(e) => { setForm({ ...form, checkin: e.target.value }); setErrors({ ...errors, checkin: '' }); }}
+                      className={`w-full px-3.5 sm:px-4 py-3 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px] ${errors.checkin ? 'border-red-400' : 'border-slate-200'}`}
+                    />
+                    {errors.checkin && <p className="text-red-500 text-xs mt-1">{errors.checkin}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                      <span className="flex items-center gap-1.5"><CalendarCheck className="w-3.5 h-3.5" />Check-out *</span>
+                    </label>
+                    <input
+                      name="checkout"
+                      type="date"
+                      value={form.checkout}
+                      onChange={(e) => { setForm({ ...form, checkout: e.target.value }); setErrors({ ...errors, checkout: '' }); }}
+                      className={`w-full px-3.5 sm:px-4 py-3 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px] ${errors.checkout ? 'border-red-400' : 'border-slate-200'}`}
+                    />
+                    {errors.checkout && <p className="text-red-500 text-xs mt-1">{errors.checkout}</p>}
+                  </div>
+                </div>
+
+                {/* Row: Guests & Booking Type */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                      <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />অতিথির সংখ্যা</span>
+                    </label>
+                    <select
+                      name="guests"
+                      value={form.guests}
+                      onChange={(e) => setForm({ ...form, guests: e.target.value })}
+                      className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                    >
+                      {[1,2,3,4,5,6,8,10,12,15,20,24].map((n) => (
+                        <option key={n} value={n}>{n} জন</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                      <span className="flex items-center gap-1.5"><Anchor className="w-3.5 h-3.5" />বুকিং ধরন</span>
+                    </label>
+                    <select
+                      name="bookingType"
+                      value={form.bookingType}
+                      onChange={(e) => setForm({ ...form, bookingType: e.target.value })}
+                      className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                    >
+                      <option value="cabin">কেবিন বুকিং</option>
+                      <option value="full">পুরো বোট (Full Boat)</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Cabin Select */}
-            {form.bookingType === 'cabin' && (
+            {activeSeason === 'haor' && form.bookingType === 'cabin' && (
               <div>
                 <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
                   <span className="flex items-center gap-1.5"><BedDouble className="w-3.5 h-3.5" />কেবিন বেছে নিন</span>
@@ -324,13 +427,59 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
                 className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
               >
                 <option value="">-- প্যাকেজ সিলেক্ট করুন --</option>
-                {packages.map((p) => (
-                  <option key={p.id} value={p.title}>
-                    {p.title} – ৳{p.price.toLocaleString()}
-                  </option>
-                ))}
+                {packages.map((p) => {
+                  const display = p as typeof p & PackageDisplayFields;
+                  return (
+                    <option key={display.id} value={display.title}>
+                      {display.title} – {display.priceDisplay || `৳${display.price.toLocaleString()}`}
+                    </option>
+                  );
+                })}
               </select>
             </div>
+
+            {activeSeason === 'padma' && seasonData.bookingForm.mode === 'padma' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Food Package</label>
+                  <select
+                    name="foodPackage"
+                    value={form.foodPackage}
+                    onChange={(e) => setForm({ ...form, foodPackage: e.target.value })}
+                    className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                  >
+                    {seasonData.bookingForm.foodPackages.map((item) => (
+                      <option key={item} value={item}>{item}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Decoration Required?</label>
+                  <select
+                    name="decorationRequired"
+                    value={form.decorationRequired}
+                    onChange={(e) => setForm({ ...form, decorationRequired: e.target.value })}
+                    className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                  >
+                    {seasonData.bookingForm.decorationOptions.map((item) => (
+                      <option key={item} value={item}>{item}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Sound System Required?</label>
+                  <select
+                    name="soundSystemRequired"
+                    value={form.soundSystemRequired}
+                    onChange={(e) => setForm({ ...form, soundSystemRequired: e.target.value })}
+                    className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                  >
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+              </div>
+            )}
 
             {/* Payment Method */}
             <div>
@@ -370,7 +519,7 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
                 name="request"
                 value={form.request}
                 onChange={(e) => setForm({ ...form, request: e.target.value })}
-                placeholder="বার্থডে ডেকোরেশন, হালাল খাবার..."
+                placeholder={activeSeason === 'padma' ? 'আপনার ইভেন্ট, ডেকোরেশন, খাবার বা বিশেষ প্রয়োজন লিখুন...' : 'বার্থডে ডেকোরেশন, হালাল খাবার...'}
                 rows={3}
                 className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all resize-none"
               />
@@ -389,7 +538,7 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
                 className="w-full flex items-center justify-center gap-2 bg-[hsl(197,80%,30%)] hover:bg-[hsl(197,80%,22%)] disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-bold py-3.5 sm:py-4 rounded-2xl transition-all shadow-lg hover:shadow-xl min-h-[52px]"
               >
                 <Send className="w-4 h-4" />
-                {isSubmitting ? 'পাঠানো হচ্ছে...' : 'বুকিং রিকোয়েস্ট পাঠান'}
+                {isSubmitting ? 'পাঠানো হচ্ছে...' : seasonData.bookingForm.submit}
               </button>
               <button
                 type="button"

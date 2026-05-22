@@ -3,17 +3,21 @@
 import Image from 'next/image';
 import {
   Bath, BedDouble, ShieldCheck, Utensils, Wind, Zap,
-  Flame, Music, Droplets, Phone, Baby, Map
+  Flame, Music, Droplets, Phone, Baby, Map, Star, Coffee, Camera, Users
 } from 'lucide-react';
-import { facilities } from '@/data/houseboatData';
 import { StaggerReveal } from '@/components/ScrollReveal';
+import { usePublicData } from '@/components/PublicDataProvider';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Bath, BedDouble, ShieldCheck, Utensils, Wind, Zap,
-  Flame, Music, Droplets, Phone, Baby, Map,
+  Flame, Music, Droplets, Phone, Baby, Map, Star, Coffee, Camera, Users,
 };
 
 export default function Facilities() {
+  const { seasonData } = usePublicData();
+  const facilities = seasonData.facilities;
+  const section = seasonData.facilitiesSection;
+
   return (
     <section id="facilities" className="py-16 md:py-28 bg-[hsl(195,100%,97%)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,13 +25,13 @@ export default function Facilities() {
         <div className="text-center mb-10 md:mb-16">
           <div className="inline-flex items-center gap-2 bg-white border border-[hsl(195,85%,82%)] rounded-full px-4 py-1.5 mb-4">
             <ShieldCheck className="w-4 h-4 text-[hsl(197,80%,30%)]" />
-            <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">Facilities</span>
+            <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">{section.badge}</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
-            আমাদের সুবিধাসমূহ
+            {section.title}
           </h2>
           <p className="text-slate-500 text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
-            আপনার আরাম ও নিরাপত্তার জন্য আমরা সর্বোচ্চ সুবিধা নিশ্চিত করি।
+            {section.subtitle}
           </p>
           <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-4" />
         </div>
@@ -53,7 +57,7 @@ export default function Facilities() {
         {/* Bottom Banner */}
         <div className="mt-10 sm:mt-14 relative overflow-hidden rounded-2xl sm:rounded-3xl">
           <Image
-            src="https://images.pexels.com/photos/1822605/pexels-photo-1822605.jpeg?auto=compress&cs=tinysrgb&w=1400"
+            src={section.bannerImage}
             alt="Houseboat rooftop"
             width={1400}
             height={600}
@@ -63,10 +67,10 @@ export default function Facilities() {
           <div className="absolute inset-0 bg-gradient-to-r from-[hsl(197,80%,10%)]/80 to-[hsl(197,80%,10%)]/40" />
           <div className="absolute inset-0 flex flex-col justify-center px-5 sm:px-8 md:px-12">
             <h3 className="text-white text-lg sm:text-2xl md:text-3xl font-bold mb-1.5 sm:mb-2 max-w-lg">
-              প্রতিটি সুবিধা আপনার জন্যই
+              {section.bannerTitle}
             </h3>
             <p className="text-white/80 text-xs sm:text-sm md:text-base max-w-md">
-              আমরা বিশ্বাস করি যে একটি আদর্শ ভ্রমণ শুধু গন্তব্য নয়, যাত্রার প্রতিটি মুহূর্ত সুন্দর হওয়া উচিত।
+              {section.bannerDescription}
             </p>
           </div>
         </div>

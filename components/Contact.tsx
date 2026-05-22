@@ -10,12 +10,17 @@ interface ContactProps {
 }
 
 export default function Contact({ onBookNow }: ContactProps) {
-  const { siteConfig } = usePublicData();
+  const { siteConfig, activeSeason, seasonData } = usePublicData();
   const [form, setForm] = useState({ name: '', phone: '', message: '' });
   const [sent, setSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [botField, setBotField] = useState('');
+  const whatsappMessage = encodeURIComponent(
+    activeSeason === 'padma'
+      ? `Hello, I want to book a Padma River event cruise for ${siteConfig.name}. Please confirm availability and package details.`
+      : `আসসালামু আলাইকুম! আমি ${siteConfig.name} এর হাওর/হাউসবোট বুকিং সম্পর্কে জানতে চাই।`
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +62,7 @@ export default function Contact({ onBookNow }: ContactProps) {
             যোগাযোগ করুন
           </h2>
           <p className="text-slate-500 text-sm sm:text-base md:text-lg max-w-xl mx-auto">
-            যেকোনো প্রশ্ন বা বুকিংয়ের জন্য আমরা সবসময় প্রস্তুত।
+            {seasonData.contact.subtitle}
           </p>
           <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-4" />
         </div>
@@ -79,7 +84,7 @@ export default function Contact({ onBookNow }: ContactProps) {
             </a>
 
             <a
-              href={`https://wa.me/${siteConfig.whatsapp}`}
+              href={`https://wa.me/${siteConfig.whatsapp}?text=${whatsappMessage}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 sm:gap-4 bg-white rounded-xl sm:rounded-2xl p-3.5 sm:p-5 shadow-sm border border-slate-100 hover:shadow-md transition-shadow group"
@@ -127,8 +132,8 @@ export default function Contact({ onBookNow }: ContactProps) {
               </div>
               <div className="min-w-0">
                 <div className="text-[10px] sm:text-xs text-slate-400 font-medium uppercase tracking-wide mb-0.5">অবস্থান</div>
-                <div className="font-bold text-slate-800 text-sm sm:text-base leading-snug">{siteConfig.location}</div>
-                <div className="text-slate-500 text-xs mt-0.5">Pickup: তাহিরপুর ঘাট</div>
+                <div className="font-bold text-slate-800 text-sm sm:text-base leading-snug">{seasonData.contact.location}</div>
+                <div className="text-slate-500 text-xs mt-0.5">{seasonData.contact.pickup}</div>
               </div>
             </div>
           </div>
@@ -138,14 +143,14 @@ export default function Contact({ onBookNow }: ContactProps) {
             {/* Map */}
             <div className="rounded-xl sm:rounded-2xl overflow-hidden shadow-md border border-slate-100 h-44 sm:h-52">
               <iframe
-                src={siteConfig.mapEmbedUrl}
+                src={seasonData.contact.mapEmbedUrl || siteConfig.mapEmbedUrl}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Tanguar Haor location map"
+                title={`${seasonData.contact.location} location map`}
               />
             </div>
 

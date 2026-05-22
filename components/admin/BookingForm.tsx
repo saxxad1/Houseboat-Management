@@ -51,6 +51,16 @@ const defaultForm = {
   booking_status: 'pending',
   special_request: '',
   admin_note: '',
+  season_type: 'haor',
+  event_type: 'Birthday',
+  event_slot: 'morning',
+  event_date: '',
+  event_start_time: '',
+  event_end_time: '',
+  food_package: 'Snacks Only',
+  decoration_required: 'false',
+  sound_system_required: 'true',
+  payment_method: 'bkash',
 };
 
 export default function BookingForm({
@@ -88,6 +98,16 @@ export default function BookingForm({
             booking_status: booking.booking_status,
             special_request: booking.special_request || '',
             admin_note: booking.admin_note || '',
+            season_type: booking.season_type || 'haor',
+            event_type: booking.event_type || 'Birthday',
+            event_slot: booking.event_slot || 'morning',
+            event_date: booking.event_date || booking.check_in_date,
+            event_start_time: booking.event_start_time || '',
+            event_end_time: booking.event_end_time || '',
+            food_package: booking.food_package || 'Snacks Only',
+            decoration_required: String(Boolean(booking.decoration_required)),
+            sound_system_required: String(Boolean(booking.sound_system_required ?? true)),
+            payment_method: booking.payment_method || 'bkash',
           }
         : defaultForm
     );
@@ -106,10 +126,16 @@ export default function BookingForm({
     setSaving(true);
     setError('');
     try {
+      const padmaCheckoutDate = form.event_date
+        ? new Date(new Date(form.event_date).getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+        : '';
       const payload = {
         ...form,
-        room_id: form.room_id === 'none' ? '' : form.room_id,
+        room_id: form.season_type === 'padma' || form.room_id === 'none' ? '' : form.room_id,
         package_id: form.package_id === 'none' ? '' : form.package_id,
+        check_in_date: form.season_type === 'padma' ? form.event_date : form.check_in_date,
+        check_out_date: form.season_type === 'padma' ? padmaCheckoutDate : form.check_out_date,
+        booking_type: form.season_type === 'padma' ? 'full_boat' : form.booking_type,
       };
       const parsed = bookingSchema.parse(payload);
       const conflictCandidate = {
@@ -119,6 +145,9 @@ export default function BookingForm({
         check_in_date: parsed.check_in_date,
         check_out_date: parsed.check_out_date,
         booking_status: parsed.booking_status,
+        season_type: parsed.season_type,
+        event_date: parsed.event_date,
+        event_slot: parsed.event_slot,
       };
       if (hasBookingConflict(conflictCandidate, bookings)) {
         throw new Error('এই তারিখে selected room/full boat already booked.');
@@ -130,6 +159,16 @@ export default function BookingForm({
           room_id: parsed.room_id || null,
           package_id: parsed.package_id || null,
           due_amount: dueAmount,
+          season_type: parsed.season_type,
+          event_type: parsed.event_type,
+          event_slot: parsed.event_slot,
+          event_date: parsed.event_date,
+          event_start_time: parsed.event_start_time,
+          event_end_time: parsed.event_end_time,
+          food_package: parsed.food_package,
+          decoration_required: parsed.decoration_required,
+          sound_system_required: parsed.sound_system_required,
+          payment_method: parsed.payment_method,
         },
         booking?.id
       );
@@ -169,6 +208,16 @@ export default function BookingForm({
             <Input type="email" value={form.email} onChange={(event) => setField('email', event.target.value)} />
           </div>
           <div className="space-y-2">
+            <Label>Season</Label>
+            <Select value={form.season_type} onValueChange={(value) => setField('season_type', value)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="haor">Haor booking</SelectItem>
+                <SelectItem value="padma">Padma event</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {form.season_type === 'haor' && <div className="space-y-2">
             <Label>Booking type</Label>
             <Select value={form.booking_type} onValueChange={(value) => setField('booking_type', value)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -177,15 +226,15 @@ export default function BookingForm({
                 <SelectItem value="full_boat">Full boat</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          {form.booking_type === 'cabin_wise' && (
+          </div>}
+          {form.season_type === 'haor' && form.booking_type === 'cabin_wise' && (
             <div className="space-y-2">
               <Label>Room/Cabin</Label>
               <Select value={form.room_id} onValueChange={(value) => setField('room_id', value)}>
                 <SelectTrigger><SelectValue placeholder="Select room" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Select room</SelectItem>
-                  {rooms.map((room) => (
+                  {rooms.filter((room) => (room.season_type || 'haor') === 'haor').map((room) => (
                     <SelectItem key={room.id} value={room.id}>{room.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -198,20 +247,83 @@ export default function BookingForm({
               <SelectTrigger><SelectValue placeholder="Select package" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No package</SelectItem>
-                {packages.map((pkg) => (
+                {packages.filter((pkg) => (pkg.season_type || 'haor') === form.season_type).map((pkg) => (
                   <SelectItem key={pkg.id} value={pkg.id}>{pkg.title}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
+          {form.season_type === 'haor' ? <div className="space-y-2">
             <Label>Check-in</Label>
             <Input type="date" value={form.check_in_date} onChange={(event) => setField('check_in_date', event.target.value)} />
-          </div>
-          <div className="space-y-2">
+          </div> : <div className="space-y-2">
+            <Label>Event date</Label>
+            <Input type="date" value={form.event_date} onChange={(event) => setField('event_date', event.target.value)} />
+          </div>}
+          {form.season_type === 'haor' && <div className="space-y-2">
             <Label>Check-out</Label>
             <Input type="date" value={form.check_out_date} onChange={(event) => setField('check_out_date', event.target.value)} />
-          </div>
+          </div>}
+          {form.season_type === 'padma' && (
+            <>
+              <div className="space-y-2">
+                <Label>Event type</Label>
+                <Select value={form.event_type} onValueChange={(value) => setField('event_type', value)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {['Birthday', 'Anniversary', 'Corporate Event', 'Family Day Out', 'Friends Gathering', 'Wedding / Engagement', 'Dinner Cruise', 'Product Launch', 'Other'].map((item) => (
+                      <SelectItem key={item} value={item}>{item}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Event slot</Label>
+                <Select value={form.event_slot} onValueChange={(value) => setField('event_slot', value)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="morning">Morning Slot</SelectItem>
+                    <SelectItem value="afternoon">Afternoon Slot</SelectItem>
+                    <SelectItem value="evening">Evening Slot</SelectItem>
+                    <SelectItem value="moonlight">Moonlight Slot</SelectItem>
+                    <SelectItem value="full_day">Full Day Event</SelectItem>
+                    <SelectItem value="custom">Custom Slot</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Food package</Label>
+                <Select value={form.food_package} onValueChange={(value) => setField('food_package', value)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {['Snacks Only', 'Lunch Package', 'Dinner Package', 'BBQ Package', 'Buffet Package', 'Custom Food Plan'].map((item) => (
+                      <SelectItem key={item} value={item}>{item}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Decoration required?</Label>
+                <Select value={form.decoration_required} onValueChange={(value) => setField('decoration_required', value)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Yes</SelectItem>
+                    <SelectItem value="false">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Sound system required?</Label>
+                <Select value={form.sound_system_required} onValueChange={(value) => setField('sound_system_required', value)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Yes</SelectItem>
+                    <SelectItem value="false">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
           <div className="space-y-2">
             <Label>Guests</Label>
             <Input type="number" min="1" value={form.number_of_guests} onChange={(event) => setField('number_of_guests', event.target.value)} />
@@ -237,6 +349,19 @@ export default function BookingForm({
                 <SelectItem value="partially_paid">Partially paid</SelectItem>
                 <SelectItem value="paid">Paid</SelectItem>
                 <SelectItem value="refunded">Refunded</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Payment method</Label>
+            <Select value={form.payment_method} onValueChange={(value) => setField('payment_method', value)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bkash">bKash</SelectItem>
+                <SelectItem value="nagad">Nagad</SelectItem>
+                <SelectItem value="bank">Bank Transfer</SelectItem>
+                <SelectItem value="cash">Cash</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>

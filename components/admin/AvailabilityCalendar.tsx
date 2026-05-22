@@ -1,15 +1,23 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { normalizeSeason, seasonMeta, type SeasonType } from '@/data/seasonalData';
 import { deleteRow, fetchAdminDataset, saveRow, rangesOverlap } from '@/lib/admin/data';
 import { statusColors } from '@/lib/admin/constants';
-import type { AvailabilityBlock, Booking, Customer, Room } from '@/types/database';
+import type { AvailabilityBlock, AvailabilityStatus, Booking, Customer, EventSlot, EventSlotStatus, Room } from '@/types/database';
 
 const weekdays = ['রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহঃ', 'শুক্র', 'শনি'];
 const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
@@ -21,6 +29,23 @@ const statusLabels: Record<string, { long: string; short: string }> = {
   blocked: { long: 'Blocked', short: 'Block' },
   maintenance: { long: 'Maintenance', short: 'Maint.' },
 };
+
+const eventSlots = [
+  { value: 'morning', label: 'Morning Slot' },
+  { value: 'afternoon', label: 'Afternoon Slot' },
+  { value: 'evening', label: 'Evening Slot' },
+  { value: 'moonlight', label: 'Moonlight Slot' },
+  { value: 'full_day', label: 'Full Day Event' },
+  { value: 'custom', label: 'Custom Event' },
+];
+
+const slotStatusOptions = [
+  { value: 'available', label: 'Available' },
+  { value: 'inquiry_pending', label: 'Inquiry pending' },
+  { value: 'booked', label: 'Booked' },
+  { value: 'blocked', label: 'Blocked' },
+  { value: 'maintenance', label: 'Maintenance' },
+];
 
 function dateKey(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -37,6 +62,9 @@ export default function AvailabilityCalendar() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [blocks, setBlocks] = useState<AvailabilityBlock[]>([]);
+  const [activeSeason, setActiveSeason] = useState<SeasonType>('haor');
+  const [eventSlot, setEventSlot] = useState<EventSlot>('morning');
+  const [eventSlotStatus, setEventSlotStatus] = useState<EventSlotStatus>('available');
   const [reason, setReason] = useState('');
   const [note, setNote] = useState('');
 
@@ -46,6 +74,8 @@ export default function AvailabilityCalendar() {
     setBookings(data.bookings);
     setCustomers(data.customers);
     setBlocks(data.availability);
+    const season = normalizeSeason(data.settings[0]?.active_season || window.localStorage.getItem('kuhelika-active-season'));
+    setActiveSeason(season);
   };
 
   useEffect(() => {
@@ -57,19 +87,54 @@ export default function AvailabilityCalendar() {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const selectedBookings = bookings.filter((booking) =>
-    activeBooking(booking) && rangesOverlap(selectedDate, selectedDateNext(selectedDate), booking.check_in_date, booking.check_out_date)
+  const visibleRooms = rooms.filter((room) => (room.season_type || 'haor') === 'haor');
+
+  const selectedBookings = bookings.filter((booking) => {
+    if (!activeBooking(booking)) return false;
+    if (activeSeason === 'padma') {
+      return (booking.season_type || 'haor') === 'padma' && (booking.event_date || booking.check_in_date) === selectedDate;
+    }
+    return (booking.season_type || 'haor') === 'haor'
+      && rangesOverlap(selectedDate, selectedDateNext(selectedDate), booking.check_in_date, booking.check_out_date);
+  });
+
+  const selectedBlock = blocks.find((block) =>
+    block.date === selectedDate && !block.room_id && !block.event_slot && (block.season_type || 'haor') === activeSeason
+  );
+  const selectedSlotBlock = blocks.find((block) =>
+    block.date === selectedDate && block.event_slot === eventSlot && (block.season_type || 'haor') === 'padma'
   );
 
-  const selectedBlock = blocks.find((block) => block.date === selectedDate && !block.room_id);
-
   const statusForDate = (date: string) => {
-    const dayBlocks = blocks.filter((block) => block.date === date);
+    const dayBlocks = blocks.filter((block) => block.date === date && (block.season_type || 'haor') === activeSeason);
     if (dayBlocks.some((block) => block.status === 'maintenance')) return 'maintenance';
-    if (dayBlocks.some((block) => block.status === 'blocked' && !block.room_id)) return 'blocked';
-    const dayBookings = bookings.filter((booking) => activeBooking(booking) && rangesOverlap(date, selectedDateNext(date), booking.check_in_date, booking.check_out_date));
+    if (dayBlocks.some((block) => block.status === 'blocked' && !block.room_id && !block.event_slot)) return 'blocked';
+
+    if (activeSeason === 'padma') {
+      const dayBookings = bookings.filter((booking) =>
+        activeBooking(booking) && (booking.season_type || 'haor') === 'padma' && (booking.event_date || booking.check_in_date) === date
+      );
+      const unavailableSlots = new Set<string>();
+      dayBookings.forEach((booking) => booking.event_slot && unavailableSlots.add(booking.event_slot));
+      dayBlocks.forEach((block) => {
+        const slotStatus = block.slot_status || block.status;
+        if (block.event_slot && ['booked', 'blocked', 'maintenance'].includes(slotStatus)) {
+          unavailableSlots.add(block.event_slot);
+        }
+      });
+      if (unavailableSlots.has('full_day')) return 'fully_booked';
+      if (unavailableSlots.size >= 5) return 'fully_booked';
+      if (unavailableSlots.size || dayBlocks.some((block) => block.slot_status === 'inquiry_pending')) return 'partially_booked';
+      return 'available';
+    }
+
+    const dayBookings = bookings.filter((booking) =>
+      activeBooking(booking)
+      && (booking.season_type || 'haor') === 'haor'
+      && rangesOverlap(date, selectedDateNext(date), booking.check_in_date, booking.check_out_date)
+    );
     if (dayBookings.some((booking) => booking.booking_type === 'full_boat')) return 'fully_booked';
-    if (rooms.length && dayBookings.length >= rooms.length) return 'fully_booked';
+    if (visibleRooms.length && dayBookings.length >= visibleRooms.length) return 'fully_booked';
     if (dayBookings.length > 0) return 'partially_booked';
     return 'available';
   };
@@ -88,9 +153,37 @@ export default function AvailabilityCalendar() {
       date: selectedDate,
       room_id: null,
       status,
+      season_type: activeSeason,
       reason,
       note,
     });
+    await load();
+  };
+
+  const saveSlot = async () => {
+    const availabilityStatus: AvailabilityStatus =
+      eventSlotStatus === 'booked'
+        ? 'fully_booked'
+        : eventSlotStatus === 'inquiry_pending'
+          ? 'partially_booked'
+          : eventSlotStatus;
+    await saveRow<AvailabilityBlock>('availability_blocks', {
+      id: selectedSlotBlock?.id,
+      date: selectedDate,
+      room_id: null,
+      status: availabilityStatus,
+      season_type: 'padma',
+      event_slot: eventSlot,
+      slot_status: eventSlotStatus,
+      reason,
+      note,
+    });
+    await load();
+  };
+
+  const releaseSlot = async () => {
+    if (!selectedSlotBlock) return;
+    await deleteRow('availability_blocks', selectedSlotBlock.id);
     await load();
   };
 
@@ -144,12 +237,37 @@ export default function AvailabilityCalendar() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">{selectedDate}</CardTitle>
-          <p className="text-sm text-slate-500">Room-wise availability and manual block controls.</p>
+          <CardTitle className="flex items-center justify-between gap-3 text-lg">
+            <span>{selectedDate}</span>
+            <Badge className={statusColors[activeSeason]}>{seasonMeta[activeSeason].adminName}</Badge>
+          </CardTitle>
+          <p className="text-sm text-slate-500">
+            {activeSeason === 'padma' ? 'Event slot availability and manual controls.' : 'Room-wise availability and manual block controls.'}
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
+          {activeSeason === 'padma' ? (
+            <div className="space-y-2">
+              {eventSlots.map((slot) => {
+                const booking = selectedBookings.find((item) => item.event_slot === slot.value || item.event_slot === 'full_day');
+                const block = blocks.find((item) =>
+                  item.date === selectedDate && item.event_slot === slot.value && (item.season_type || 'haor') === 'padma'
+                );
+                const status = booking ? 'booked' : (block?.slot_status || 'available');
+                return (
+                  <div key={slot.value} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3">
+                    <div className="min-w-0">
+                      <div className="truncate font-semibold">{slot.label}</div>
+                      <div className="text-xs text-slate-500">Padma Event Season · slot based</div>
+                    </div>
+                    <Badge className={`shrink-0 ${statusColors[status]}`}>{status.replace('_', ' ')}</Badge>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
           <div className="space-y-2">
-            {rooms.map((room) => {
+            {visibleRooms.map((room) => {
               const status = roomStatus(room);
               return (
                 <div key={room.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3">
@@ -162,10 +280,33 @@ export default function AvailabilityCalendar() {
               );
             })}
           </div>
+          )}
 
           <div className="space-y-2">
+            {activeSeason === 'padma' && (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Select value={eventSlot} onValueChange={(value) => setEventSlot(value as EventSlot)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {eventSlots.map((slot) => <SelectItem key={slot.value} value={slot.value}>{slot.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Select value={eventSlotStatus} onValueChange={(value) => setEventSlotStatus(value as EventSlotStatus)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {slotStatusOptions.map((status) => <SelectItem key={status.value} value={status.value}>{status.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <Input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Reason" />
             <Textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Note" />
+            {activeSeason === 'padma' && (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Button variant="outline" onClick={saveSlot}>Save slot status</Button>
+                <Button variant="secondary" disabled={!selectedSlotBlock} onClick={releaseSlot}>Release slot</Button>
+              </div>
+            )}
             <div className="grid gap-2 sm:grid-cols-2">
               <Button variant="outline" onClick={() => blockDate('blocked')}>Block date</Button>
               <Button variant="outline" onClick={() => blockDate('maintenance')}>Maintenance</Button>
@@ -180,7 +321,9 @@ export default function AvailabilityCalendar() {
               return (
                 <div key={booking.id} className="rounded-lg bg-slate-50 p-3 text-sm">
                   <div className="font-semibold">{booking.booking_code}</div>
-                  <div className="text-slate-500">{customer?.full_name || 'Customer'} · {booking.booking_type}</div>
+                  <div className="text-slate-500">
+                    {customer?.full_name || 'Customer'} · {activeSeason === 'padma' ? `${booking.event_type || 'Event'} · ${booking.event_slot || 'slot'}` : booking.booking_type}
+                  </div>
                 </div>
               );
             }) : <p className="text-sm text-slate-500">No booking for this date.</p>}
