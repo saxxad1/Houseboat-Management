@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
+import { verifyAdminAccess } from '@/lib/admin/verifyAdmin';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -38,16 +39,10 @@ export default function LoginForm() {
         password,
       });
       if (loginError) throw loginError;
-      const profile = data.user
-        ? await supabase
-            .from('admin_profiles')
-            .select('id')
-            .eq('user_id', data.user.id)
-            .maybeSingle()
-        : null;
-      if (!profile?.data) {
+      const adminCheck = await verifyAdminAccess(data.session?.access_token);
+      if (!adminCheck.isAdmin) {
         await supabase.auth.signOut();
-        throw new Error('এই user admin_profiles table-এ admin হিসেবে যুক্ত নেই');
+        throw new Error(adminCheck.error || 'এই user admin_profiles table-এ admin হিসেবে যুক্ত নেই');
       }
       router.replace('/admin/dashboard');
     } catch (err) {
