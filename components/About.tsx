@@ -34,7 +34,7 @@ export default function About() {
           <div className="relative pb-6 lg:pb-0">
             <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl sm:shadow-2xl">
               <Image
-                src="https://images.pexels.com/photos/1179156/pexels-photo-1179156.jpeg?auto=compress&cs=tinysrgb&w=900"
+                src="/images/kuhelika/gallery/img-8749.jpg"
                 alt="Tanguar Haor houseboat"
                 width={900}
                 height={600}
