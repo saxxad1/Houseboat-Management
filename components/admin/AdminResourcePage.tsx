@@ -44,6 +44,8 @@ export type ResourceField = {
   options?: { value: string; label: string }[];
   placeholder?: string;
   required?: boolean;
+  defaultValue?: string | number | boolean;
+  min?: number;
   colSpan?: 'full';
 };
 
@@ -68,6 +70,10 @@ const emptyRow = {};
 
 function getDefaultForm(fields: ResourceField[]) {
   return fields.reduce<Record<string, unknown>>((acc, field) => {
+    if (field.defaultValue !== undefined) {
+      acc[field.name] = field.defaultValue;
+      return acc;
+    }
     if (field.type === 'select') {
       acc[field.name] = field.options?.[0]?.value || '';
       return acc;
@@ -95,13 +101,30 @@ function valueToString(value: unknown) {
   return String(value);
 }
 
+function createSlug(value: unknown) {
+  const base = valueToString(value)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\u0980-\u09ffa-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  return base || `item-${Date.now()}`;
+}
+
 function normalizeForm(form: Record<string, unknown>, fields: ResourceField[]) {
   const next: Record<string, unknown> = { ...form };
+
+  if ('slug' in next && !valueToString(next.slug).trim()) {
+    next.slug = createSlug(next.name || next.title);
+  }
 
   fields.forEach((field) => {
     const value = next[field.name];
     if (field.type === 'number') {
-      next[field.name] = Number(value || 0);
+      const numberValue = Number(value || field.defaultValue || 0);
+      next[field.name] = typeof field.min === 'number' ? Math.max(numberValue, field.min) : numberValue;
     }
     if (field.type === 'boolean') {
       next[field.name] = Boolean(value);
@@ -210,13 +233,23 @@ export default function AdminResourcePage({
     setSaving(true);
     setMessage('');
     try {
-      const missingField = fields.find((field) => field.required && !valueToString(form[field.name]).trim());
+      const normalizedForm = normalizeForm(form, fields);
+      const missingField = fields.find((field) => field.required && !valueToString(normalizedForm[field.name]).trim());
       if (missingField) {
         throw new Error(`${missingField.label} is required`);
       }
-      await saveRow(table, normalizeForm(form, fields));
+      const invalidNumberField = fields.find((field) =>
+        field.type === 'number'
+        && typeof field.min === 'number'
+        && Number(normalizedForm[field.name]) < field.min
+      );
+      if (invalidNumberField) {
+        throw new Error(`${invalidNumberField.label} must be at least ${invalidNumberField.min}`);
+      }
+      await saveRow(table, normalizedForm);
       setOpen(false);
       await load();
+      window.dispatchEvent(new Event('kuhelika-public-data-change'));
       setMessage('Saved successfully');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Save failed');
@@ -231,6 +264,7 @@ export default function AdminResourcePage({
     try {
       await deleteRow(table, id);
       await load();
+      window.dispatchEvent(new Event('kuhelika-public-data-change'));
       setMessage('Deleted successfully');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Delete failed');

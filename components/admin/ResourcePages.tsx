@@ -36,13 +36,13 @@ export function RoomsAdminPage() {
         { name: 'image_url', label: 'Room image', type: 'image', colSpan: 'full' },
         { name: 'description', label: 'Description', type: 'textarea' },
         { name: 'bed_type', label: 'Bed type' },
-        { name: 'capacity', label: 'Capacity', type: 'number' },
-        { name: 'price_per_night', label: 'Price / starting quote', type: 'number' },
+        { name: 'capacity', label: 'Capacity', type: 'number', defaultValue: 2, min: 1 },
+        { name: 'price_per_night', label: 'Price / starting quote', type: 'number', defaultValue: 0, min: 0 },
         { name: 'has_ac', label: 'AC available', type: 'boolean' },
         { name: 'has_attached_washroom', label: 'Attached washroom', type: 'boolean' },
         { name: 'facilities', label: 'Facilities (comma separated)', type: 'tags', colSpan: 'full' },
         { name: 'status', label: 'Status', type: 'select', options: yesNoStatuses },
-        { name: 'sort_order', label: 'Sort order', type: 'number' },
+        { name: 'sort_order', label: 'Sort order', type: 'number', defaultValue: 0 },
       ]}
     />
   );
@@ -73,14 +73,14 @@ export function PackagesAdminPage() {
         { name: 'description', label: 'Description', type: 'textarea' },
         { name: 'duration', label: 'Duration' },
         { name: 'suggested_time', label: 'Suggested time' },
-        { name: 'price', label: 'Price', type: 'number' },
+        { name: 'price', label: 'Price', type: 'number', defaultValue: 0, min: 0 },
         { name: 'best_for', label: 'Best for' },
-        { name: 'max_guests', label: 'Max guests', type: 'number' },
+        { name: 'max_guests', label: 'Max guests', type: 'number', defaultValue: 1, min: 1 },
         { name: 'included_services', label: 'Included services', type: 'tags', colSpan: 'full' },
         { name: 'meal_info', label: 'Meal info', type: 'textarea' },
         { name: 'route_spots', label: 'Route/spots', type: 'tags', colSpan: 'full' },
         { name: 'status', label: 'Status', type: 'select', options: [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }] },
-        { name: 'sort_order', label: 'Sort order', type: 'number' },
+        { name: 'sort_order', label: 'Sort order', type: 'number', defaultValue: 0 },
       ]}
     />
   );
@@ -130,7 +130,7 @@ export function IncomeAdminPage() {
       fields={[
         { name: 'title', label: 'Title', required: true },
         { name: 'category', label: 'Category', type: 'select', options: incomeCategories.map((value) => ({ value, label: value })) },
-        { name: 'amount', label: 'Amount', type: 'number' },
+        { name: 'amount', label: 'Amount', type: 'number', defaultValue: 0, min: 0 },
         { name: 'income_date', label: 'Income date', type: 'date' },
         { name: 'note', label: 'Note', type: 'textarea' },
       ]}
@@ -156,7 +156,7 @@ export function ExpensesAdminPage() {
       fields={[
         { name: 'title', label: 'Title', required: true },
         { name: 'category', label: 'Category', type: 'select', options: expenseCategories.map((value) => ({ value, label: value })) },
-        { name: 'amount', label: 'Amount', type: 'number' },
+        { name: 'amount', label: 'Amount', type: 'number', defaultValue: 0, min: 0 },
         { name: 'expense_date', label: 'Expense date', type: 'date' },
         { name: 'vendor_name', label: 'Vendor name' },
         { name: 'note', label: 'Note', type: 'textarea' },
@@ -183,10 +183,10 @@ export function GalleryAdminPage() {
       ]}
       fields={[
         { name: 'title', label: 'Title' },
-        { name: 'image_url', label: 'Image', type: 'image', colSpan: 'full' },
+        { name: 'image_url', label: 'Image', type: 'image', colSpan: 'full', required: true },
         { name: 'category', label: 'Category' },
         { name: 'is_featured', label: 'Featured', type: 'boolean' },
-        { name: 'sort_order', label: 'Sort order', type: 'number' },
+        { name: 'sort_order', label: 'Sort order', type: 'number', defaultValue: 0 },
       ]}
     />
   );
@@ -215,7 +215,7 @@ export function ContentAdminPage() {
         { name: 'image_url', label: 'Image', type: 'image', colSpan: 'full' },
         { name: 'button_text', label: 'Button text' },
         { name: 'button_url', label: 'Button URL' },
-        { name: 'is_active', label: 'Active', type: 'boolean' },
+        { name: 'is_active', label: 'Active', type: 'boolean', defaultValue: true },
       ]}
     />
   );
@@ -275,7 +275,7 @@ export function PaymentsFallbackResourcePage() {
       ]}
       fields={[
         { name: 'booking_id', label: 'Booking ID' },
-        { name: 'amount', label: 'Amount', type: 'number' },
+        { name: 'amount', label: 'Amount', type: 'number', defaultValue: 1, min: 1 },
         { name: 'payment_method', label: 'Method', type: 'select', options: paymentMethods },
         { name: 'transaction_id', label: 'Transaction ID' },
         { name: 'payment_date', label: 'Payment date', type: 'date' },

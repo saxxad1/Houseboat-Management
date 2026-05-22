@@ -78,6 +78,40 @@ function sortRows<T extends AdminRow>(rows: T[]) {
   });
 }
 
+async function getAdminAccessToken() {
+  const supabase = getSupabaseBrowserClient();
+  if (!supabase) {
+    throw new Error('Supabase client is not configured');
+  }
+
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session?.access_token) {
+    throw new Error('Admin session expired. আবার login করুন।');
+  }
+
+  return data.session.access_token;
+}
+
+async function adminJsonRequest<T>(path: string, init: RequestInit = {}) {
+  const token = await getAdminAccessToken();
+  const headers = new Headers(init.headers);
+  headers.set('Authorization', `Bearer ${token}`);
+  if (!(init.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  const response = await fetch(path, {
+    ...init,
+    headers,
+    cache: 'no-store',
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(typeof result.error === 'string' ? result.error : 'Admin request failed');
+  }
+  return result as T;
+}
+
 export async function listRows<T extends AdminRow>(table: AdminTableName) {
   const supabase = getSupabaseBrowserClient();
 
@@ -85,9 +119,8 @@ export async function listRows<T extends AdminRow>(table: AdminTableName) {
     return sortRows(getLocalRows<T>(table));
   }
 
-  const { data, error } = await supabase.from(table).select('*');
-  if (error) throw error;
-  return sortRows((data || []) as T[]);
+  const result = await adminJsonRequest<{ rows: T[] }>(`/api/admin/data/${table}`);
+  return sortRows(result.rows || []);
 }
 
 export async function saveRow<T extends AdminRow>(table: AdminTableName, row: Partial<T> & { id?: string }) {
@@ -112,15 +145,11 @@ export async function saveRow<T extends AdminRow>(table: AdminTableName, row: Pa
     return nextRow;
   }
 
-  if (row.id) {
-    const { data, error } = await supabase.from(table).update(payload as never).eq('id', row.id).select().single();
-    if (error) throw error;
-    return data as T;
-  }
-
-  const { data, error } = await supabase.from(table).insert(payload as never).select().single();
-  if (error) throw error;
-  return data as T;
+  const result = await adminJsonRequest<{ row: T }>(`/api/admin/data/${table}`, {
+    method: 'POST',
+    body: JSON.stringify({ row: payload }),
+  });
+  return result.row;
 }
 
 export async function deleteRow(table: AdminTableName, id: string) {
@@ -132,8 +161,9 @@ export async function deleteRow(table: AdminTableName, id: string) {
     return;
   }
 
-  const { error } = await supabase.from(table).delete().eq('id', id);
-  if (error) throw error;
+  await adminJsonRequest(`/api/admin/data/${table}?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
 }
 
 export function generateBookingCode() {

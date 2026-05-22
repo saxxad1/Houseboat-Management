@@ -7,17 +7,27 @@ export async function uploadHouseboatFile(bucket: string, folder: string, file: 
     return URL.createObjectURL(file);
   }
 
-  const extension = file.name.split('.').pop() || 'bin';
-  const safeName = `${folder}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-  const { error } = await supabase.storage.from(bucket).upload(safeName, file, {
-    cacheControl: '3600',
-    upsert: false,
-  });
-
-  if (error) {
-    throw error;
+  const { data, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !data.session?.access_token) {
+    throw new Error('Admin session expired. আবার login করুন।');
   }
 
-  const { data } = supabase.storage.from(bucket).getPublicUrl(safeName);
-  return data.publicUrl;
+  const formData = new FormData();
+  formData.append('folder', folder || bucket);
+  formData.append('file', file);
+
+  const response = await fetch('/api/admin/upload', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${data.session.access_token}`,
+    },
+    body: formData,
+  });
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(typeof result.error === 'string' ? result.error : 'Upload failed');
+  }
+
+  return result.url as string;
 }

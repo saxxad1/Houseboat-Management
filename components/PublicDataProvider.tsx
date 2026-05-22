@@ -9,6 +9,7 @@ import {
 } from '@/data/houseboatData';
 import { getSeasonalData, normalizeSeason, type SeasonType, type SeasonalContent } from '@/data/seasonalData';
 import {
+  getEffectiveSeasonalData,
   loadPublicHouseboatData,
   mapGalleryToPublic,
   mapPackagesToPublic,
@@ -90,7 +91,7 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
       }
 
       const activeSeason = normalizeSeason(data.settings?.active_season || localSeason);
-      const seasonData = getSeasonalData(activeSeason);
+      const seasonData = getEffectiveSeasonalData(getSeasonalData(activeSeason), data.settings, data.content, activeSeason);
       const mappedRooms = mapRoomsToCabins(data.rooms, activeSeason);
       const mappedPackages = mapPackagesToPublic(data.packages, activeSeason);
       const mappedGallery = mapGalleryToPublic(data.gallery, activeSeason);
@@ -118,9 +119,11 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
     load().finally(() => {
       if (mounted) setValue((current) => ({ ...current, loading: false }));
     });
+    window.addEventListener('kuhelika-public-data-change', load);
 
     return () => {
       mounted = false;
+      window.removeEventListener('kuhelika-public-data-change', load);
     };
   }, []);
 

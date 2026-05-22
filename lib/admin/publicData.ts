@@ -1,36 +1,28 @@
 'use client';
 
-import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '@/lib/supabase/client';
 import { cabins as fallbackRooms, siteConfig } from '@/data/houseboatData';
 import type { SeasonType, SeasonalContent } from '@/data/seasonalData';
 import type { AvailabilityBlock, GalleryImage, HouseboatSettings, Room, TourPackage, WebsiteContent } from '@/types/database';
 
 export async function loadPublicHouseboatData() {
-  const supabase = getSupabaseBrowserClient();
-  if (!supabase) {
+  if (!isSupabaseConfigured()) {
     return null;
   }
 
-  const [settings, rooms, packages, gallery, content, availability] = await Promise.all([
-    supabase.from('houseboat_settings').select('*').limit(1).maybeSingle(),
-    supabase.from('rooms').select('*').eq('status', 'active').order('sort_order'),
-    supabase.from('packages').select('*').eq('status', 'active').order('sort_order'),
-    supabase.from('gallery').select('*').order('sort_order'),
-    supabase.from('website_content').select('*').eq('is_active', true),
-    supabase.from('availability_blocks').select('*'),
-  ]);
-
-  if (settings.error || rooms.error || packages.error || gallery.error || content.error || availability.error) {
+  const response = await fetch('/api/public/data', { cache: 'no-store' });
+  const result = await response.json().catch(() => null);
+  if (!response.ok || !result) {
     return null;
   }
 
   return {
-    settings: settings.data as HouseboatSettings | null,
-    rooms: (rooms.data || []) as Room[],
-    packages: (packages.data || []) as TourPackage[],
-    gallery: (gallery.data || []) as GalleryImage[],
-    content: (content.data || []) as WebsiteContent[],
-    availability: (availability.data || []) as AvailabilityBlock[],
+    settings: result.settings as HouseboatSettings | null,
+    rooms: (result.rooms || []) as Room[],
+    packages: (result.packages || []) as TourPackage[],
+    gallery: (result.gallery || []) as GalleryImage[],
+    content: (result.content || []) as WebsiteContent[],
+    availability: (result.availability || []) as AvailabilityBlock[],
   };
 }
 
@@ -51,6 +43,150 @@ export function mapSettingsToSiteConfig(settings?: HouseboatSettings | null, sea
     locationEn: baseSite.locationEn,
     logoUrl: settings.logo_url || '/logo-kuhelika-clean.png',
   };
+}
+
+function textOr<T extends string | null | undefined>(value: T, fallback: string) {
+  return typeof value === 'string' && value.trim() ? value : fallback;
+}
+
+function contentFor(content: WebsiteContent[], season: SeasonType, key: string) {
+  const keys = new Set([key, `${season}_${key}`, `${key}_${season}`, `${season}:${key}`, `${key}:${season}`]);
+  return content.find((row) => row.is_active && keys.has(row.section_key));
+}
+
+export function getEffectiveSeasonalData(
+  seasonData: SeasonalContent,
+  settings: HouseboatSettings | null | undefined,
+  content: WebsiteContent[],
+  season: SeasonType
+) {
+  const settingsHero = {
+    ...seasonData.hero,
+    title: textOr(settings?.houseboat_name, seasonData.hero.title),
+    subtitle: season === 'haor' ? textOr(settings?.tagline, seasonData.hero.subtitle) : seasonData.hero.subtitle,
+    description: season === 'haor' ? textOr(settings?.description, seasonData.hero.description) : seasonData.hero.description,
+  };
+  const settingsContact = {
+    ...seasonData.contact,
+    location: season === 'haor' ? textOr(settings?.location, seasonData.contact.location) : seasonData.contact.location,
+    pickup: season === 'haor' ? textOr(settings?.address, seasonData.contact.pickup) : seasonData.contact.pickup,
+  };
+
+  const hero = contentFor(content, season, 'hero');
+  const about = contentFor(content, season, 'about');
+  const cabinsSection = contentFor(content, season, season === 'padma' ? 'event_spaces' : 'cabins') || contentFor(content, season, 'cabins');
+  const packagesSection = contentFor(content, season, season === 'padma' ? 'event_packages' : 'packages') || contentFor(content, season, 'packages');
+  const availability = contentFor(content, season, 'availability');
+  const itinerary = contentFor(content, season, 'itinerary');
+  const facilities = contentFor(content, season, 'facilities');
+  const gallery = contentFor(content, season, 'gallery');
+  const testimonials = contentFor(content, season, 'testimonials') || contentFor(content, season, 'reviews');
+  const cta = contentFor(content, season, 'cta');
+  const faq = contentFor(content, season, 'faq');
+  const contact = contentFor(content, season, 'contact');
+
+  return {
+    ...seasonData,
+    hero: hero
+      ? {
+          ...settingsHero,
+          title: textOr(hero.title, settingsHero.title),
+          subtitle: textOr(hero.subtitle, settingsHero.subtitle),
+          description: textOr(hero.content, settingsHero.description),
+          primaryCta: textOr(hero.button_text, settingsHero.primaryCta),
+          secondaryTarget: textOr(hero.button_url, settingsHero.secondaryTarget),
+        }
+      : settingsHero,
+    about: about
+      ? {
+          ...seasonData.about,
+          title: textOr(about.title, seasonData.about.title),
+          subtitle: textOr(about.subtitle, seasonData.about.subtitle),
+          story: textOr(about.content, seasonData.about.story),
+        }
+      : seasonData.about,
+    cabinsSection: cabinsSection
+      ? {
+          ...seasonData.cabinsSection,
+          title: textOr(cabinsSection.title, seasonData.cabinsSection.title),
+          subtitle: textOr(cabinsSection.subtitle, seasonData.cabinsSection.subtitle),
+          fullBoatDescription: textOr(cabinsSection.content, seasonData.cabinsSection.fullBoatDescription),
+          fullBoatButton: textOr(cabinsSection.button_text, seasonData.cabinsSection.fullBoatButton),
+        }
+      : seasonData.cabinsSection,
+    packagesSection: packagesSection
+      ? {
+          ...seasonData.packagesSection,
+          title: textOr(packagesSection.title, seasonData.packagesSection.title),
+          subtitle: textOr(packagesSection.subtitle, seasonData.packagesSection.subtitle),
+          note: textOr(packagesSection.content, seasonData.packagesSection.note),
+        }
+      : seasonData.packagesSection,
+    availability: availability
+      ? {
+          ...seasonData.availability,
+          title: textOr(availability.title, seasonData.availability.title),
+          subtitle: textOr(availability.subtitle, seasonData.availability.subtitle),
+        }
+      : seasonData.availability,
+    itinerary: itinerary
+      ? {
+          ...seasonData.itinerary,
+          title: textOr(itinerary.title, seasonData.itinerary.title),
+          subtitle: textOr(itinerary.subtitle, seasonData.itinerary.subtitle),
+          note: textOr(itinerary.content, seasonData.itinerary.note),
+        }
+      : seasonData.itinerary,
+    facilitiesSection: facilities
+      ? {
+          ...seasonData.facilitiesSection,
+          title: textOr(facilities.title, seasonData.facilitiesSection.title),
+          subtitle: textOr(facilities.subtitle, seasonData.facilitiesSection.subtitle),
+          bannerDescription: textOr(facilities.content, seasonData.facilitiesSection.bannerDescription),
+          bannerImage: textOr(facilities.image_url, seasonData.facilitiesSection.bannerImage),
+        }
+      : seasonData.facilitiesSection,
+    gallery: gallery
+      ? {
+          ...seasonData.gallery,
+          title: textOr(gallery.title, seasonData.gallery.title),
+          subtitle: textOr(gallery.subtitle, seasonData.gallery.subtitle),
+        }
+      : seasonData.gallery,
+    testimonials: testimonials
+      ? {
+          ...seasonData.testimonials,
+          title: textOr(testimonials.title, seasonData.testimonials.title),
+          subtitle: textOr(testimonials.subtitle, seasonData.testimonials.subtitle),
+        }
+      : seasonData.testimonials,
+    cta: cta
+      ? {
+          ...seasonData.cta,
+          eyebrow: textOr(cta.subtitle, seasonData.cta.eyebrow),
+          title: textOr(cta.title, seasonData.cta.title),
+          description: textOr(cta.content, seasonData.cta.description),
+          primary: textOr(cta.button_text, seasonData.cta.primary),
+          image: textOr(cta.image_url, seasonData.cta.image),
+        }
+      : seasonData.cta,
+    faq: faq
+      ? {
+          ...seasonData.faq,
+          title: textOr(faq.title, seasonData.faq.title),
+          subtitle: textOr(faq.subtitle, seasonData.faq.subtitle),
+        }
+      : seasonData.faq,
+    contact: contact
+      ? {
+          ...settingsContact,
+          subtitle: textOr(contact.subtitle, settingsContact.subtitle),
+          location: textOr(contact.title, settingsContact.location),
+          pickup: textOr(contact.content, settingsContact.pickup),
+          mapEmbedUrl: textOr(contact.button_url, settingsContact.mapEmbedUrl),
+        }
+      : settingsContact,
+  } as SeasonalContent;
 }
 
 export function mapRoomsToCabins(rooms: Room[], season: SeasonType = 'haor') {
