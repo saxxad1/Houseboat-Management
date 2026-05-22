@@ -14,6 +14,14 @@ export default function NetlifyForms() {
         <input name="cabin" />
         <input name="package" />
         <input name="payment" />
+        <input name="season_type" />
+        <input name="eventDate" />
+        <input name="eventType" />
+        <input name="eventSlot" />
+        <input name="guestRange" />
+        <input name="foodPackage" />
+        <input name="decorationRequired" />
+        <input name="soundSystemRequired" />
         <textarea name="request" />
       </form>
 

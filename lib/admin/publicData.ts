@@ -1,7 +1,8 @@
 'use client';
 
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
-import { galleryImages, packages as fallbackPackages, cabins as fallbackRooms, siteConfig } from '@/data/houseboatData';
+import { cabins as fallbackRooms, siteConfig } from '@/data/houseboatData';
+import type { SeasonType, SeasonalContent } from '@/data/seasonalData';
 import type { AvailabilityBlock, GalleryImage, HouseboatSettings, Room, TourPackage, WebsiteContent } from '@/types/database';
 
 export async function loadPublicHouseboatData() {
@@ -33,27 +34,29 @@ export async function loadPublicHouseboatData() {
   };
 }
 
-export function mapSettingsToSiteConfig(settings?: HouseboatSettings | null) {
-  if (!settings) return siteConfig;
+export function mapSettingsToSiteConfig(settings?: HouseboatSettings | null, seasonData?: SeasonalContent) {
+  const baseSite = seasonData?.site || siteConfig;
+  if (!settings) return baseSite;
   return {
-    ...siteConfig,
-    name: settings.houseboat_name || siteConfig.name,
-    nameEn: settings.houseboat_name || siteConfig.nameEn,
-    tagline: settings.tagline || siteConfig.tagline,
-    description: settings.description || siteConfig.description,
-    phone: settings.phone || siteConfig.phone,
-    whatsapp: settings.whatsapp || siteConfig.whatsapp,
-    email: settings.email || siteConfig.email,
-    facebook: settings.facebook_url || siteConfig.facebook,
-    location: settings.location || siteConfig.location,
-    locationEn: settings.address || siteConfig.locationEn,
+    ...baseSite,
+    name: settings.houseboat_name || baseSite.name,
+    nameEn: settings.houseboat_name || baseSite.nameEn,
+    tagline: baseSite.tagline,
+    description: baseSite.description,
+    phone: settings.phone || baseSite.phone,
+    whatsapp: settings.whatsapp || baseSite.whatsapp,
+    email: settings.email || baseSite.email,
+    facebook: settings.facebook_url || baseSite.facebook,
+    location: baseSite.location,
+    locationEn: baseSite.locationEn,
     logoUrl: settings.logo_url || '/logo-kuhelika-clean.png',
   };
 }
 
-export function mapRoomsToCabins(rooms: Room[]) {
-  if (!rooms.length) return fallbackRooms;
-  return rooms.map((room, index) => ({
+export function mapRoomsToCabins(rooms: Room[], season: SeasonType = 'haor') {
+  const filtered = rooms.filter((room) => (room.season_type || 'haor') === season);
+  if (!filtered.length) return [];
+  return filtered.map((room, index) => ({
     id: index + 1,
     name: room.name,
     nameEn: room.slug,
@@ -63,24 +66,30 @@ export function mapRoomsToCabins(rooms: Room[]) {
     hasWashroom: room.has_attached_washroom,
     hasAC: room.has_ac,
     pricePerNight: room.price_per_night,
+    priceLabel: season === 'padma' ? (room.price_per_night > 0 ? `৳${room.price_per_night.toLocaleString()} থেকে` : 'Quote on request') : undefined,
+    unitLabel: season === 'padma' ? 'Event setup' : undefined,
     size: '',
     features: room.facilities || [],
     available: room.status === 'active',
     badge: index === 0 ? 'Premium' : '',
+    buttonLabel: season === 'padma' ? 'এই ইভেন্ট স্পেস বুক করুন' : undefined,
   }));
 }
 
-export function mapPackagesToPublic(packages: TourPackage[]) {
-  if (!packages.length) return fallbackPackages;
-  return packages.map((pkg, index) => ({
+export function mapPackagesToPublic(packages: TourPackage[], season: SeasonType = 'haor') {
+  const filtered = packages.filter((pkg) => (pkg.season_type || 'haor') === season);
+  if (!filtered.length) return [];
+  return filtered.map((pkg, index) => ({
     id: index + 1,
     title: pkg.title,
     titleEn: pkg.slug,
     duration: pkg.duration || '',
     price: pkg.price,
-    priceNote: 'প্যাকেজ অনুযায়ী',
+    priceDisplay: season === 'padma' ? (pkg.price > 0 ? `৳${pkg.price.toLocaleString()} থেকে` : 'Custom Quote') : undefined,
+    priceNote: season === 'padma' ? 'প্যাকেজ থেকে শুরু' : 'প্যাকেজ অনুযায়ী',
     maxGuests: pkg.max_guests,
-    meals: pkg.meal_info || '',
+    meals: season === 'padma' ? (pkg.best_for || pkg.meal_info || '') : (pkg.meal_info || ''),
+    time: pkg.suggested_time || undefined,
     popular: index === 0,
     color: ['sky', 'teal', 'amber', 'emerald', 'orange', 'slate'][index % 6],
     includes: pkg.included_services || [],
@@ -89,9 +98,16 @@ export function mapPackagesToPublic(packages: TourPackage[]) {
   }));
 }
 
-export function mapGalleryToPublic(gallery: GalleryImage[]) {
-  if (!gallery.length) return galleryImages;
-  return gallery.map((image, index) => ({
+export function mapGalleryToPublic(gallery: GalleryImage[], season: SeasonType = 'haor') {
+  const filtered = gallery.filter((image) => {
+    const category = image.category || '';
+    if (season === 'padma') {
+      return ['Padma River', 'Padma Bridge', 'Event Decoration', 'Birthday', 'Corporate', 'Dining', 'Rooftop', 'Sunset', 'Moonlight'].includes(category);
+    }
+    return !['Padma River', 'Padma Bridge', 'Event Decoration', 'Birthday', 'Corporate', 'Dining', 'Sunset', 'Moonlight'].includes(category);
+  });
+  if (!filtered.length) return [];
+  return filtered.map((image, index) => ({
     id: index + 1,
     src: image.image_url,
     alt: image.title || 'Houseboat gallery image',

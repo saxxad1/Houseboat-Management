@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { ChevronDown, CircleHelp as HelpCircle } from 'lucide-react';
-import { faqs } from '@/data/houseboatData';
 import { StaggerReveal } from '@/components/ScrollReveal';
+import { usePublicData } from '@/components/PublicDataProvider';
 
 export default function FAQ() {
+  const { seasonData } = usePublicData();
+  const faqs = seasonData.faq.items;
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
@@ -18,10 +20,10 @@ export default function FAQ() {
             <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">FAQ</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
-            সাধারণ প্রশ্নোত্তর
+            {seasonData.faq.title}
           </h2>
           <p className="text-slate-500 text-sm sm:text-base md:text-lg">
-            আপনার মনে যা প্রশ্ন আসছে তার উত্তর এখানে পাবেন।
+            {seasonData.faq.subtitle}
           </p>
           <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-4" />
         </div>

@@ -5,7 +5,7 @@ import {
   MapPin, Ship, Coffee, Utensils, Waves, Eye, Sunset,
   Music, Moon, Sun, Bird, Fish, LogOut, Chrome as Home, Route
 } from 'lucide-react';
-import { itinerary } from '@/data/houseboatData';
+import { usePublicData } from '@/components/PublicDataProvider';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   MapPin, Ship, Coffee, Utensils, Waves, Eye, Sunset,
@@ -13,6 +13,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export default function Itinerary() {
+  const { seasonData, activeSeason } = usePublicData();
+  const itinerary = seasonData.itinerary.items;
   const [activeDay, setActiveDay] = useState(0);
 
   return (
@@ -22,13 +24,13 @@ export default function Itinerary() {
         <div className="text-center mb-10 md:mb-16">
           <div className="inline-flex items-center gap-2 bg-[hsl(195,95%,92%)] rounded-full px-4 py-1.5 mb-4">
             <Route className="w-4 h-4 text-[hsl(197,80%,30%)]" />
-            <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">Travel Plan</span>
+            <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">{seasonData.itinerary.badge}</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
-            দিনওয়ারি ভ্রমণ পরিকল্পনা
+            {seasonData.itinerary.title}
           </h2>
           <p className="text-slate-500 text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
-            প্রতিটি মুহূর্তকে অবিস্মরণীয় করতে আমরা প্রস্তুত।
+            {seasonData.itinerary.subtitle}
           </p>
           <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-4" />
         </div>
@@ -45,7 +47,7 @@ export default function Itinerary() {
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              Day {day.day}
+              {activeSeason === 'padma' && 'tabLabel' in day ? day.tabLabel : `Day ${day.day}`}
             </button>
           ))}
         </div>
@@ -58,7 +60,7 @@ export default function Itinerary() {
           >
             {/* Day Title */}
             <div className="bg-gradient-to-r from-[hsl(197,80%,28%)] to-[hsl(173,58%,40%)] rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 mb-6 sm:mb-8 text-white">
-              <div className="text-3xl sm:text-5xl font-black opacity-20 mb-1">Day {day.day}</div>
+              <div className="text-3xl sm:text-5xl font-black opacity-20 mb-1">{activeSeason === 'padma' ? 'Event' : `Day ${day.day}`}</div>
               <h3 className="text-base sm:text-xl md:text-2xl font-bold -mt-5 sm:-mt-6">{day.title}</h3>
             </div>
 
@@ -97,8 +99,7 @@ export default function Itinerary() {
         {/* Note */}
         <div className="mt-8 sm:mt-10 bg-amber-50 border border-amber-200 rounded-xl sm:rounded-2xl p-4 sm:p-5 text-center">
           <p className="text-amber-800 text-xs sm:text-sm">
-            <strong>নোট:</strong> এই পরিকল্পনাটি আনুমানিক। আবহাওয়া ও পরিস্থিতি অনুযায়ী সময়সূচি পরিবর্তন হতে পারে।
-            আপনার পছন্দমতো কাস্টম ইটিনারি তৈরি করে দেওয়া হয়।
+            <strong>নোট:</strong> {seasonData.itinerary.note}
           </p>
         </div>
       </div>

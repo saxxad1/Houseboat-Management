@@ -26,6 +26,7 @@ export default function BookingsAdminPage() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [bookingStatus, setBookingStatus] = useState('all');
+  const [seasonFilter, setSeasonFilter] = useState('all');
   const [paymentStatus, setPaymentStatus] = useState('all');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -51,13 +52,14 @@ export default function BookingsAdminPage() {
       const customer = booking.customer_id ? customerMap.get(booking.customer_id) : null;
       const text = `${booking.booking_code} ${customer?.full_name || ''} ${customer?.phone || ''}`.toLowerCase();
       if (lower && !text.includes(lower)) return false;
+      if (seasonFilter !== 'all' && (booking.season_type || 'haor') !== seasonFilter) return false;
       if (bookingStatus !== 'all' && booking.booking_status !== bookingStatus) return false;
       if (paymentStatus !== 'all' && booking.payment_status !== paymentStatus) return false;
       if (fromDate && booking.check_in_date < fromDate) return false;
       if (toDate && booking.check_in_date > toDate) return false;
       return true;
     });
-  }, [bookingStatus, bookings, customerMap, fromDate, paymentStatus, search, toDate]);
+  }, [bookingStatus, bookings, customerMap, fromDate, paymentStatus, search, seasonFilter, toDate]);
 
   const add = () => {
     setSelected(null);
@@ -92,11 +94,19 @@ export default function BookingsAdminPage() {
           </Button>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
-          <div className="mb-4 grid gap-3 md:grid-cols-6">
+          <div className="mb-4 grid gap-3 md:grid-cols-7">
             <div className="relative md:col-span-2">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Customer, phone, booking code" className="pl-9" />
             </div>
+            <Select value={seasonFilter} onValueChange={setSeasonFilter}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All seasons</SelectItem>
+                <SelectItem value="haor">Haor</SelectItem>
+                <SelectItem value="padma">Padma</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={bookingStatus} onValueChange={setBookingStatus}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>

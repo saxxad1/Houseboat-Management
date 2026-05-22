@@ -66,6 +66,29 @@ interface AdminResourcePageProps {
 
 const emptyRow = {};
 
+function getDefaultForm(fields: ResourceField[]) {
+  return fields.reduce<Record<string, unknown>>((acc, field) => {
+    if (field.type === 'select') {
+      acc[field.name] = field.options?.[0]?.value || '';
+      return acc;
+    }
+    if (field.type === 'boolean') {
+      acc[field.name] = false;
+      return acc;
+    }
+    if (field.type === 'number') {
+      acc[field.name] = 0;
+      return acc;
+    }
+    if (field.type === 'tags') {
+      acc[field.name] = '';
+      return acc;
+    }
+    acc[field.name] = '';
+    return acc;
+  }, {});
+}
+
 function valueToString(value: unknown) {
   if (value === null || value === undefined) return '';
   if (Array.isArray(value)) return value.join(', ');
@@ -179,7 +202,7 @@ export default function AdminResourcePage({
 
   const edit = (row?: AdminRow) => {
     setMessage('');
-    setForm(row ? { ...(row as Record<string, unknown>) } : {});
+    setForm(row ? { ...getDefaultForm(fields), ...(row as Record<string, unknown>) } : getDefaultForm(fields));
     setOpen(true);
   };
 

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Users, Star, Utensils, Shield, CircleCheck as CheckCircle2 } from 'lucide-react';
-import { aboutContent } from '@/data/houseboatData';
+import { usePublicData } from '@/components/PublicDataProvider';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Users,
@@ -12,6 +12,9 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export default function About() {
+  const { seasonData } = usePublicData();
+  const aboutContent = seasonData.about;
+
   return (
     <section id="about" className="py-16 md:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

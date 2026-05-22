@@ -34,6 +34,8 @@ export const demoSettings: HouseboatSettings = {
   primary_color: '#075985',
   secondary_color: '#f59e0b',
   logo_url: '/logo-kuhelika-clean.png',
+  active_season: 'haor',
+  season_updated_at: now,
   created_at: now,
   updated_at: now,
 };
@@ -52,6 +54,8 @@ export const demoRooms: Room[] = cabins.map((room, index) => ({
   facilities: room.features,
   status: room.available ? 'active' : 'inactive',
   sort_order: index + 1,
+  season_type: 'haor',
+  display_mode: 'cabin',
   created_at: now,
   updated_at: now,
 }));
@@ -70,6 +74,9 @@ export const demoPackages: TourPackage[] = packages.map((pkg, index) => ({
   image_url: '',
   status: 'active',
   sort_order: index + 1,
+  season_type: 'haor',
+  suggested_time: null,
+  best_for: null,
   created_at: now,
   updated_at: now,
 }));
@@ -115,6 +122,7 @@ export const demoBookings: Booking[] = [
     booking_status: 'confirmed',
     special_request: 'Birthday decoration',
     admin_note: '',
+    season_type: 'haor',
     created_at: now,
     updated_at: now,
   },
@@ -135,6 +143,7 @@ export const demoBookings: Booking[] = [
     booking_status: 'pending',
     special_request: '',
     admin_note: 'Need confirmation call',
+    season_type: 'haor',
     created_at: now,
     updated_at: now,
   },

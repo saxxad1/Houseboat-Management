@@ -4,16 +4,16 @@ import { useState, useEffect } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { usePublicData } from '@/components/PublicDataProvider';
-import { navLinks } from '@/data/houseboatData';
 
 interface HeaderProps {
   onBookNow: () => void;
 }
 
 export default function Header({ onBookNow }: HeaderProps) {
-  const { siteConfig } = usePublicData();
+  const { siteConfig, seasonData } = usePublicData();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navLinks = seasonData.nav.links;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -86,7 +86,7 @@ export default function Header({ onBookNow }: HeaderProps) {
               onClick={onBookNow}
               className="px-5 py-2.5 rounded-full bg-[hsl(38,90%,55%)] text-white text-sm font-bold shadow-md hover:bg-[hsl(35,90%,48%)] hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
             >
-              Book Now
+              {seasonData.nav.ctaLabel}
             </button>
           </div>
 
@@ -135,7 +135,7 @@ export default function Header({ onBookNow }: HeaderProps) {
                 }}
                 className="px-4 py-3 rounded-xl bg-[hsl(38,90%,55%)] text-white font-bold text-center hover:bg-[hsl(35,90%,48%)] transition-colors"
               >
-                Book Now
+                {seasonData.nav.ctaLabel}
               </button>
             </div>
           </nav>

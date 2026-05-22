@@ -1,10 +1,14 @@
 'use client';
 
 import { Star, Quote, MessageSquare } from 'lucide-react';
-import { testimonials } from '@/data/houseboatData';
 import { StaggerReveal } from '@/components/ScrollReveal';
+import { usePublicData } from '@/components/PublicDataProvider';
 
 export default function Testimonials() {
+  const { seasonData } = usePublicData();
+  const testimonials = seasonData.testimonials.items;
+  const stats = seasonData.testimonials.stats;
+
   return (
     <section id="reviews" className="py-16 md:py-28 bg-[hsl(195,100%,97%)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,10 +19,10 @@ export default function Testimonials() {
             <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">Reviews</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
-            আমাদের অতিথিরা যা বলেন
+            {seasonData.testimonials.title}
           </h2>
           <p className="text-slate-500 text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
-            হাজারো সন্তুষ্ট পর্যটকের বিশ্বাস আমাদের সেরা পুরস্কার।
+            {seasonData.testimonials.subtitle}
           </p>
           <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-4" />
         </div>
@@ -27,7 +31,7 @@ export default function Testimonials() {
         <div className="flex justify-center mb-8 sm:mb-12">
           <div className="bg-white rounded-2xl sm:rounded-3xl shadow-md border border-slate-100 px-5 sm:px-8 py-4 sm:py-6 flex items-center gap-5 sm:gap-10 flex-wrap justify-center w-full sm:w-auto">
             <div className="text-center">
-              <div className="text-3xl sm:text-5xl font-black text-[hsl(197,80%,28%)] leading-none">4.9</div>
+              <div className="text-3xl sm:text-5xl font-black text-[hsl(197,80%,28%)] leading-none">{stats.rating}</div>
               <div className="flex gap-0.5 justify-center mt-1.5">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-3.5 h-3.5 sm:w-5 sm:h-5 fill-amber-400 text-amber-400" />
@@ -37,13 +41,13 @@ export default function Testimonials() {
             </div>
             <div className="hidden sm:block w-px h-12 sm:h-16 bg-slate-200" />
             <div className="text-center">
-              <div className="text-3xl sm:text-5xl font-black text-[hsl(197,80%,28%)] leading-none">১০০০+</div>
-              <div className="text-slate-500 text-xs mt-1.5">সন্তুষ্ট পর্যটক</div>
+              <div className="text-3xl sm:text-5xl font-black text-[hsl(197,80%,28%)] leading-none">{stats.count}</div>
+              <div className="text-slate-500 text-xs mt-1.5">{stats.label}</div>
             </div>
             <div className="hidden sm:block w-px h-12 sm:h-16 bg-slate-200" />
             <div className="text-center">
-              <div className="text-3xl sm:text-5xl font-black text-[hsl(197,80%,28%)] leading-none">৯৮%</div>
-              <div className="text-slate-500 text-xs mt-1.5">পুনরায় আসার হার</div>
+              <div className="text-3xl sm:text-5xl font-black text-[hsl(197,80%,28%)] leading-none">{stats.happiness}</div>
+              <div className="text-slate-500 text-xs mt-1.5">{stats.happinessLabel}</div>
             </div>
           </div>
         </div>

@@ -149,10 +149,22 @@ export function rangesOverlap(startA: string, endA: string, startB: string, endB
 
 export function hasBookingConflict(candidate: Partial<Booking>, bookings: Booking[]) {
   const activeStatuses = ['pending', 'confirmed', 'checked_in'];
+  if ((candidate.season_type || 'haor') === 'padma') {
+    if (!candidate.event_date || !candidate.event_slot) return false;
+    return bookings.some((booking) => {
+      if (booking.id === candidate.id) return false;
+      if ((booking.season_type || 'haor') !== 'padma') return false;
+      if (!activeStatuses.includes(booking.booking_status)) return false;
+      if ((booking.event_date || booking.check_in_date) !== candidate.event_date) return false;
+      return booking.event_slot === candidate.event_slot || booking.event_slot === 'full_day' || candidate.event_slot === 'full_day';
+    });
+  }
+
   if (!candidate.check_in_date || !candidate.check_out_date) return false;
 
   return bookings.some((booking) => {
     if (booking.id === candidate.id) return false;
+    if ((booking.season_type || 'haor') !== 'haor') return false;
     if (!activeStatuses.includes(booking.booking_status)) return false;
     if (!rangesOverlap(candidate.check_in_date!, candidate.check_out_date!, booking.check_in_date, booking.check_out_date)) {
       return false;
@@ -206,6 +218,16 @@ export async function saveBookingWithCustomer(
     booking_status: values.booking_status || 'pending',
     special_request: values.special_request || '',
     admin_note: values.admin_note || '',
+    season_type: values.season_type || 'haor',
+    event_type: values.event_type || null,
+    event_slot: values.event_slot || null,
+    event_date: values.event_date || null,
+    event_start_time: values.event_start_time || null,
+    event_end_time: values.event_end_time || null,
+    food_package: values.food_package || null,
+    decoration_required: Boolean(values.decoration_required),
+    sound_system_required: Boolean(values.sound_system_required),
+    payment_method: values.payment_method || null,
   });
 }
 
