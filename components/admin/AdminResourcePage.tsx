@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import imageCompression from 'browser-image-compression';
 import { Edit, Plus, Search, Trash2, Upload, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -316,7 +317,24 @@ export default function AdminResourcePage({
     setSaving(true);
     const toastId = toast.loading('Uploading image...');
     try {
-      const url = await uploadHouseboatFile('houseboat-media', storageFolder || table, file);
+      let fileToUpload = file;
+      // Only compress images, ignore other files like videos/PDFs if any
+      if (file.type.startsWith('image/')) {
+        toast.loading('Compressing image...', { id: toastId });
+        const options = {
+          maxSizeMB: 0.5, // 500 KB
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+        };
+        try {
+          fileToUpload = await imageCompression(file, options);
+        } catch (compressError) {
+          console.error('Compression failed, falling back to original file', compressError);
+        }
+      }
+
+      toast.loading('Uploading image...', { id: toastId });
+      const url = await uploadHouseboatFile('houseboat-media', storageFolder || table, fileToUpload);
       setForm((current) => {
         if (isMultiple) {
           const existing = valueToString(current[fieldName]).split(',').filter(Boolean);
