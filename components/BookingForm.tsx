@@ -96,6 +96,17 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
     }
   }, [isOpen, initialCabin, initialBookingType, initialCheckInDate, initialCheckOutDate]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!form.name.trim()) newErrors.name = 'Enter name';
