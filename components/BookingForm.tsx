@@ -294,7 +294,7 @@ Thank you.`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={handleClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/60" />
 
       <div
         className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-xl md:max-w-2xl max-h-[95vh] sm:max-h-[92vh] flex flex-col"
