@@ -11,10 +11,10 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="py-16 md:py-28 bg-white">
+    <section id="faq" className="py-8 md:py-12 bg-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-10 md:mb-16">
+        <div className="text-center mb-8 md:mb-12">
           <div className="inline-flex items-center gap-2 bg-[hsl(195,95%,92%)] rounded-full px-4 py-1.5 mb-4">
             <HelpCircle className="w-4 h-4 text-[hsl(197,80%,30%)]" />
             <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">FAQ</span>
@@ -71,7 +71,7 @@ export default function FAQ() {
         {/* Contact CTA */}
         <div className="mt-8 sm:mt-10 text-center p-4 sm:p-6 bg-[hsl(195,95%,92%)] rounded-2xl sm:rounded-3xl border border-[hsl(195,85%,82%)]">
           <p className="text-[hsl(197,80%,28%)] font-medium text-sm sm:text-base">
-            আরও প্রশ্ন আছে? সরাসরি আমাদের সাথে যোগাযোগ করুন।
+            Have more questions? Contact us directly.
           </p>
         </div>
       </div>

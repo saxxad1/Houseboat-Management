@@ -21,7 +21,7 @@ export async function verifyAdminAccess(accessToken?: string | null) {
   } catch (error) {
     return {
       isAdmin: false,
-      error: error instanceof Error ? error.message : 'Admin যাচাই করা যায়নি',
+      error: error instanceof Error ? error.message : 'Admin verification failed',
     };
   }
 }

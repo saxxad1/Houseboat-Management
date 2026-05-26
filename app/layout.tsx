@@ -1,47 +1,85 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Outfit, Hind_Siliguri, Playfair_Display } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({
+const outfit = Outfit({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-outfit',
+  display: 'swap',
+});
+
+const hindSiliguri = Hind_Siliguri({
+  subsets: ['bengali'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-hind',
+  display: 'swap',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://kuhelika.com'),
-  title: 'কুহেলিকা – টাঙ্গুয়ার হাওর বিলাসবহুল হাউসবোট | Sunamganj',
+  title: 'Kuhelika - An Aesthetic Water Villa',
   description:
-    'টাঙ্গুয়ার হাওরে বিলাসবহুল হাউসবোটে আপনাকে স্বাগতম। Tanguar Haor houseboat booking Bangladesh. পরিবার, বন্ধু ও কর্পোরেট টিমের জন্য আদর্শ ভ্রমণ প্যাকেজ।',
+    'Welcome to the luxury houseboat in Tanguar Haor. Tanguar Haor houseboat booking Bangladesh. Ideal travel packages for family, friends, and corporate teams.',
   keywords: [
     'Tanguar Haor houseboat',
     'Sunamganj houseboat booking',
-    'টাঙ্গুয়ার হাওর হাউসবোট',
+    'Tanguar Haor Houseboat',
     'Tanguar Haor tour package',
     'Houseboat booking Bangladesh',
     'kuhelika',
-    'কুহেলিকা',
+    'Kuhelika',
     'sunamganj tour',
     'tanguar haor travel',
   ],
   openGraph: {
-    title: 'কুহেলিকা – টাঙ্গুয়ার হাওর বিলাসবহুল হাউসবোট',
+    title: 'Kuhelika - An Aesthetic Water Villa',
     description:
-      'টাঙ্গুয়ার হাওরের নীল জলে ভাসমান বিলাসবহুল হাউসবোটে একটি অবিস্মরণীয় অভিজ্ঞতা।',
+      'An unforgettable experience on a luxury houseboat floating in the blue waters of Tanguar Haor.',
     type: 'website',
-    locale: 'bn_BD',
+    locale: 'en_US',
   },
 };
+
+import { Toaster } from '@/components/ui/sonner';
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const schemaData = {
+    '@context': 'https://schema.org',
+    '@type': 'LodgingBusiness',
+    name: 'Kuhelika Houseboat',
+    image: 'https://kuhelika.com/images/hero.jpg',
+    description: 'An unforgettable experience on a luxury houseboat floating in the blue waters of Tanguar Haor.',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Sunamganj',
+      addressRegion: 'Sylhet',
+      addressCountry: 'BD',
+    },
+    telephone: '+8801736625982',
+    priceRange: '$$$',
+  };
+
   return (
-    <html lang="bn" className="scroll-smooth">
-      <body className={`${inter.variable} font-sans antialiased`}>
+    <html lang="en" className="scroll-smooth">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+        />
+      </head>
+      <body className={`${outfit.variable} ${hindSiliguri.variable} ${playfair.variable} font-sans antialiased`}>
         {children}
+        <Toaster />
       </body>
     </html>
   );

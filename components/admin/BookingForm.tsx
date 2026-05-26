@@ -23,6 +23,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { hasBookingConflict, saveBookingWithCustomer } from '@/lib/admin/data';
 import type { Booking, Customer, Room, TourPackage } from '@/types/database';
+import { usePublicData } from '@/components/PublicDataProvider';
 
 interface BookingFormProps {
   open: boolean;
@@ -61,6 +62,8 @@ const defaultForm = {
   decoration_required: 'false',
   sound_system_required: 'true',
   payment_method: 'bkash',
+  transaction_id: '',
+  trip_slot_id: 'none',
 };
 
 export default function BookingForm({
@@ -74,12 +77,24 @@ export default function BookingForm({
   onSaved,
 }: BookingFormProps) {
   const [form, setForm] = useState(defaultForm);
+  const [roomDetails, setRoomDetails] = useState<{roomId: string; pax: number}[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const { tripSlots } = usePublicData();
 
   useEffect(() => {
     const customer = booking ? customers.find((item) => item.id === booking.customer_id) : null;
     setError('');
+    
+    // Initialize room details
+    if (booking?.room_details && Array.isArray(booking.room_details)) {
+      setRoomDetails(booking.room_details);
+    } else if (booking?.room_id) {
+      setRoomDetails([{ roomId: booking.room_id, pax: Number(booking.number_of_guests || 2) }]);
+    } else {
+      setRoomDetails([]);
+    }
+
     setForm(
       booking
         ? {
@@ -108,6 +123,8 @@ export default function BookingForm({
             decoration_required: String(Boolean(booking.decoration_required)),
             sound_system_required: String(Boolean(booking.sound_system_required ?? true)),
             payment_method: booking.payment_method || 'bkash',
+            transaction_id: booking.transaction_id || '',
+            trip_slot_id: booking.trip_slot_id || 'none',
           }
         : defaultForm
     );
@@ -132,10 +149,12 @@ export default function BookingForm({
       const payload = {
         ...form,
         room_id: form.season_type === 'padma' || form.room_id === 'none' ? '' : form.room_id,
+        room_details: form.season_type === 'padma' ? null : roomDetails,
         package_id: form.package_id === 'none' ? '' : form.package_id,
         check_in_date: form.season_type === 'padma' ? form.event_date : form.check_in_date,
         check_out_date: form.season_type === 'padma' ? padmaCheckoutDate : form.check_out_date,
         booking_type: form.season_type === 'padma' ? 'full_boat' : form.booking_type,
+        trip_slot_id: form.trip_slot_id === 'none' ? null : form.trip_slot_id,
       };
       const parsed = bookingSchema.parse(payload);
       const conflictCandidate = {
@@ -150,7 +169,7 @@ export default function BookingForm({
         event_slot: parsed.event_slot,
       };
       if (hasBookingConflict(conflictCandidate, bookings)) {
-        throw new Error('এই তারিখে selected room/full boat already booked.');
+        throw new Error('Selected room/full boat is already booked on this date.');
       }
       await saveBookingWithCustomer(
         {
@@ -169,6 +188,8 @@ export default function BookingForm({
           decoration_required: parsed.decoration_required,
           sound_system_required: parsed.sound_system_required,
           payment_method: parsed.payment_method,
+          transaction_id: form.transaction_id || null,
+          trip_slot_id: parsed.trip_slot_id || null,
         },
         booking?.id
       );
@@ -190,8 +211,8 @@ export default function BookingForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>{booking ? 'Edit booking' : 'নতুন বুকিং'}</DialogTitle>
-          <DialogDescription>কাস্টমার, তারিখ, প্যাকেজ, পেমেন্ট ও booking status আপডেট করুন।</DialogDescription>
+          <DialogTitle>{booking ? 'Edit booking' : 'New Booking'}</DialogTitle>
+          <DialogDescription>Update customer, date, package, payment, and booking status.</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -228,17 +249,43 @@ export default function BookingForm({
             </Select>
           </div>}
           {form.season_type === 'haor' && form.booking_type === 'cabin_wise' && (
-            <div className="space-y-2">
-              <Label>Room/Cabin</Label>
-              <Select value={form.room_id} onValueChange={(value) => setField('room_id', value)}>
-                <SelectTrigger><SelectValue placeholder="Select room" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Select room</SelectItem>
-                  {rooms.filter((room) => (room.season_type || 'haor') === 'haor').map((room) => (
-                    <SelectItem key={room.id} value={room.id}>{room.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Rooms & Guests</Label>
+              <div className="space-y-2">
+                {roomDetails.map((detail, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <Select value={detail.roomId} onValueChange={(val) => {
+                      const newDetails = [...roomDetails];
+                      newDetails[index].roomId = val;
+                      setRoomDetails(newDetails);
+                    }}>
+                      <SelectTrigger className="flex-1"><SelectValue placeholder="Select room" /></SelectTrigger>
+                      <SelectContent>
+                        {rooms.filter((room) => (room.season_type || 'haor') === 'haor').map((room) => (
+                          <SelectItem key={room.id} value={room.id}>{room.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={String(detail.pax)} onValueChange={(val) => {
+                      const newDetails = [...roomDetails];
+                      newDetails[index].pax = Number(val);
+                      setRoomDetails(newDetails);
+                    }}>
+                      <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2">2 Persons</SelectItem>
+                        <SelectItem value="3">3 Persons</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="icon" onClick={() => setRoomDetails(roomDetails.filter((_, i) => i !== index))}>
+                      X
+                    </Button>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={() => setRoomDetails([...roomDetails, { roomId: '', pax: 2 }])}>
+                  + Add Room
+                </Button>
+              </div>
             </div>
           )}
           <div className="space-y-2">
@@ -365,6 +412,26 @@ export default function BookingForm({
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-2">
+            <Label>Transaction ID</Label>
+            <Input value={form.transaction_id} onChange={(event) => setField('transaction_id', event.target.value)} />
+          </div>
+          {form.season_type === 'haor' && (
+            <div className="space-y-2">
+              <Label>Trip Slot (Optional)</Label>
+              <Select value={form.trip_slot_id} onValueChange={(value) => setField('trip_slot_id', value)}>
+                <SelectTrigger><SelectValue placeholder="Select Trip Slot" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No specific trip</SelectItem>
+                  {tripSlots.map((trip) => (
+                    <SelectItem key={trip.id} value={trip.id}>
+                      {new Date(trip.start_date).toLocaleDateString('en-GB')} to {new Date(trip.end_date).toLocaleDateString('en-GB')}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="space-y-2">
             <Label>Booking status</Label>
             <Select value={form.booking_status} onValueChange={(value) => setField('booking_status', value)}>

@@ -16,10 +16,10 @@ export default function About() {
   const aboutContent = seasonData.about;
 
   return (
-    <section id="about" className="py-16 md:py-28 bg-white">
+    <section id="about" className="py-10 md:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-10 md:mb-16">
+        <div className="text-center mb-8 md:mb-12">
           <div className="inline-flex items-center gap-2 bg-[hsl(195,95%,92%)] rounded-full px-4 py-1.5 mb-4">
             <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">{aboutContent.subtitle}</span>
           </div>
@@ -45,8 +45,8 @@ export default function About() {
             </div>
             {/* Floating card */}
             <div className="absolute bottom-0 right-0 sm:-bottom-4 sm:-right-2 lg:-bottom-6 lg:-right-4 bg-white rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-5 border border-slate-100 max-w-[160px] sm:max-w-[200px]">
-              <div className="text-2xl sm:text-3xl font-bold text-[hsl(197,80%,30%)] mb-0.5">১০০০+</div>
-              <div className="text-slate-600 text-xs sm:text-sm font-medium">সন্তুষ্ট পর্যটক</div>
+              <div className="text-2xl sm:text-3xl font-bold text-[hsl(197,80%,30%)] mb-0.5">1000+</div>
+              <div className="text-slate-600 text-xs sm:text-sm font-medium">Happy Tourists</div>
               <div className="flex gap-0.5 mt-1.5">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 fill-amber-400 text-amber-400" />
@@ -82,7 +82,7 @@ export default function About() {
 
             {/* Suitable For */}
             <div>
-              <h3 className="font-bold text-slate-700 mb-2 sm:mb-3 text-xs sm:text-sm uppercase tracking-wide">যাদের জন্য উপযুক্ত</h3>
+              <h3 className="font-bold text-slate-700 mb-2 sm:mb-3 text-xs sm:text-sm uppercase tracking-wide">Suitable For</h3>
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {aboutContent.suitableFor.map((tag) => (
                   <span

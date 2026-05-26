@@ -11,26 +11,29 @@ import {
   Package,
   ReceiptText,
   Settings,
+  Star,
   ToggleLeft,
   Users,
   Wallet,
 } from 'lucide-react';
 
 export const adminNavItems = [
-  { href: '/admin/dashboard', label: 'Dashboard', labelBn: 'ড্যাশবোর্ড', icon: LayoutDashboard },
-  { href: '/admin/bookings', label: 'Bookings', labelBn: 'বুকিং', icon: CalendarDays },
-  { href: '/admin/availability', label: 'Availability', labelBn: 'উপলব্ধতা', icon: Home },
-  { href: '/admin/rooms', label: 'Rooms/Cabins', labelBn: 'রুম/কেবিন', icon: BedDouble },
-  { href: '/admin/packages', label: 'Packages', labelBn: 'প্যাকেজ', icon: Package },
-  { href: '/admin/customers', label: 'Customers', labelBn: 'কাস্টমার', icon: Users },
-  { href: '/admin/payments', label: 'Payments', labelBn: 'পেমেন্ট', icon: CreditCard },
-  { href: '/admin/income', label: 'Income', labelBn: 'আয়', icon: Wallet },
-  { href: '/admin/expenses', label: 'Expenses', labelBn: 'খরচ', icon: ReceiptText },
-  { href: '/admin/reports', label: 'Reports', labelBn: 'রিপোর্ট', icon: FileBarChart },
-  { href: '/admin/gallery', label: 'Gallery', labelBn: 'গ্যালারি', icon: Camera },
-  { href: '/admin/content', label: 'Website Content', labelBn: 'ওয়েবসাইট কনটেন্ট', icon: Image },
-  { href: '/admin/season-settings', label: 'Season Mode', labelBn: 'সিজন মোড', icon: ToggleLeft },
-  { href: '/admin/settings', label: 'Settings', labelBn: 'সেটিংস', icon: Settings },
+  { href: '/admin/dashboard', label: 'Dashboard', labelBn: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/bookings', label: 'Bookings', labelBn: 'Bookings', icon: CalendarDays },
+  { href: '/admin/availability', label: 'Availability', labelBn: 'Booking Calendar', icon: Home },
+  { href: '/admin/trips', label: 'Trips', labelBn: 'Trips', icon: Package },
+  { href: '/admin/rooms', label: 'Rooms/Cabins', labelBn: 'Rooms/Cabins', icon: BedDouble },
+  { href: '/admin/packages', label: 'Packages', labelBn: 'Packages', icon: Package },
+  { href: '/admin/customers', label: 'Customers', labelBn: 'Customers', icon: Users },
+  { href: '/admin/payments', label: 'Payments', labelBn: 'Payments', icon: CreditCard },
+  { href: '/admin/income', label: 'Income', labelBn: 'Income', icon: Wallet },
+  { href: '/admin/expenses', label: 'Expenses', labelBn: 'Expenses', icon: ReceiptText },
+  { href: '/admin/reports', label: 'Reports', labelBn: 'Reports', icon: FileBarChart },
+  { href: '/admin/gallery', label: 'Gallery', labelBn: 'Gallery', icon: Camera },
+  { href: '/admin/content', label: 'Website Content', labelBn: 'Website Content', icon: Image },
+  { href: '/admin/reviews', label: 'Reviews', labelBn: 'Reviews', icon: Star },
+  { href: '/admin/season-settings', label: 'Season Mode', labelBn: 'Season Mode', icon: ToggleLeft },
+  { href: '/admin/settings', label: 'Settings', labelBn: 'Settings', icon: Settings },
 ];
 
 export const bookingStatusLabels: Record<string, string> = {
@@ -86,7 +89,7 @@ export const paymentMethods = [
 export const incomeCategories = ['booking', 'food', 'extra_guest', 'bbq', 'transport', 'service', 'other'];
 export const expenseCategories = ['food', 'staff_salary', 'fuel', 'maintenance', 'cleaning', 'transport', 'marketing', 'commission', 'utility', 'other'];
 
-export const currencyFormatter = new Intl.NumberFormat('bn-BD', {
+export const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'BDT',
   maximumFractionDigits: 0,
@@ -100,20 +103,22 @@ export const chartColors = {
 };
 
 export const pageTitles: Record<string, { title: string; subtitle: string }> = {
-  '/admin/dashboard': { title: 'ড্যাশবোর্ড', subtitle: 'আজকের অবস্থা, আয়-খরচ ও বুকিং এক নজরে' },
-  '/admin/bookings': { title: 'বুকিং ম্যানেজমেন্ট', subtitle: 'নতুন বুকিং, স্ট্যাটাস, পেমেন্ট ও কাস্টমার তথ্য' },
-  '/admin/availability': { title: 'তারিখ ও উপলব্ধতা', subtitle: 'কোন তারিখে কোন কেবিন খালি বা বুকড দেখুন' },
-  '/admin/rooms': { title: 'রুম/কেবিন', subtitle: 'কেবিন, দাম, ক্যাপাসিটি ও সুবিধা ম্যানেজ করুন' },
-  '/admin/packages': { title: 'প্যাকেজ', subtitle: 'ভ্রমণ প্যাকেজ, দাম ও অন্তর্ভুক্ত সেবা ম্যানেজ করুন' },
-  '/admin/customers': { title: 'কাস্টমার', subtitle: 'কাস্টমার তালিকা ও বুকিং ইতিহাস' },
-  '/admin/payments': { title: 'পেমেন্ট', subtitle: 'অগ্রিম, বাকি ও ট্রানজেকশন ট্র্যাক করুন' },
-  '/admin/income': { title: 'আয়', subtitle: 'বুকিং ও অন্যান্য আয়ের হিসাব' },
-  '/admin/expenses': { title: 'খরচ', subtitle: 'খাবার, স্টাফ, জ্বালানি, মেইনটেন্যান্সসহ সব খরচ' },
-  '/admin/reports': { title: 'রিপোর্ট', subtitle: 'আয়-খরচ, লাভ, বাকি পেমেন্ট ও বুকিং রিপোর্ট' },
-  '/admin/gallery': { title: 'গ্যালারি', subtitle: 'ওয়েবসাইটের ছবি আপলোড ও সাজান' },
-  '/admin/content': { title: 'ওয়েবসাইট কনটেন্ট', subtitle: 'Hero, About, FAQ, CTA ও অন্যান্য টেক্সট' },
-  '/admin/season-settings': { title: 'সিজন মোড', subtitle: 'হাওর সিজন বা পদ্মা ইভেন্ট সিজন সক্রিয় করুন' },
-  '/admin/settings': { title: 'সেটিংস', subtitle: 'ব্র্যান্ড, কন্ট্যাক্ট, পেমেন্ট ও রঙের সেটিংস' },
+  '/admin/dashboard': { title: 'Dashboard', subtitle: 'Today\'s status, income-expenses, and bookings at a glance' },
+  '/admin/bookings': { title: 'Booking Management', subtitle: 'New bookings, status, payments, and customer info' },
+  '/admin/availability': { title: 'Booking Calendar', subtitle: 'See which cabins are available or booked on specific dates' },
+  '/admin/trips': { title: 'Trips Management', subtitle: 'Manage trip slots, income, expenses, and profit' },
+  '/admin/rooms': { title: 'Rooms/Cabins', subtitle: 'Manage cabins, prices, capacity, and facilities' },
+  '/admin/packages': { title: 'Packages', subtitle: 'Manage tour packages, prices, and included services' },
+  '/admin/customers': { title: 'Customers', subtitle: 'Customer list and booking history' },
+  '/admin/payments': { title: 'Payments', subtitle: 'Track advances, dues, and transactions' },
+  '/admin/income': { title: 'Income', subtitle: 'Accounting for bookings and other income' },
+  '/admin/expenses': { title: 'Expenses', subtitle: 'Food, staff, fuel, maintenance, and all other expenses' },
+  '/admin/reports': { title: 'Reports', subtitle: 'Income-expense, profit, due payments, and booking reports' },
+  '/admin/gallery': { title: 'Gallery', subtitle: 'Upload and arrange website images' },
+  '/admin/content': { title: 'Website Content', subtitle: 'Hero, About, FAQ, CTA, and other texts' },
+  '/admin/reviews': { title: 'Reviews', subtitle: 'Add, edit, and delete guest reviews' },
+  '/admin/season-settings': { title: 'Season Mode', subtitle: 'Activate Haor season or Padma event season' },
+  '/admin/settings': { title: 'Settings', subtitle: 'Brand, contact, payment, and color settings' },
 };
 
 export const dashboardMetricIcons = {
@@ -123,3 +128,4 @@ export const dashboardMetricIcons = {
   money: Wallet,
   rooms: BedDouble,
 };
+

@@ -76,7 +76,7 @@ export default function PaymentsAdminPage() {
       <Card>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="text-xl">Payment records</CardTitle>
-          <Button onClick={() => { setSelected(null); setOpen(true); }} className="w-full gap-2 sm:w-auto"><Plus className="h-4 w-4" />নতুন পেমেন্ট</Button>
+          <Button onClick={() => { setSelected(null); setOpen(true); }} className="w-full gap-2 sm:w-auto"><Plus className="h-4 w-4" />New Payment</Button>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
           <div className="mb-4 grid gap-3 md:grid-cols-5">

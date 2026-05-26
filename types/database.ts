@@ -21,6 +21,15 @@ export interface BaseRow {
   updated_at: string;
 }
 
+export interface TripSlot extends BaseRow {
+  start_date: string;
+  end_date: string;
+  duration_label: string;
+  status: AvailabilityStatus;
+  reason: string | null;
+  note: string | null;
+}
+
 export interface AdminProfile extends BaseRow {
   user_id: string;
   full_name: string;
@@ -54,8 +63,10 @@ export interface Room extends BaseRow {
   description: string | null;
   image_url: string | null;
   bed_type: string | null;
-  capacity: number;
+  capacity: number | string;
   price_per_night: number;
+  price_2_pax?: number | null;
+  price_3_pax?: number | null;
   has_attached_washroom: boolean;
   has_ac: boolean;
   facilities: string[];
@@ -96,6 +107,7 @@ export interface Booking extends BaseRow {
   customer_id: string | null;
   booking_type: BookingType;
   room_id: string | null;
+  room_details?: { roomId: string; pax: number; subtotal: number; roomName?: string }[] | null;
   package_id: string | null;
   check_in_date: string;
   check_out_date: string;
@@ -117,6 +129,8 @@ export interface Booking extends BaseRow {
   decoration_required?: boolean;
   sound_system_required?: boolean;
   payment_method?: PaymentMethod | null;
+  transaction_id?: string | null;
+  trip_slot_id?: string | null;
 }
 
 export interface Payment extends BaseRow {
@@ -135,6 +149,7 @@ export interface Income extends BaseRow {
   amount: number;
   income_date: string;
   note: string | null;
+  trip_slot_id?: string | null;
 }
 
 export interface Expense extends BaseRow {
@@ -144,6 +159,7 @@ export interface Expense extends BaseRow {
   expense_date: string;
   vendor_name: string | null;
   note: string | null;
+  trip_slot_id?: string | null;
 }
 
 export interface AvailabilityBlock extends BaseRow {
@@ -176,6 +192,15 @@ export interface WebsiteContent extends BaseRow {
   is_active: boolean;
 }
 
+export interface Review extends BaseRow {
+  name: string;
+  location: string | null;
+  rating: number;
+  review: string;
+  avatar: string;
+  is_published: boolean;
+}
+
 export type AdminTableName =
   | 'admin_profiles'
   | 'houseboat_settings'
@@ -187,8 +212,10 @@ export type AdminTableName =
   | 'income'
   | 'expenses'
   | 'availability_blocks'
+  | 'trip_slots'
   | 'gallery'
-  | 'website_content';
+  | 'website_content'
+  | 'reviews';
 
 export interface Database {
   public: {
@@ -203,8 +230,10 @@ export interface Database {
       income: { Row: Income; Insert: Partial<Income>; Update: Partial<Income> };
       expenses: { Row: Expense; Insert: Partial<Expense>; Update: Partial<Expense> };
       availability_blocks: { Row: AvailabilityBlock; Insert: Partial<AvailabilityBlock>; Update: Partial<AvailabilityBlock> };
+      trip_slots: { Row: TripSlot; Insert: Partial<TripSlot>; Update: Partial<TripSlot> };
       gallery: { Row: GalleryImage; Insert: Partial<GalleryImage>; Update: Partial<GalleryImage> };
       website_content: { Row: WebsiteContent; Insert: Partial<WebsiteContent>; Update: Partial<WebsiteContent> };
+      reviews: { Row: Review; Insert: Partial<Review>; Update: Partial<Review> };
     };
   };
 }

@@ -22,6 +22,7 @@ export default function BookingsAdminPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [packages, setPackages] = useState<TourPackage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selected, setSelected] = useState<Booking | null>(null);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -33,11 +34,13 @@ export default function BookingsAdminPage() {
   const [message, setMessage] = useState('');
 
   const load = async () => {
+    setIsLoading(true);
     const data = await fetchAdminDataset();
     setBookings(data.bookings);
     setCustomers(data.customers);
     setRooms(data.rooms);
     setPackages(data.packages);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -85,15 +88,15 @@ export default function BookingsAdminPage() {
       <Card>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle className="text-xl">সব বুকিং</CardTitle>
+            <CardTitle className="text-xl">All Bookings</CardTitle>
             <p className="mt-1 text-sm text-slate-500">Search, filter, add, edit, cancel and payment status update.</p>
           </div>
           <Button onClick={add} className="w-full gap-2 sm:w-auto">
             <Plus className="h-4 w-4" />
-            নতুন বুকিং
+            New Booking
           </Button>
         </CardHeader>
-        <CardContent className="p-4 sm:p-6">
+        <CardContent className="p-4 sm:p-6 min-w-0">
           <div className="mb-4 grid gap-3 md:grid-cols-7">
             <div className="relative md:col-span-2">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -134,18 +137,27 @@ export default function BookingsAdminPage() {
 
           {message && <div className="mb-4 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">{message}</div>}
 
-          <BookingTable
-            bookings={filtered}
-            customers={customers}
-            rooms={rooms}
-            packages={packages}
-            onEdit={(booking) => {
-              setSelected(booking);
-              setOpen(true);
-            }}
-            onCancel={cancel}
-            onDelete={remove}
-          />
+          {isLoading ? (
+            <div className="animate-pulse space-y-4 py-4">
+              <div className="h-10 bg-slate-100 rounded-xl w-full"></div>
+              <div className="h-16 bg-slate-50 rounded-xl w-full"></div>
+              <div className="h-16 bg-slate-50 rounded-xl w-full"></div>
+              <div className="h-16 bg-slate-50 rounded-xl w-full"></div>
+            </div>
+          ) : (
+            <BookingTable
+              bookings={filtered}
+              customers={customers}
+              rooms={rooms}
+              packages={packages}
+              onEdit={(booking) => {
+                setSelected(booking);
+                setOpen(true);
+              }}
+              onCancel={cancel}
+              onDelete={remove}
+            />
+          )}
         </CardContent>
       </Card>
 

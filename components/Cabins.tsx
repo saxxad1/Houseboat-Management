@@ -1,201 +1,341 @@
 'use client';
 
 import Image from 'next/image';
-import { BedDouble, Users, Bath, Wind, CircleCheck as CheckCircle, Circle as XCircle, Banknote, Anchor } from 'lucide-react';
+import { BedDouble, Users, Bath, Wind, CircleCheck as CheckCircle, Circle as XCircle, Banknote, Anchor, ChevronLeft, ChevronRight } from 'lucide-react';
 import { usePublicData } from '@/components/PublicDataProvider';
 import { StaggerReveal } from '@/components/ScrollReveal';
+import useEmblaCarousel from 'embla-carousel-react';
+import { useCallback } from 'react';
 
 interface CabinsProps {
-  onBookNow: () => void;
+  onBookNow: (cabin?: string, type?: 'cabin' | 'full') => void;
 }
 
 const badgeStyles: Record<string, string> = {
-  Premium: 'bg-[hsl(38,90%,55%)] text-white',
-  Popular: 'bg-[hsl(197,80%,30%)] text-white',
-  Deluxe: 'bg-emerald-600 text-white',
-  Family: 'bg-rose-500 text-white',
+  Premium: 'bg-[hsl(38,90%,55%)] text-white shadow-md shadow-[hsl(38,90%,55%)]/30',
+  Popular: 'bg-[hsl(197,80%,40%)] text-white shadow-md shadow-[hsl(197,80%,40%)]/30',
+  Deluxe: 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30',
+  Family: 'bg-rose-500 text-white shadow-md shadow-rose-500/30',
 };
 
 type CabinDisplayFields = {
+  id: string | number;
+  image: string;
+  name: string;
+  nameEn: string;
+  size?: string;
+  badge?: string;
+  available: boolean;
+  mainPrice: string;
   priceLabel?: string;
+  price2Pax?: string;
+  price3Pax?: string;
+  rawPrice2Pax?: number;
+  rawPrice3Pax?: number;
+  bedType: string;
+  capacity: string | number;
   capacityLabel?: string;
+  bath: string;
+  ac: string;
+  features: string[];
   buttonLabel?: string;
 };
 
+function CabinCard({
+  display,
+  isPadma,
+  onBookNow,
+}: {
+  display: CabinDisplayFields;
+  isPadma: boolean;
+  onBookNow: (cabinName?: string) => void;
+}) {
+  const imageStr = typeof display.image === 'string' ? display.image : '';
+  const rawImages = imageStr.split(',').filter(Boolean);
+  const showCarousel = rawImages.length > 1;
+  
+  // Embla needs enough slides to loop seamlessly. If there are only 2 or 3 images, 
+  // duplicate them to ensure perfect infinite scrolling without rewinding.
+  const images = rawImages.length > 1 && rawImages.length < 4 
+    ? [...rawImages, ...rawImages] 
+    : rawImages;
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 15 });
+
+  const scrollPrev = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (emblaApi) emblaApi.scrollPrev();
+    },
+    [emblaApi]
+  );
+
+  const scrollNext = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (emblaApi) emblaApi.scrollNext();
+    },
+    [emblaApi]
+  );
+
+  return (
+    <div className="h-full bg-white/80 backdrop-blur-md rounded-[2rem] overflow-hidden shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-2 border border-white flex flex-col group">
+      {/* Image Carousel */}
+      <div className="relative h-56 sm:h-64 overflow-hidden rounded-t-[2rem]">
+        {showCarousel ? (
+          <div className="h-full" ref={emblaRef}>
+            <div className="flex h-full">
+              {images.map((img: string, idx: number) => (
+                <div key={idx} className="relative flex-[0_0_100%] h-full min-w-0">
+                  <img
+                    src={img || '/images/kuhelika/cabins/cabin-01.jpg'}
+                    alt={`${display.name} image ${idx + 1}`}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <img
+            src={images[0] || display.image || '/images/kuhelika/cabins/cabin-01.jpg'}
+            alt={display.name}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-80 pointer-events-none" />
+
+        {/* Carousel Navigation */}
+        {showCarousel && (
+          <>
+            <button
+              onClick={scrollPrev}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={scrollNext}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </>
+        )}
+
+        {/* Badges */}
+        <div className="absolute top-4 left-4 flex gap-2 flex-wrap max-w-[80%] z-10 pointer-events-none">
+          {display.badge && (
+            <span className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold tracking-wide uppercase ${badgeStyles[display.badge] || 'bg-slate-700 text-white'}`}>
+              {display.badge}
+            </span>
+          )}
+          <span className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold tracking-wide uppercase shadow-md ${display.available ? 'bg-emerald-500/90 backdrop-blur text-white shadow-emerald-500/30' : 'bg-rose-500/90 backdrop-blur text-white shadow-rose-500/30'}`}>
+            {display.available ? 'Available' : 'Booked'}
+          </span>
+        </div>
+
+        {/* Name overlaid on image */}
+        <div className="absolute bottom-4 left-4 right-4 z-10 pointer-events-none">
+          <h3 className="text-xl sm:text-2xl font-black text-white mb-1 drop-shadow-md">{display.name}</h3>
+          <p className="text-white/80 text-xs sm:text-sm font-medium">{display.nameEn}{display.size ? ` · ${display.size}` : ''}</p>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="p-5 sm:p-6 flex flex-col flex-1 bg-white/50 relative">
+        {/* Price floating badge */}
+        <div className="absolute -top-6 right-5 bg-white shadow-xl shadow-slate-200/50 rounded-2xl px-4 py-2 border border-slate-100 flex flex-col items-center justify-center transform group-hover:-translate-y-1 transition-transform">
+          <div className="text-[10px] font-extrabold text-[hsl(197,80%,38%)] bg-[hsl(195,95%,92%)] px-2 py-0.5 rounded-full mb-1">2 Days 1 Night</div>
+          {display.rawPrice2Pax || display.rawPrice3Pax ? (
+            <div className="flex flex-col items-end gap-1.5 py-0.5">
+              {display.rawPrice2Pax && (
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[hsl(197,80%,30%)] font-black text-sm sm:text-base leading-none">
+                    ৳{display.rawPrice2Pax.toLocaleString()}
+                  </span>
+                  <span className="text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider">
+                    / person (2 persons)
+                  </span>
+                </div>
+              )}
+              {display.rawPrice3Pax && (
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[hsl(197,80%,30%)] font-black text-sm sm:text-base leading-none">
+                    ৳{display.rawPrice3Pax.toLocaleString()}
+                  </span>
+                  <span className="text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider">
+                    / person (3 persons)
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <span className="text-[hsl(197,80%,30%)] font-black text-lg sm:text-xl leading-none">
+                {display.mainPrice}
+              </span>
+              <span className="text-slate-400 text-[10px] font-semibold uppercase tracking-wider mt-0.5">
+                {display.priceLabel || '/Night'}
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Details Grid */}
+        <div className="grid grid-cols-2 gap-3 mb-5 mt-12">
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50/80 border border-slate-100/50">
+            <BedDouble className="w-4 h-4 text-[hsl(197,80%,38%)] shrink-0" />
+            <span className="text-xs sm:text-sm font-semibold text-slate-700 leading-tight">{display.bedType}</span>
+          </div>
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50/80 border border-slate-100/50">
+            <Users className="w-4 h-4 text-[hsl(197,80%,38%)] shrink-0" />
+            <span className="text-xs sm:text-sm font-semibold text-slate-700 leading-tight">{display.capacityLabel || display.capacity}</span>
+          </div>
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50/80 border border-slate-100/50">
+            <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+            <span className="text-xs sm:text-sm font-semibold text-slate-700 leading-tight">{display.bath}</span>
+          </div>
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50/80 border border-slate-100/50">
+            {typeof display.ac === 'string' && display.ac.includes('Non-AC') ? (
+              <Wind className="w-4 h-4 text-slate-400" />
+            ) : (
+              <CheckCircle className="w-4 h-4 text-emerald-500" />
+            )}
+            <span className="text-xs sm:text-sm font-semibold text-slate-700">{display.ac || 'N/A'}</span>
+          </div>
+        </div>
+
+        {/* Features */}
+        <div className="flex flex-wrap gap-2 mt-auto mb-6">
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs sm:text-sm px-4 py-1.5 rounded-full font-extrabold shadow-sm flex items-center gap-1.5">
+            <CheckCircle className="w-4 h-4" />
+            Food Included
+          </span>
+        </div>
+
+        <button
+          onClick={() => onBookNow(display.name)}
+          disabled={!display.available}
+          className={`mt-auto w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base transition-all duration-300 min-h-[48px] shadow-lg ${
+            display.available
+              ? 'bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,35%)] text-white hover:shadow-[hsl(197,80%,30%)]/40 hover:-translate-y-1'
+              : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none border border-slate-200'
+          }`}
+        >
+          {display.available ? (display.buttonLabel || 'Book This Cabin') : 'Booked Out'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+
+class ErrorBoundary extends Component<{children: ReactNode, fallback: (error: Error) => ReactNode}, {hasError: boolean, error: Error | null}> {
+  constructor(props: any) { super(props); this.state = { hasError: false, error: null }; }
+  static getDerivedStateFromError(error: Error) { return { hasError: true, error }; }
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) { console.error("Caught error:", error, errorInfo); }
+  render() { 
+    if (this.state.hasError && this.state.error) {
+      return this.props.fallback(this.state.error);
+    }
+    return this.props.children; 
+  }
+}
+
 export default function Cabins({ onBookNow }: CabinsProps) {
+  return (
+    <ErrorBoundary fallback={(error) => (
+      <div className="p-10 bg-red-50 text-red-600 rounded-xl m-10 border border-red-200 shadow-lg">
+        <h2 className="text-2xl font-bold mb-4">Cabin Section Crashed!</h2>
+        <p className="font-mono text-sm break-all">{error.toString()}</p>
+        <p className="font-mono text-sm mt-4 break-all">{error.stack}</p>
+      </div>
+    )}>
+      <CabinsContent onBookNow={onBookNow} />
+    </ErrorBoundary>
+  );
+}
+
+function CabinsContent({ onBookNow }: CabinsProps) {
   const { cabins, activeSeason, seasonData } = usePublicData();
   const section = seasonData.cabinsSection;
   const isPadma = activeSeason === 'padma';
 
   return (
-    <section id="cabins" className="py-16 md:py-28 bg-[hsl(195,100%,97%)]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="cabins" className="py-10 md:py-16 bg-gradient-to-b from-[hsl(195,100%,97%)] to-white relative overflow-hidden">
+      {/* Aesthetic Background Orbs */}
+      <div className="absolute top-0 right-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[20%] -left-[10%] w-[40%] max-w-[500px] aspect-square rounded-full bg-[hsl(173,58%,95%)]/60 blur-[100px]" />
+        <div className="absolute bottom-[10%] -right-[10%] w-[50%] max-w-[600px] aspect-square rounded-full bg-[hsl(38,90%,95%)]/60 blur-[120px]" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
-        <div className="text-center mb-10 md:mb-16">
-          <div className="inline-flex items-center gap-2 bg-white border border-[hsl(195,85%,82%)] rounded-full px-4 py-1.5 mb-4">
+        <div className="text-center mb-8 md:mb-12 relative z-10">
+          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-md border border-slate-100 shadow-sm rounded-full px-4 py-1.5 mb-4">
             <Anchor className="w-4 h-4 text-[hsl(197,80%,30%)]" />
             <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">{section.badge}</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-800 mb-4 tracking-tight">
             {section.title}
           </h2>
           <p className="text-slate-500 text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
             {section.subtitle}
           </p>
-          <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-4" />
+          <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-5" />
         </div>
 
-        {/* Booking Type Info */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8 md:mb-12">
-          <div className="flex items-center gap-3 bg-white rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 shadow-sm border border-slate-100">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[hsl(195,95%,92%)] flex items-center justify-center flex-shrink-0">
-              <BedDouble className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(197,80%,30%)]" />
+        {/* Booking Type Info - Glassmorphism */}
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-12 md:mb-16">
+          <div className="glass-panel rounded-2xl sm:rounded-3xl px-5 sm:px-8 py-4 sm:py-5 flex items-center gap-4 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[hsl(195,95%,92%)] to-[hsl(195,85%,85%)] flex items-center justify-center flex-shrink-0 shadow-inner">
+              <BedDouble className="w-5 h-5 text-[hsl(197,80%,30%)]" />
             </div>
             <div>
-              <div className="font-bold text-slate-800 text-sm">{section.bookingCards[0].title}</div>
-              <div className="text-slate-500 text-xs">{section.bookingCards[0].desc}</div>
+              <div className="font-extrabold text-slate-800 text-base">{section.bookingCards[0].title}</div>
+              <div className="text-slate-500 text-sm">{section.bookingCards[0].desc}</div>
             </div>
           </div>
-          <div className="flex items-center gap-3 bg-white rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 shadow-sm border border-slate-100">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[hsl(38,90%,90%)] flex items-center justify-center flex-shrink-0">
-              <Anchor className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(35,90%,48%)]" />
+          <div className="glass-panel rounded-2xl sm:rounded-3xl px-5 sm:px-8 py-4 sm:py-5 flex items-center gap-4 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[hsl(38,90%,90%)] to-[hsl(35,90%,80%)] flex items-center justify-center flex-shrink-0 shadow-inner">
+              <Anchor className="w-5 h-5 text-[hsl(35,90%,45%)]" />
             </div>
             <div>
-              <div className="font-bold text-slate-800 text-sm">{section.bookingCards[1].title}</div>
-              <div className="text-slate-500 text-xs">{section.bookingCards[1].desc}</div>
+              <div className="font-extrabold text-slate-800 text-base">{section.bookingCards[1].title}</div>
+              <div className="text-slate-500 text-sm">{section.bookingCards[1].desc}</div>
             </div>
           </div>
         </div>
 
-        {/* Cabin Grid */}
-        <StaggerReveal className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" itemClassName="h-full">
+        {/* Cabin Grid - Modern Card Design */}
+        <StaggerReveal className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8" itemClassName="h-full">
           {cabins.map((cabin) => {
-            const display = cabin as typeof cabin & CabinDisplayFields;
-            return (
-            <div
-              key={display.id}
-              className="h-full bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 flex flex-col"
-            >
-              {/* Image */}
-              <div className="relative h-44 sm:h-52 overflow-hidden">
-                <Image
-                  src={display.image}
-                  alt={display.name}
-                  fill
-                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  className="object-cover transition-transform duration-500 hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-
-                {/* Badges */}
-                <div className="absolute top-2.5 left-2.5 flex gap-1.5 flex-wrap max-w-[70%]">
-                  {display.badge && (
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${badgeStyles[display.badge] || 'bg-slate-700 text-white'}`}>
-                      {display.badge}
-                    </span>
-                  )}
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${display.available ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
-                    {display.available ? 'Available' : 'Booked'}
-                  </span>
-                </div>
-
-                {/* Price badge */}
-                <div className="absolute bottom-2.5 right-2.5 bg-white/95 backdrop-blur-sm rounded-lg sm:rounded-xl px-2.5 py-1">
-                  <span className="text-[hsl(197,80%,28%)] font-bold text-xs sm:text-sm">
-                    {display.priceLabel || `৳${display.pricePerNight.toLocaleString()}`}
-                  </span>
-                  <span className="text-slate-400 text-[10px] sm:text-xs">
-                    {isPadma ? '' : '/রাত'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Body */}
-              <div className="p-4 sm:p-5 flex flex-col flex-1">
-                <h3 className="text-base sm:text-xl font-bold text-slate-800 mb-0.5">{display.name}</h3>
-                <p className="text-slate-400 text-xs sm:text-sm mb-3">{display.nameEn} · {display.size}</p>
-
-                {/* Details */}
-                <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                  <div className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-600">
-                    <BedDouble className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(197,80%,38%)] flex-shrink-0" />
-                    <span className="truncate">{display.bedType}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-600">
-                    <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(197,80%,38%)] flex-shrink-0" />
-                    <span>{display.capacityLabel || `${display.capacity} জন`}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs sm:text-sm">
-                    {display.hasWashroom ? (
-                      <>
-                        <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0" />
-                        <span className="text-slate-600">{isPadma ? 'Washroom support' : 'প্রাইভেট বাথরুম'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-300 flex-shrink-0" />
-                        <span className="text-slate-400">{isPadma ? 'Custom setup' : 'শেয়ার্ড বাথরুম'}</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs sm:text-sm">
-                    {display.hasAC ? (
-                      <>
-                        <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0" />
-                        <span className="text-slate-600">{isPadma ? 'AC support' : 'এসি'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Wind className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 flex-shrink-0" />
-                        <span className="text-slate-500">{isPadma ? 'Open-air' : 'নন-এসি'}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Features */}
-                <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-4">
-                  {display.features.map((f) => (
-                    <span
-                      key={f}
-                      className="bg-[hsl(195,95%,92%)] text-[hsl(197,80%,28%)] text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-medium"
-                    >
-                      {f}
-                    </span>
-                  ))}
-                </div>
-
-                {/* CTA */}
-                <button
-                  onClick={onBookNow}
-                  disabled={!display.available}
-                  className={`mt-auto w-full py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-sm transition-all duration-200 min-h-[44px] ${
-                    display.available
-                      ? 'bg-[hsl(197,80%,30%)] text-white hover:bg-[hsl(197,80%,22%)] hover:shadow-md transform hover:-translate-y-0.5'
-                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                  }`}
-                >
-                  {display.available ? (display.buttonLabel || 'এই কেবিন বুক করুন') : 'Booked Out'}
-                </button>
-              </div>
-            </div>
-          );
+            const display = cabin as any;
+            return <CabinCard key={display.id} display={display} isPadma={isPadma} onBookNow={onBookNow} />;
           })}
         </StaggerReveal>
 
-        {/* Full Boat CTA */}
-        <div className="mt-8 sm:mt-12 bg-gradient-to-br from-[hsl(197,80%,28%)] to-[hsl(173,58%,38%)] rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 text-center text-white">
-          <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3">{section.fullBoatTitle}</h3>
-          <p className="text-white/80 text-sm sm:text-base md:text-lg mb-5 sm:mb-6 max-w-xl mx-auto">
-            {section.fullBoatDescription}
-          </p>
-          <button
-            onClick={onBookNow}
-            className="inline-flex items-center gap-2 bg-[hsl(38,90%,55%)] hover:bg-[hsl(35,90%,48%)] text-white font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:-translate-y-0.5 min-h-[48px]"
-          >
-            <Anchor className="w-5 h-5 flex-shrink-0" />
-            {section.fullBoatButton}
-          </button>
+        {/* Full Boat CTA - Aesthetic Gradient Card */}
+        <div className="mt-12 sm:mt-16 bg-gradient-to-br from-[hsl(197,80%,25%)] via-[hsl(197,80%,32%)] to-[hsl(173,58%,35%)] rounded-[2.5rem] p-8 sm:p-12 md:p-16 text-center text-white relative overflow-hidden shadow-2xl shadow-[hsl(197,80%,30%)]/30">
+          {/* Decorative shapes */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-[hsl(38,90%,55%)]/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+          
+          <div className="relative z-10">
+            <h3 className="text-2xl sm:text-3xl md:text-5xl font-black mb-4 tracking-tight drop-shadow-md">{section.fullBoatTitle}</h3>
+            <p className="text-white/80 text-base sm:text-lg md:text-xl font-medium mb-8 max-w-2xl mx-auto drop-shadow-sm">
+              {section.fullBoatDescription}
+            </p>
+            <button
+              onClick={() => onBookNow(undefined, 'full')}
+              className="inline-flex items-center gap-3 bg-gradient-to-r from-[hsl(38,90%,55%)] to-[hsl(35,90%,48%)] hover:from-[hsl(38,90%,60%)] hover:to-[hsl(35,90%,50%)] text-white font-bold px-8 sm:px-10 py-4 sm:py-5 rounded-full shadow-xl shadow-[hsl(35,90%,48%)]/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 min-h-[56px] text-lg"
+            >
+              <Anchor className="w-5 h-5 flex-shrink-0" />
+              {section.fullBoatButton}
+            </button>
+          </div>
         </div>
       </div>
     </section>

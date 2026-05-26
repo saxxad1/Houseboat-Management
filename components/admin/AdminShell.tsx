@@ -72,25 +72,35 @@ export default function AdminShell({ children }: AdminShellProps) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 text-sm text-slate-600 shadow-sm">
-          Admin session যাচাই হচ্ছে...
+          Verifying Admin session...
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
-      {menuOpen && (
-        <button
-          aria-label="Close menu overlay"
-          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
-          onClick={() => setMenuOpen(false)}
-        />
-      )}
-      <div className="lg:pl-72">
-        <AdminTopbar email={email} onOpenMenu={() => setMenuOpen(true)} />
-        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+    <div className="min-h-screen bg-slate-50/50 text-slate-900 relative">
+      {/* Decorative Background */}
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-[40vw] max-w-[500px] aspect-square rounded-full bg-[hsl(197,80%,90%)]/50 blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[50vw] max-w-[600px] aspect-square rounded-full bg-[hsl(38,90%,90%)]/40 blur-[150px]" />
+      </div>
+
+      <div className="relative z-10 flex h-screen overflow-hidden">
+        <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+        {menuOpen && (
+          <button
+            aria-label="Close menu overlay"
+            className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden transition-all"
+            onClick={() => setMenuOpen(false)}
+          />
+        )}
+        <div className="flex-1 flex flex-col h-screen overflow-hidden lg:pl-[280px]">
+          <AdminTopbar email={email} onOpenMenu={() => setMenuOpen(true)} />
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );

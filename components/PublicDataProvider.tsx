@@ -7,7 +7,7 @@ import {
   packages as fallbackPackages,
   siteConfig as fallbackSiteConfig,
 } from '@/data/houseboatData';
-import { getSeasonalData, normalizeSeason, type SeasonType, type SeasonalContent } from '@/data/seasonalData';
+import { getSeasonalData, normalizeSeason, padmaEventSpaces, type SeasonType, type SeasonalContent } from '@/data/seasonalData';
 import {
   getEffectiveSeasonalData,
   loadPublicHouseboatData,
@@ -16,10 +16,13 @@ import {
   mapRoomsToCabins,
   mapSettingsToSiteConfig,
 } from '@/lib/admin/publicData';
-import type { AvailabilityBlock, WebsiteContent } from '@/types/database';
+import type { AvailabilityBlock, WebsiteContent, TripSlot } from '@/types/database';
 
 type PublicSiteConfig = typeof fallbackSiteConfig & {
   logoUrl?: string;
+  bkashNumber?: string;
+  nagadNumber?: string;
+  bankInfo?: string;
 };
 type PublicCabin = (typeof fallbackCabins)[number];
 type PublicPackage = (typeof fallbackPackages)[number];
@@ -33,6 +36,7 @@ interface PublicDataContextValue {
   packages: PublicPackage[];
   galleryImages: PublicGalleryImage[];
   availability: AvailabilityBlock[];
+  tripSlots: TripSlot[];
   content: WebsiteContent[];
   loading: boolean;
 }
@@ -47,11 +51,30 @@ const fallbackValue: PublicDataContextValue = {
   packages: fallbackPackages,
   galleryImages: fallbackGalleryImages,
   availability: [],
+  tripSlots: [],
   content: [],
   loading: false,
 };
 
 const PublicDataContext = createContext<PublicDataContextValue>(fallbackValue);
+
+function getLocalSeason(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage.getItem('kuhelika-active-season');
+  } catch (e) {
+    return null;
+  }
+}
+
+function setLocalSeason(season: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem('kuhelika-active-season', season);
+  } catch (e) {
+    // ignore
+  }
+}
 
 export function PublicDataProvider({ children }: { children: React.ReactNode }) {
   const [value, setValue] = useState<PublicDataContextValue>(fallbackValue);
@@ -74,17 +97,16 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
           facebook: current.siteConfig.facebook || fallbackSiteConfig.facebook,
           logoUrl: current.siteConfig.logoUrl || '/logo-kuhelika-clean.png',
         },
-        cabins: season === 'padma' ? [...seasonData.eventSpaces] as PublicCabin[] : [...seasonData.cabins] as PublicCabin[],
-        packages: [...seasonData.packages] as PublicPackage[],
-        galleryImages: [...seasonData.gallery.images] as PublicGalleryImage[],
+        cabins: season === 'padma' ? [...seasonData.eventSpaces] as PublicCabin[] : [...fallbackCabins] as PublicCabin[],
+        packages: seasonData.packages.length ? [...seasonData.packages] as PublicPackage[] : [...fallbackPackages] as PublicPackage[],
+        galleryImages: seasonData.gallery.images.length ? [...seasonData.gallery.images] as PublicGalleryImage[] : [...fallbackGalleryImages] as PublicGalleryImage[],
       }));
     };
 
     async function load() {
       const data = await loadPublicHouseboatData();
-      const localSeason = typeof window !== 'undefined'
-        ? normalizeSeason(window.localStorage.getItem('kuhelika-active-season'))
-        : 'haor';
+      const localSeason = normalizeSeason(getLocalSeason());
+      
       if (!mounted || !data) {
         applySeasonFallback(localSeason);
         return;
@@ -96,9 +118,8 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
       const mappedPackages = mapPackagesToPublic(data.packages, activeSeason);
       const mappedGallery = mapGalleryToPublic(data.gallery, activeSeason);
       const mappedSettings = mapSettingsToSiteConfig(data.settings, seasonData);
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('kuhelika-active-season', activeSeason);
-      }
+      
+      setLocalSeason(activeSeason);
 
       setValue({
         activeSeason,
@@ -106,10 +127,11 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
         siteConfig: mappedSettings,
         cabins: mappedRooms.length
           ? mappedRooms as PublicCabin[]
-          : (activeSeason === 'padma' ? [...seasonData.eventSpaces] : [...seasonData.cabins]) as PublicCabin[],
-        packages: mappedPackages.length ? mappedPackages as PublicPackage[] : [...seasonData.packages] as PublicPackage[],
+          : (activeSeason === 'padma' ? [...seasonData.eventSpaces] : fallbackCabins) as PublicCabin[],
+        packages: mappedPackages.length ? mappedPackages as PublicPackage[] : (seasonData.packages.length ? [...seasonData.packages] : [...fallbackPackages]) as PublicPackage[],
         galleryImages: mappedGallery.length ? mappedGallery as PublicGalleryImage[] : [...seasonData.gallery.images] as PublicGalleryImage[],
         availability: data.availability,
+        tripSlots: data.trip_slots || [],
         content: data.content,
         loading: false,
       });
@@ -129,25 +151,32 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     const handleSeasonChange = () => {
-      const season = normalizeSeason(window.localStorage.getItem('kuhelika-active-season'));
+      const season = normalizeSeason(getLocalSeason());
       const seasonData = getSeasonalData(season);
-      setValue((current) => ({
-        ...current,
-        activeSeason: season,
-        seasonData,
-        siteConfig: {
-          ...current.siteConfig,
-          ...seasonData.site,
-          phone: current.siteConfig.phone || fallbackSiteConfig.phone,
-          whatsapp: current.siteConfig.whatsapp || fallbackSiteConfig.whatsapp,
-          email: current.siteConfig.email || fallbackSiteConfig.email,
-          facebook: current.siteConfig.facebook || fallbackSiteConfig.facebook,
-          logoUrl: current.siteConfig.logoUrl || '/logo-kuhelika-clean.png',
-        },
-        cabins: season === 'padma' ? [...seasonData.eventSpaces] as PublicCabin[] : [...seasonData.cabins] as PublicCabin[],
-        packages: [...seasonData.packages] as PublicPackage[],
-        galleryImages: [...seasonData.gallery.images] as PublicGalleryImage[],
-      }));
+      
+      setValue((current) => {
+        return {
+          ...current,
+          activeSeason: season,
+          seasonData,
+          siteConfig: {
+            ...current.siteConfig,
+            ...seasonData.site,
+            phone: current.siteConfig.phone || fallbackSiteConfig.phone,
+            whatsapp: current.siteConfig.whatsapp || fallbackSiteConfig.whatsapp,
+            email: current.siteConfig.email || fallbackSiteConfig.email,
+            facebook: current.siteConfig.facebook || fallbackSiteConfig.facebook,
+            logoUrl: current.siteConfig.logoUrl || '/logo-kuhelika-clean.png',
+          },
+          galleryImages: current.galleryImages,
+          cabins: current.cabins.length > 0 && current.cabins !== fallbackCabins && current.cabins !== padmaEventSpaces
+            ? current.cabins 
+            : (season === 'padma' ? [...seasonData.eventSpaces] as PublicCabin[] : [...fallbackCabins] as PublicCabin[]),
+          packages: current.packages.length > 0 && current.packages !== fallbackPackages 
+            ? current.packages 
+            : (seasonData.packages.length ? [...seasonData.packages] : [...fallbackPackages]) as PublicPackage[],
+        };
+      });
     };
 
     window.addEventListener('kuhelika-season-change', handleSeasonChange);

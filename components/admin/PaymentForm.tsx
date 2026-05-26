@@ -90,8 +90,8 @@ export default function PaymentForm({ open, onOpenChange, bookings, payment, onS
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{payment ? 'Edit payment' : 'নতুন পেমেন্ট'}</DialogTitle>
-          <DialogDescription>Payment যোগ করলে booking advance/due/payment status auto update হবে।</DialogDescription>
+          <DialogTitle>{payment ? 'Edit payment' : 'New Payment'}</DialogTitle>
+          <DialogDescription>Adding payment will auto update booking advance/due/payment status.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <div className="space-y-2">

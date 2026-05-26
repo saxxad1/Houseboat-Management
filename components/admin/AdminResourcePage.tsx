@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Edit, Plus, Search, Trash2, Upload } from 'lucide-react';
+import { Edit, Plus, Search, Trash2, Upload, Video } from 'lucide-react';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,12 +36,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { deleteRow, listRows, saveRow, type AdminRow } from '@/lib/admin/data';
 import { statusColors } from '@/lib/admin/constants';
 import { uploadHouseboatFile } from '@/lib/supabase/storage';
+import { isVideoUrl } from '@/lib/videoUtils';
 import type { AdminTableName } from '@/types/database';
 
 export type ResourceField = {
   name: string;
   label: string;
-  type?: 'text' | 'textarea' | 'number' | 'date' | 'select' | 'boolean' | 'tags' | 'image';
+  type?: 'text' | 'textarea' | 'number' | 'date' | 'select' | 'boolean' | 'tags' | 'image' | 'images';
   options?: { value: string; label: string }[];
   placeholder?: string;
   required?: boolean;
@@ -52,7 +54,7 @@ export type ResourceField = {
 export type ResourceColumn = {
   key: string;
   label: string;
-  type?: 'money' | 'status' | 'boolean' | 'image' | 'date' | 'tags';
+  type?: 'money' | 'status' | 'boolean' | 'image' | 'images' | 'date' | 'tags';
 };
 
 interface AdminResourcePageProps {
@@ -135,7 +137,20 @@ function normalizeForm(form: Record<string, unknown>, fields: ResourceField[]) {
         .map((item) => item.trim())
         .filter(Boolean);
     }
+    if (field.type === 'select' && value === 'none') {
+      next[field.name] = null;
+    }
   });
+
+  // Hack for capacity: allow "2-3" strings to be saved in an integer column by encoding it
+  if ('capacity' in next && typeof next.capacity === 'string' && next.capacity.includes('-')) {
+    const parts = next.capacity.split('-');
+    if (parts.length === 2 && !isNaN(Number(parts[0])) && !isNaN(Number(parts[1]))) {
+      next.capacity = parseInt(parts[0], 10) * 1000 + parseInt(parts[1], 10);
+    }
+  } else if ('capacity' in next) {
+    next.capacity = parseInt(String(next.capacity).replace(/\D/g, ''), 10) || 2;
+  }
 
   return next;
 }
@@ -143,10 +158,22 @@ function normalizeForm(form: Record<string, unknown>, fields: ResourceField[]) {
 function renderCell(row: Record<string, unknown>, column: ResourceColumn) {
   const value = row[column.key];
 
-  if (column.type === 'image') {
-    return value ? (
+  if (column.type === 'image' || column.type === 'images') {
+    const images = column.type === 'images' ? valueToString(value).split(',').filter(Boolean) : [valueToString(value)].filter(Boolean);
+    const firstImage = images[0];
+
+    if (firstImage && isVideoUrl(firstImage)) {
+      return (
+        <div className="h-12 w-16 rounded-md bg-slate-100 flex flex-col items-center justify-center border border-slate-200">
+          <Video className="w-5 h-5 text-slate-500 mb-0.5" />
+          <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Video</span>
+        </div>
+      );
+    }
+
+    return firstImage ? (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={String(value)} alt="" className="h-12 w-16 rounded-md object-cover" />
+      <img src={firstImage} alt="Resource preview" className="h-12 w-16 rounded-md object-cover" />
     ) : (
       <span className="text-slate-400">No image</span>
     );
@@ -176,6 +203,11 @@ function renderCell(row: Record<string, unknown>, column: ResourceColumn) {
     );
   }
 
+  // Decode capacity
+  if (column.key === 'capacity' && typeof value === 'number' && value >= 1000) {
+    return <span className="line-clamp-2">{`${Math.floor(value / 1000)}-${value % 1000}`}</span>;
+  }
+
   return <span className="line-clamp-2">{valueToString(value) || '-'}</span>;
 }
 
@@ -188,7 +220,8 @@ export default function AdminResourcePage({
   searchKeys = [],
   addLabel = 'Add new',
   storageFolder,
-}: AdminResourcePageProps) {
+  renderTop,
+}: AdminResourcePageProps & { renderTop?: (rows: AdminRow[]) => React.ReactNode }) {
   const [rows, setRows] = useState<AdminRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -225,7 +258,14 @@ export default function AdminResourcePage({
 
   const edit = (row?: AdminRow) => {
     setMessage('');
-    setForm(row ? { ...getDefaultForm(fields), ...(row as Record<string, unknown>) } : getDefaultForm(fields));
+    const newForm = row ? { ...getDefaultForm(fields), ...(row as Record<string, unknown>) } : getDefaultForm(fields);
+    
+    // Decode capacity
+    if (newForm.capacity && typeof newForm.capacity === 'number' && newForm.capacity >= 1000) {
+      newForm.capacity = `${Math.floor(newForm.capacity / 1000)}-${newForm.capacity % 1000}`;
+    }
+    
+    setForm(newForm);
     setOpen(true);
   };
 
@@ -271,21 +311,39 @@ export default function AdminResourcePage({
     }
   };
 
-  const handleUpload = async (fieldName: string, file?: File) => {
+  const handleUpload = async (fieldName: string, file?: File, isMultiple?: boolean) => {
     if (!file) return;
     setSaving(true);
+    const toastId = toast.loading('Uploading image...');
     try {
       const url = await uploadHouseboatFile('houseboat-media', storageFolder || table, file);
-      setForm((current) => ({ ...current, [fieldName]: url }));
+      setForm((current) => {
+        if (isMultiple) {
+          const existing = valueToString(current[fieldName]).split(',').filter(Boolean);
+          return { ...current, [fieldName]: [...existing, url].join(',') };
+        }
+        return { ...current, [fieldName]: url };
+      });
+      toast.success('Image uploaded successfully', { id: toastId });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Upload failed');
+      const errorMsg = error instanceof Error ? error.message : 'Upload failed';
+      setMessage(errorMsg);
+      toast.error(errorMsg, { id: toastId });
     } finally {
       setSaving(false);
     }
   };
 
+  const removeImage = (fieldName: string, indexToRemove: number) => {
+    setForm((current) => {
+      const existing = valueToString(current[fieldName]).split(',').filter(Boolean);
+      return { ...current, [fieldName]: existing.filter((_, i) => i !== indexToRemove).join(',') };
+    });
+  };
+
   return (
     <div className="space-y-5">
+      {renderTop?.(rows)}
       <Card>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -373,10 +431,11 @@ export default function AdminResourcePage({
               }
 
               if (field.type === 'select') {
+                const selectValue = value === null || value === undefined || value === '' ? (field.options?.[0]?.value || '') : valueToString(value);
                 return (
                   <div key={field.name} className={`space-y-2 ${commonClass}`}>
                     <Label>{field.label}</Label>
-                    <Select value={valueToString(value)} onValueChange={(next) => setForm((current) => ({ ...current, [field.name]: next }))}>
+                    <Select value={selectValue} onValueChange={(next) => setForm((current) => ({ ...current, [field.name]: next }))}>
                       <SelectTrigger><SelectValue placeholder={field.placeholder || 'Select'} /></SelectTrigger>
                       <SelectContent>
                         {(field.options || []).map((option) => (
@@ -410,8 +469,65 @@ export default function AdminResourcePage({
                       />
                       <label className="inline-flex cursor-pointer items-center justify-center rounded-md border border-slate-200 px-3 text-sm hover:bg-slate-50">
                         <Upload className="h-4 w-4" />
-                        <input type="file" accept="image/*" className="hidden" onChange={(event) => handleUpload(field.name, event.target.files?.[0])} />
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={async (event) => {
+                            const file = event.target.files?.[0];
+                            if (file) {
+                              await handleUpload(field.name, file);
+                            }
+                            event.target.value = '';
+                          }} 
+                        />
                       </label>
+                    </div>
+                    <p className="text-[10px] text-slate-500 leading-tight">Upload an image or paste a YouTube/Facebook video link.</p>
+                  </div>
+                );
+              }
+
+              if (field.type === 'images') {
+                const images = valueToString(value).split(',').filter(Boolean);
+                return (
+                  <div key={field.name} className={`space-y-3 ${commonClass}`}>
+                    <Label>{field.label}</Label>
+                    {images.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {images.map((img, idx) => (
+                          <div key={idx} className="relative group aspect-video rounded-md overflow-hidden bg-slate-100 border border-slate-200">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={img} alt="Image preview" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(field.name, idx)}
+                              className="absolute top-1 right-1 p-1 bg-white/90 rounded-md text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white shadow-sm"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <label className="inline-flex cursor-pointer items-center justify-center rounded-md bg-slate-100 px-4 py-2 text-sm font-medium hover:bg-slate-200 transition-colors">
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload Image
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={async (event) => {
+                            const file = event.target.files?.[0];
+                            if (file) {
+                              await handleUpload(field.name, file, true);
+                            }
+                            event.target.value = ''; // Reset input to allow selecting the same file again
+                          }} 
+                        />
+                      </label>
+                      <span className="text-xs text-slate-500">You can upload multiple images (one by one).</span>
                     </div>
                   </div>
                 );

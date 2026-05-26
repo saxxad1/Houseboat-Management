@@ -7,6 +7,12 @@ import { Input } from '@/components/ui/input';
 import { fetchAdminDataset } from '@/lib/admin/data';
 import type { Booking, Expense, Income, Room, TourPackage } from '@/types/database';
 
+import ReportsCharts from '@/components/admin/ReportsCharts';
+
+function getReportBookingDate(booking: Booking) {
+  return booking.season_type === 'padma' && booking.event_date ? booking.event_date : booking.check_in_date;
+}
+
 export default function ReportsAdminPage() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -35,7 +41,10 @@ export default function ReportsAdminPage() {
     [expenses, fromDate, toDate]
   );
   const rangeBookings = useMemo(
-    () => bookings.filter((item) => (!fromDate || item.check_in_date >= fromDate) && (!toDate || item.check_in_date <= toDate)),
+    () => bookings.filter((item) => {
+      const bookingDate = getReportBookingDate(item);
+      return (!fromDate || bookingDate >= fromDate) && (!toDate || bookingDate <= toDate);
+    }),
     [bookings, fromDate, toDate]
   );
 
@@ -47,37 +56,115 @@ export default function ReportsAdminPage() {
     const roomCounts = rooms.map((room) => ({
       room: room.name,
       bookings: rangeBookings.filter((booking) => booking.room_id === room.id).length,
-    })).sort((a, b) => b.bookings - a.bookings);
+    })).filter(r => r.bookings > 0).sort((a, b) => b.bookings - a.bookings).slice(0, 5); // top 5
     const packageCounts = packages.map((pkg) => ({
       package: pkg.title,
       bookings: rangeBookings.filter((booking) => booking.package_id === pkg.id).length,
-    })).sort((a, b) => b.bookings - a.bookings);
+    })).filter(p => p.bookings > 0).sort((a, b) => b.bookings - a.bookings).slice(0, 5); // top 5
     return { roomCounts, packageCounts };
   }, [packages, rangeBookings, rooms]);
 
   const dailyRows = Array.from(new Set([...rangeIncome.map((item) => item.income_date), ...rangeExpenses.map((item) => item.expense_date)])).sort().map((date) => {
-    const dayIncome = rangeIncome.filter((item) => item.income_date === date).reduce((sum, item) => sum + Number(item.amount), 0);
-    const dayExpense = rangeExpenses.filter((item) => item.expense_date === date).reduce((sum, item) => sum + Number(item.amount), 0);
+    const dayIncome = rangeIncome.filter((item) => item.income_date === date).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+    const dayExpense = rangeExpenses.filter((item) => item.expense_date === date).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
     return { date, income: dayIncome, expense: dayExpense, profit: dayIncome - dayExpense };
   });
 
+  const incomeByCategory = useMemo(() => {
+    const grouped = rangeIncome.reduce((acc, item) => {
+      const cat = item.category || 'other';
+      acc[cat] = (acc[cat] || 0) + (Number(item.amount) || 0);
+      return acc;
+    }, {} as Record<string, number>);
+    return Object.entries(grouped).filter((entry) => entry[1] > 0).map(([category, amount]) => ({ category, amount })).sort((a, b) => b.amount - a.amount);
+  }, [rangeIncome]);
+
+  const expenseByCategory = useMemo(() => {
+    const grouped = rangeExpenses.reduce((acc, item) => {
+      const cat = item.category || 'other';
+      acc[cat] = (acc[cat] || 0) + (Number(item.amount) || 0);
+      return acc;
+    }, {} as Record<string, number>);
+    return Object.entries(grouped).filter((entry) => entry[1] > 0).map(([category, amount]) => ({ category, amount })).sort((a, b) => b.amount - a.amount);
+  }, [rangeExpenses]);
+
+  const bookingStatusData = useMemo(() => {
+    const grouped = rangeBookings.reduce((acc, booking) => {
+      const key = booking.booking_status || 'pending';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    return Object.entries(grouped).filter((entry) => entry[1] > 0).map(([name, value]) => ({ name, value }));
+  }, [rangeBookings]);
+
+  const paymentStatusData = useMemo(() => {
+    const grouped = rangeBookings.reduce((acc, booking) => {
+      const key = booking.payment_status || 'unpaid';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    return Object.entries(grouped).filter((entry) => entry[1] > 0).map(([name, value]) => ({ name, value }));
+  }, [rangeBookings]);
+
+  const seasonData = useMemo(() => {
+    const grouped = rangeBookings.reduce((acc, booking) => {
+      const key = booking.season_type || 'haor';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    return Object.entries(grouped).filter((entry) => entry[1] > 0).map(([name, value]) => ({ name, value }));
+  }, [rangeBookings]);
+
   return (
-    <div className="space-y-5">
-      <Card>
-        <CardContent className="grid gap-3 p-4 sm:grid-cols-5">
-          <Input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
-          <Input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
-          <div className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">Income: ৳{totalIncome.toLocaleString()}</div>
-          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">Expense: ৳{totalExpense.toLocaleString()}</div>
-          <div className="rounded-lg bg-sky-50 p-3 text-sm text-sky-700">Profit: ৳{(totalIncome - totalExpense).toLocaleString()}</div>
+    <div className="space-y-6">
+      {/* Filter and Summary Card */}
+      <Card className="border-0 bg-white/70 backdrop-blur-xl shadow-lg shadow-slate-200/50 rounded-3xl overflow-hidden">
+        <CardContent className="p-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 items-end">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Start Date</label>
+              <Input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} className="bg-white/50 border-slate-200 shadow-inner rounded-xl" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">End Date</label>
+              <Input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} className="bg-white/50 border-slate-200 shadow-inner rounded-xl" />
+            </div>
+            
+            <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 p-4 shadow-sm flex flex-col justify-center">
+              <span className="text-[10px] font-bold text-emerald-600/80 uppercase tracking-wider">Total Income</span>
+              <span className="text-xl font-black text-emerald-700 tracking-tight">৳{totalIncome.toLocaleString()}</span>
+            </div>
+            
+            <div className="rounded-2xl bg-gradient-to-br from-rose-50 to-red-50 border border-rose-100 p-4 shadow-sm flex flex-col justify-center">
+              <span className="text-[10px] font-bold text-rose-600/80 uppercase tracking-wider">Total Expense</span>
+              <span className="text-xl font-black text-rose-700 tracking-tight">৳{totalExpense.toLocaleString()}</span>
+            </div>
+            
+            <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-blue-50 border border-sky-100 p-4 shadow-sm flex flex-col justify-center">
+              <span className="text-[10px] font-bold text-sky-600/80 uppercase tracking-wider">Net Profit</span>
+              <span className="text-xl font-black text-sky-700 tracking-tight">৳{(totalIncome - totalExpense).toLocaleString()}</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Visual Analytics */}
+      <ReportsCharts 
+        trendData={dailyRows} 
+        roomData={mostBooked.roomCounts} 
+        packageData={mostBooked.packageCounts} 
+        incomeByCategory={incomeByCategory}
+        expenseByCategory={expenseByCategory}
+        bookingStatusData={bookingStatusData}
+        paymentStatusData={paymentStatusData}
+        seasonData={seasonData}
+      />
 
       <ReportTable title="Daily income expense profit" rows={dailyRows} />
       <ReportTable title="Booking report" rows={rangeBookings.map((booking) => ({
         code: booking.booking_code,
-        check_in: booking.check_in_date,
-        check_out: booking.check_out_date,
+        date: getReportBookingDate(booking),
+        check_out: booking.season_type === 'padma' ? booking.event_slot || 'custom' : booking.check_out_date,
         guests: booking.number_of_guests,
         total: booking.total_amount,
         due: booking.due_amount,
@@ -89,16 +176,10 @@ export default function ReportsAdminPage() {
         payment_status: booking.payment_status,
         booking_status: booking.booking_status,
       }))} />
-      <ReportTable title="Most booked room" rows={mostBooked.roomCounts} />
-      <ReportTable title="Most booked package" rows={mostBooked.packageCounts} />
-      <ReportTable title="Cancelled bookings" rows={rangeBookings.filter((booking) => booking.booking_status === 'cancelled').map((booking) => ({
-        code: booking.booking_code,
-        date: booking.check_in_date,
-        amount: booking.total_amount,
-      }))} />
-      <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-600 print:block">
-        Print/export layout: browser print থেকে PDF বানানো যাবে। CSV export প্রতিটি table থেকে করা যাবে।
-        Total due in range: ৳{due.toLocaleString()}.
+      
+      <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-5 text-sm text-indigo-800 shadow-sm print:block backdrop-blur-sm">
+        <strong className="font-bold">Print/export layout:</strong> Print from browser to create PDF. CSV export is available from each table.
+        <div className="mt-2 font-black text-lg">Total due in range: ৳{due.toLocaleString()}</div>
       </div>
     </div>
   );

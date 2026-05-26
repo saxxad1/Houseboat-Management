@@ -18,7 +18,7 @@ export default function AdminSidebar({ open = true, onClose }: AdminSidebarProps
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-50 w-72 border-r border-slate-200 bg-white transition-transform duration-200 lg:translate-x-0',
+        'fixed inset-y-0 left-0 z-50 w-[280px] bg-white/80 backdrop-blur-xl border-r border-white shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-out lg:translate-x-0',
         open ? 'translate-x-0' : '-translate-x-full'
       )}
     >
@@ -47,26 +47,28 @@ export default function AdminSidebar({ open = true, onClose }: AdminSidebarProps
                 href={item.href}
                 onClick={onClose}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-300 relative overflow-hidden',
                   active
-                    ? 'bg-[hsl(197,80%,30%)] text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ? 'bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,35%)] text-white shadow-md shadow-[hsl(197,80%,30%)]/20'
+                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
                 )}
               >
-                <Icon className="h-4 w-4 flex-shrink-0" />
-                <span>{item.labelBn}</span>
-                <span className={cn('ml-auto text-[10px]', active ? 'text-white/65' : 'text-slate-400')}>
-                  {item.label}
-                </span>
+                <Icon className={cn("h-4 w-4 flex-shrink-0 transition-transform duration-300 group-hover:scale-110", active ? "text-white" : "text-slate-400 group-hover:text-[hsl(197,80%,30%)]")} />
+                <span className="relative z-10">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-t border-slate-100 p-4 text-xs text-slate-500">
-          <div className="rounded-lg bg-slate-50 p-3">
-            Single houseboat admin
-            <div className="mt-1 font-semibold text-slate-700">কুহেলিকা</div>
+        <div className="p-4 border-t border-white/50 bg-gradient-to-t from-slate-50/80 to-transparent">
+          <div className="rounded-xl bg-white/60 backdrop-blur-md border border-white p-3 shadow-sm flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] flex items-center justify-center shadow-inner">
+              <span className="text-white font-bold text-xs">K</span>
+            </div>
+            <div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Houseboat Admin</div>
+              <div className="font-black text-slate-800 text-sm">Kuhelika</div>
+            </div>
           </div>
         </div>
       </div>

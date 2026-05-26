@@ -9,7 +9,7 @@ export async function uploadHouseboatFile(bucket: string, folder: string, file: 
 
   const { data, error: sessionError } = await supabase.auth.getSession();
   if (sessionError || !data.session?.access_token) {
-    throw new Error('Admin session expired. আবার login করুন।');
+    throw new Error('Admin session expired. Please login again.');
   }
 
   const formData = new FormData();

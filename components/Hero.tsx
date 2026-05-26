@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import { MapPin, BedDouble, Users, Banknote, ChevronDown, CalendarCheck } from 'lucide-react';
 import { usePublicData } from '@/components/PublicDataProvider';
+import { motion, useScroll, useTransform, useReducedMotion, type Variants } from 'framer-motion';
+import { useRef } from 'react';
 
 interface HeroProps {
   onBookNow: () => void;
@@ -10,6 +12,14 @@ interface HeroProps {
 
 export default function Hero({ onBookNow }: HeroProps) {
   const { siteConfig, cabins, seasonData } = usePublicData();
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"]
+  });
+  const reduceMotion = useReducedMotion();
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", reduceMotion ? "0%" : "50%"]);
+  const opacity = useTransform(scrollYProgress, [0, 1], [1, reduceMotion ? 1 : 0]);
 
   const scrollToSection = (id: string) => {
     const el = document.querySelector(id);
@@ -19,14 +29,12 @@ export default function Hero({ onBookNow }: HeroProps) {
     }
   };
 
-  const startingPrice = cabins.length
-    ? `৳${Math.min(...cabins.map((cabin) => cabin.pricePerNight)).toLocaleString()}`
-    : siteConfig.startingPrice;
+  const startingPrice = siteConfig.startingPrice || '৳10,000';
 
   const defaultStats = [
-    { icon: BedDouble, value: `${cabins.length || siteConfig.totalCabins} টি`, label: 'Premium Cabin' },
-    { icon: Users, value: `${cabins.reduce((sum, cabin) => sum + cabin.capacity, 0) || siteConfig.totalCapacity} জন`, label: 'ক্যাপাসিটি' },
-    { icon: Banknote, value: startingPrice, label: 'থেকে শুরু' },
+    { icon: BedDouble, value: '8', label: 'Total Rooms' },
+    { icon: Users, value: '24 Persons', label: 'Maximum Capacity' },
+    { icon: CalendarCheck, value: '1 Night 2 Days', label: 'Trip Duration' },
     { icon: MapPin, value: 'Tanguar Haor', label: 'Sunamganj' },
   ];
   const stats = (seasonData.hero.stats || defaultStats).map((stat, index) => ({
@@ -34,95 +42,132 @@ export default function Hero({ onBookNow }: HeroProps) {
     ...stat,
   }));
 
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.1,
+      }
+    }
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <section id="home" className="relative min-h-screen flex flex-col">
-      {/* Background */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/hero-kuhelika-houseboat.jpg"
-          alt="কুহেলিকা হাউসবোট টাঙ্গুয়ার হাওরে"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/27 to-black/56" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(197,80%,8%)]/60 via-[hsl(197,70%,12%)]/24 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/24 via-transparent to-black/14" />
-      </div>
+    <section ref={ref} id="home" className="relative min-h-screen flex flex-col overflow-hidden bg-black">
+      {/* Background with Parallax */}
+      <motion.div style={{ y, opacity }} className="absolute inset-0 z-0">
+        <motion.div
+          initial={{ scale: reduceMotion ? 1 : 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 3, ease: "easeOut" }}
+          className="absolute inset-0"
+        >
+          <Image
+            src="/hero-kuhelika-houseboat.jpg"
+            alt="Kuhelika Houseboat in Tanguar Haor"
+            fill
+            priority
+            quality={80}
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+        </motion.div>
+        {/* Improved aesthetic gradients */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-[hsl(197,80%,10%)]/95" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(197,80%,15%)]/80 via-transparent to-transparent" />
+      </motion.div>
 
       {/* Content */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center px-4 sm:px-6 pt-28 pb-10 max-w-7xl mx-auto w-full">
-        <div
-          className="transition-all duration-1000 opacity-100 translate-y-0"
+      <div className="relative z-10 flex-1 flex flex-col justify-center px-4 sm:px-6 pt-32 pb-16 max-w-7xl mx-auto w-full">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="w-full"
         >
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-black/30 backdrop-blur-md border border-white/35 rounded-full px-3 py-1.5 mb-5">
-            <MapPin className="w-3.5 h-3.5 text-[hsl(38,90%,65%)] flex-shrink-0" />
-            <span className="text-white text-xs sm:text-sm font-semibold truncate text-shadow-soft">{seasonData.hero.locationBadge}</span>
-          </div>
+          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full px-4 py-2 mb-6 border border-white/50 text-white bg-transparent">
+            <MapPin className="w-4 h-4 text-[hsl(38,90%,60%)] flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-wide uppercase">{seasonData.hero.locationBadge}</span>
+          </motion.div>
 
           {/* Title */}
-          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-3 max-w-4xl text-shadow-strong">
-            {seasonData.hero.title}
-          </h1>
-          <p className="text-lg sm:text-2xl md:text-3xl text-[hsl(38,95%,72%)] font-bold mb-4 max-w-3xl leading-snug text-shadow-strong">
+          <motion.h1 variants={itemVariants} className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-4 text-shadow-strong">
+            <span className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black font-serif italic text-white leading-[1.1] tracking-tight">{seasonData.hero.title}</span>
+            <span className="text-2xl sm:text-3xl md:text-4xl text-white/90 italic font-serif font-medium tracking-wide">- An Aesthetic Water Villa</span>
+          </motion.h1>
+          
+          <motion.p variants={itemVariants} className="text-xl sm:text-3xl md:text-4xl text-[hsl(38,95%,65%)] font-bold mb-6 max-w-3xl leading-snug text-shadow-strong drop-shadow-lg">
             {seasonData.hero.subtitle}
-          </p>
-          <p className="text-white/95 text-sm sm:text-base md:text-lg font-medium max-w-2xl leading-relaxed mb-8 text-shadow-soft">
+          </motion.p>
+          
+          <motion.p variants={itemVariants} className="text-white/90 text-base sm:text-lg md:text-xl font-medium max-w-2xl leading-relaxed mb-10 text-shadow-soft">
             {seasonData.hero.description}
-          </p>
+          </motion.p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col xs:flex-row gap-3 mb-10 max-w-sm xs:max-w-none">
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 mb-16 max-w-md sm:max-w-none">
             <button
               onClick={onBookNow}
-              className="flex-1 xs:flex-none px-6 py-3.5 sm:px-8 sm:py-4 bg-[hsl(38,90%,55%)] hover:bg-[hsl(35,90%,48%)] text-white font-bold text-base sm:text-lg rounded-full shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px]"
+              className="flex-1 sm:flex-none px-8 py-4 bg-gradient-to-r from-[hsl(38,90%,55%)] to-[hsl(35,90%,45%)] hover:from-[hsl(38,90%,60%)] hover:to-[hsl(35,90%,50%)] text-white font-bold text-lg rounded-full shadow-xl shadow-[hsl(35,90%,48%)]/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2"
             >
               <CalendarCheck className="w-5 h-5 flex-shrink-0" />
               {seasonData.hero.primaryCta}
             </button>
             <button
               onClick={() => scrollToSection(seasonData.hero.secondaryTarget)}
-              className="flex-1 xs:flex-none px-6 py-3.5 sm:px-8 sm:py-4 bg-black/25 hover:bg-black/35 backdrop-blur-md text-white font-bold text-base sm:text-lg rounded-full border border-white/40 hover:border-white/60 transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px] text-shadow-soft"
+              className="flex-1 sm:flex-none px-8 py-4 glass hover:bg-white/20 text-white font-bold text-lg rounded-full transition-all duration-300 flex items-center justify-center gap-2 group border-white/30"
             >
               {seasonData.hero.secondaryCta}
+              <ChevronDown className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
             </button>
-          </div>
+          </motion.div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 max-w-xs sm:max-w-none">
+          {/* Stats Glassmorphism Grid */}
+          <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 max-w-4xl">
             {stats.map((stat, i) => {
               const Icon = stat.icon;
               return (
                 <div
                   key={i}
-                  className="bg-[rgba(5,24,30,0.42)] backdrop-blur-xl border border-white/30 rounded-xl sm:rounded-2xl p-3 text-center hover:bg-[rgba(5,24,30,0.52)] transition-all duration-200"
+                  className="glass-card !bg-white/5 !border-white/10 hover:!bg-white/10 hover:!border-white/20 rounded-2xl p-4 sm:p-5 flex flex-col items-center sm:items-start text-center sm:text-left group"
                 >
-                  <div className="flex justify-center mb-1.5">
-                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-[hsl(197,80%,30%)]/80 flex items-center justify-center">
-                      <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-                    </div>
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-[hsl(197,80%,40%)]/80 to-[hsl(197,80%,20%)]/80 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-inner border border-white/10">
+                    <Icon className="w-5 h-5 text-white" />
                   </div>
-                  <div className="text-white font-bold text-sm sm:text-base leading-none mb-1 text-shadow-soft">{stat.value}</div>
-                  <div className="text-white/90 text-[10px] sm:text-xs font-medium leading-tight text-shadow-soft">{stat.label}</div>
+                  <div className="text-white font-black text-xl sm:text-2xl leading-none mb-1 text-shadow-strong">{stat.value}</div>
+                  <div className="text-white/60 text-[10px] sm:text-xs font-bold uppercase tracking-wider">{stat.label}</div>
                 </div>
               );
             })}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
 
       {/* Scroll indicator */}
-      <div className="relative z-10 flex justify-center pb-6">
-        <button
-          onClick={() => scrollToSection('#about')}
-          className="flex flex-col items-center gap-1 text-white/80 hover:text-white transition-colors text-shadow-soft"
-        >
-          <span className="text-[11px] sm:text-xs">নিচে স্ক্রোল করুন</span>
-          <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 animate-bounce" />
-        </button>
-      </div>
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5, duration: 1 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex justify-center pointer-events-none"
+      >
+        <div className="flex flex-col items-center gap-2 text-white/60">
+          <span className="text-[10px] sm:text-xs font-medium uppercase tracking-widest">Scroll</span>
+          <div className="w-5 h-8 sm:w-6 sm:h-10 border-2 border-white/30 rounded-full flex justify-center p-1">
+            <motion.div 
+              animate={{ y: [0, 12, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              className="w-1.5 h-2 bg-white rounded-full"
+            />
+          </div>
+        </div>
+      </motion.div>
     </section>
   );
 }

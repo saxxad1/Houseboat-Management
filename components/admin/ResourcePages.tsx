@@ -13,13 +13,13 @@ export function RoomsAdminPage() {
   return (
     <AdminResourcePage
       table="rooms"
-      title="রুম/কেবিন তালিকা"
-      description="কেবিনের ছবি, দাম, ক্যাপাসিটি, AC ও washroom সুবিধা ম্যানেজ করুন।"
-      addLabel="নতুন কেবিন"
+      title="Room/Cabin List"
+      description="Manage cabin photos, price, capacity, AC, and washroom facilities."
+      addLabel="New Cabin"
       storageFolder="rooms"
       searchKeys={['name', 'slug', 'bed_type']}
       columns={[
-        { key: 'image_url', label: 'Image', type: 'image' },
+        { key: 'image_url', label: 'Image', type: 'images' },
         { key: 'season_type', label: 'Season', type: 'status' },
         { key: 'name', label: 'Name' },
         { key: 'capacity', label: 'Capacity' },
@@ -33,11 +33,13 @@ export function RoomsAdminPage() {
         { name: 'slug', label: 'Slug', required: true },
         { name: 'season_type', label: 'Season', type: 'select', options: [{ value: 'haor', label: 'Haor cabin' }, { value: 'padma', label: 'Padma event space' }] },
         { name: 'display_mode', label: 'Display mode', type: 'select', options: [{ value: 'cabin', label: 'Cabin' }, { value: 'event_space', label: 'Event space' }] },
-        { name: 'image_url', label: 'Room image', type: 'image', colSpan: 'full' },
+        { name: 'image_url', label: 'Room Images (Up to 4)', type: 'images', colSpan: 'full' },
         { name: 'description', label: 'Description', type: 'textarea' },
         { name: 'bed_type', label: 'Bed type' },
-        { name: 'capacity', label: 'Capacity', type: 'number', defaultValue: 2, min: 1 },
+        { name: 'capacity', label: 'Capacity (e.g. "2" or "2-3")', type: 'text', defaultValue: '2' },
         { name: 'price_per_night', label: 'Price / starting quote', type: 'number', defaultValue: 0, min: 0 },
+        { name: 'price_2_pax', label: 'Price for 2 Pax (Per Person)', type: 'number', defaultValue: 0, min: 0 },
+        { name: 'price_3_pax', label: 'Price for 3 Pax (Per Person)', type: 'number', defaultValue: 0, min: 0 },
         { name: 'has_ac', label: 'AC available', type: 'boolean' },
         { name: 'has_attached_washroom', label: 'Attached washroom', type: 'boolean' },
         { name: 'facilities', label: 'Facilities (comma separated)', type: 'tags', colSpan: 'full' },
@@ -48,13 +50,16 @@ export function RoomsAdminPage() {
   );
 }
 
+import PackagesSectionToggle from '@/components/admin/PackagesSectionToggle';
+
 export function PackagesAdminPage() {
   return (
     <AdminResourcePage
       table="packages"
-      title="প্যাকেজ তালিকা"
-      description="ভ্রমণ প্যাকেজ, সেবা, খাবার, রুট ও দাম ম্যানেজ করুন।"
-      addLabel="নতুন প্যাকেজ"
+      renderTop={() => <PackagesSectionToggle />}
+      title="Package List"
+      description="Manage travel packages, services, food, routes, and price."
+      addLabel="New Package"
       storageFolder="packages"
       searchKeys={['title', 'duration', 'meal_info']}
       columns={[
@@ -90,9 +95,9 @@ export function CustomersAdminPage() {
   return (
     <AdminResourcePage
       table="customers"
-      title="কাস্টমার তালিকা"
-      description="কাস্টমারের নাম, ফোন, ইমেইল, ঠিকানা ও নোট সংরক্ষণ করুন।"
-      addLabel="নতুন কাস্টমার"
+      title="Customer List"
+      description="Save customer name, phone, email, address, and notes."
+      addLabel="New Customer"
       searchKeys={['full_name', 'phone', 'email']}
       columns={[
         { key: 'full_name', label: 'Name' },
@@ -112,13 +117,21 @@ export function CustomersAdminPage() {
   );
 }
 
+import { usePublicData } from '@/components/PublicDataProvider';
+
 export function IncomeAdminPage() {
+  const { tripSlots } = usePublicData();
+  const tripOptions = [{ value: 'none', label: 'None (No Trip)' }, ...tripSlots.map(t => ({ 
+    value: t.id, 
+    label: `${new Date(t.start_date).toLocaleDateString('en-GB')} to ${new Date(t.end_date).toLocaleDateString('en-GB')}` 
+  }))];
+
   return (
     <AdminResourcePage
       table="income"
-      title="আয়ের তালিকা"
-      description="বুকিং, খাবার, BBQ, transport বা অন্যান্য আয় যোগ করুন।"
-      addLabel="নতুন আয়"
+      title="Income List"
+      description="Add income from booking, food, BBQ, transport, or others."
+      addLabel="New Income"
       searchKeys={['title', 'category', 'income_date']}
       columns={[
         { key: 'title', label: 'Title' },
@@ -132,20 +145,31 @@ export function IncomeAdminPage() {
         { name: 'category', label: 'Category', type: 'select', options: incomeCategories.map((value) => ({ value, label: value })) },
         { name: 'amount', label: 'Amount', type: 'number', defaultValue: 0, min: 0 },
         { name: 'income_date', label: 'Income date', type: 'date' },
+        { name: 'trip_slot_id', label: 'Link to Trip (Optional)', type: 'select', options: tripOptions },
         { name: 'note', label: 'Note', type: 'textarea' },
       ]}
     />
   );
 }
 
+import ExpensesChart from '@/components/admin/ExpensesChart';
+import type { Expense } from '@/types/database';
+
 export function ExpensesAdminPage() {
+  const { tripSlots } = usePublicData();
+  const tripOptions = [{ value: 'none', label: 'None (No Trip)' }, ...tripSlots.map(t => ({ 
+    value: t.id, 
+    label: `${new Date(t.start_date).toLocaleDateString('en-GB')} to ${new Date(t.end_date).toLocaleDateString('en-GB')}` 
+  }))];
+
   return (
     <AdminResourcePage
       table="expenses"
-      title="খরচের তালিকা"
-      description="খাবার, staff salary, fuel, maintenance সহ সব খরচ রাখুন।"
-      addLabel="নতুন খরচ"
+      title="Expense List"
+      description="Keep track of all expenses including food, staff salary, fuel, maintenance."
+      addLabel="New Expense"
       searchKeys={['title', 'category', 'vendor_name', 'expense_date']}
+      renderTop={(rows) => <ExpensesChart expenses={rows as Expense[]} />}
       columns={[
         { key: 'title', label: 'Title' },
         { key: 'category', label: 'Category', type: 'status' },
@@ -159,6 +183,7 @@ export function ExpensesAdminPage() {
         { name: 'amount', label: 'Amount', type: 'number', defaultValue: 0, min: 0 },
         { name: 'expense_date', label: 'Expense date', type: 'date' },
         { name: 'vendor_name', label: 'Vendor name' },
+        { name: 'trip_slot_id', label: 'Link to Trip (Optional)', type: 'select', options: tripOptions },
         { name: 'note', label: 'Note', type: 'textarea' },
       ]}
     />
@@ -169,9 +194,9 @@ export function GalleryAdminPage() {
   return (
     <AdminResourcePage
       table="gallery"
-      title="গ্যালারি ছবি"
-      description="ওয়েবসাইটের গ্যালারি ছবি আপলোড, category, featured status ও sort order ম্যানেজ করুন।"
-      addLabel="নতুন ছবি"
+      title="Gallery Images"
+      description="Upload website gallery images, manage category, featured status, and sort order."
+      addLabel="New Image"
       storageFolder="gallery"
       searchKeys={['title', 'category']}
       columns={[
@@ -196,9 +221,9 @@ export function ContentAdminPage() {
   return (
     <AdminResourcePage
       table="website_content"
-      title="ওয়েবসাইট কনটেন্ট"
-      description="Hero, About, FAQ, Contact, CTA ইত্যাদি section-wise কনটেন্ট ম্যানেজ করুন।"
-      addLabel="নতুন কনটেন্ট"
+      title="Website Content"
+      description="Manage Hero, About, FAQ, Contact, CTA etc. section-wise content."
+      addLabel="New Content"
       storageFolder="content"
       searchKeys={['section_key', 'title', 'subtitle']}
       columns={[
@@ -225,9 +250,9 @@ export function SettingsAdminPage() {
   return (
     <AdminResourcePage
       table="houseboat_settings"
-      title="হাউসবোট সেটিংস"
-      description="ব্র্যান্ড, ফোন, WhatsApp, payment number, logo এবং theme color আপডেট করুন।"
-      addLabel="সেটিংস যোগ করুন"
+      title="Houseboat Settings"
+      description="Update brand, phone, WhatsApp, payment number, logo, and theme color."
+      addLabel="Add Settings"
       storageFolder="settings"
       searchKeys={['houseboat_name', 'phone', 'whatsapp', 'email']}
       columns={[
@@ -262,9 +287,9 @@ export function PaymentsFallbackResourcePage() {
   return (
     <AdminResourcePage
       table="payments"
-      title="পেমেন্ট"
-      description="Booking payment, method, transaction ID ও note ম্যানেজ করুন।"
-      addLabel="নতুন পেমেন্ট"
+      title="Payments"
+      description="Manage booking payment, method, transaction ID, and notes."
+      addLabel="New Payment"
       searchKeys={['payment_method', 'transaction_id', 'payment_date']}
       columns={[
         { key: 'booking_id', label: 'Booking ID' },

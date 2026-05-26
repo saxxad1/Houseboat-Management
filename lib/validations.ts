@@ -18,6 +18,7 @@ export const bookingSchema = z
     email: z.string().optional(),
     booking_type: z.enum(['full_boat', 'cabin_wise']),
     room_id: z.string().optional(),
+    room_details: z.any().optional(),
     package_id: z.string().optional(),
     check_in_date: z.string().min(1, 'Check-in date is required'),
     check_out_date: z.string().min(1, 'Check-out date is required'),
@@ -38,6 +39,7 @@ export const bookingSchema = z
     decoration_required: booleanFromForm.optional().default(false),
     sound_system_required: booleanFromForm.optional().default(false),
     payment_method: z.enum(['cash', 'bkash', 'nagad', 'bank', 'other']).optional(),
+    trip_slot_id: z.string().optional().nullable(),
   })
   .superRefine((value, ctx) => {
     if (value.check_out_date <= value.check_in_date) {

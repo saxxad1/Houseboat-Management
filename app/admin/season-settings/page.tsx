@@ -62,7 +62,7 @@ export default function SeasonSettingsPage() {
     try {
       const saved = await saveRow<HouseboatSettings>('houseboat_settings', {
         id: settings?.id,
-        houseboat_name: settings?.houseboat_name || 'কুহেলিকা',
+        houseboat_name: settings?.houseboat_name || 'Kuhelika',
         tagline: settings?.tagline || data.site.tagline,
         description: settings?.description || data.site.description,
         phone: settings?.phone || data.site.phone,
@@ -84,9 +84,9 @@ export default function SeasonSettingsPage() {
       setSavedSeason(activeSeason);
       window.localStorage.setItem('kuhelika-active-season', activeSeason);
       window.dispatchEvent(new Event('kuhelika-season-change'));
-      setMessage('সিজন মোড সেভ হয়েছে। Public website এখন এই সিজনের content দেখাবে।');
+      setMessage('Season mode saved. Public website will now show content for this season.');
     } catch {
-      setMessage('সেভ করা যায়নি। Supabase connection/permission চেক করুন। Demo mode হলে local switch কাজ করবে।');
+      setMessage('Save failed. Check Supabase connection/permission. In Demo mode, local switch will work.');
       window.localStorage.setItem('kuhelika-active-season', activeSeason);
       window.dispatchEvent(new Event('kuhelika-season-change'));
       setSavedSeason(activeSeason);
@@ -212,7 +212,7 @@ export default function SeasonSettingsPage() {
       <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="font-semibold text-slate-900">
-            {dirty ? 'সিজন বদলানো হয়েছে, Save চাপুন।' : 'সিজন সেটিংস আপডেটেড।'}
+            {dirty ? 'Season changed, click Save.' : 'Season settings updated.'}
           </div>
           {message && <div className="mt-1 text-sm text-slate-500">{message}</div>}
         </div>

@@ -1,13 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, CircleCheck as CheckCircle2, Send, MessageCircle, Phone, User, CalendarCheck, Users, Anchor, BedDouble, Package, CreditCard, FileText } from 'lucide-react';
 import { usePublicData } from '@/components/PublicDataProvider';
-import { submitNetlifyForm } from '@/lib/netlifyForms';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import AvailabilityCalendar from '@/components/AvailabilityCalendar';
+
 
 interface BookingFormProps {
   isOpen: boolean;
   onClose: () => void;
+  initialCabin?: string;
+  initialBookingType?: 'cabin' | 'full';
+  initialCheckInDate?: string;
+  initialCheckOutDate?: string;
 }
 
 const initialForm = {
@@ -16,12 +22,13 @@ const initialForm = {
   email: '',
   checkin: '',
   checkout: '',
-  guests: '2',
+  guests: '16',
   bookingType: 'cabin',
-  cabin: '',
+  acPreference: 'AC',
   package: '',
   request: '',
   payment: 'bkash',
+  transactionId: '',
   eventDate: '',
   eventType: 'Birthday',
   eventSlot: 'Morning Slot',
@@ -35,28 +42,51 @@ type PackageDisplayFields = {
   priceDisplay?: string;
 };
 
-export default function BookingForm({ isOpen, onClose }: BookingFormProps) {
-  const { siteConfig, cabins, packages, activeSeason, seasonData } = usePublicData();
-  const [form, setForm] = useState(initialForm);
+export default function BookingForm({ isOpen, onClose, initialCabin, initialBookingType = 'cabin', initialCheckInDate, initialCheckOutDate }: BookingFormProps) {
+  const { siteConfig, cabins, packages, activeSeason, seasonData, tripSlots } = usePublicData();
+  const [form, setForm] = useState({ ...initialForm, bookingType: initialBookingType });
+  const [roomDetails, setRoomDetails] = useState<{cabin: string, pax: number}[]>([{cabin: '', pax: 2}]);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [botField, setBotField] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isCheckinOpen, setIsCheckinOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setForm(prev => ({ 
+        ...prev, 
+        bookingType: initialBookingType,
+        checkin: initialCheckInDate || prev.checkin,
+        checkout: initialCheckOutDate || prev.checkout
+      }));
+      if (initialCabin) {
+        setRoomDetails([{ cabin: initialCabin, pax: 2 }]);
+      } else {
+        setRoomDetails([{ cabin: '', pax: 2 }]);
+      }
+    }
+  }, [isOpen, initialCabin, initialBookingType, initialCheckInDate, initialCheckOutDate]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!form.name.trim()) newErrors.name = 'নাম দিন';
-    if (!form.phone.trim()) newErrors.phone = 'ফোন নম্বর দিন';
+    if (!form.name.trim()) newErrors.name = 'Enter name';
+    if (!form.phone.trim()) newErrors.phone = 'Enter phone number';
     if (activeSeason === 'padma') {
-      if (!form.eventDate) newErrors.eventDate = 'ইভেন্ট তারিখ দিন';
-      if (!form.eventType) newErrors.eventType = 'ইভেন্ট ধরন সিলেক্ট করুন';
-      if (!form.eventSlot) newErrors.eventSlot = 'স্লট সিলেক্ট করুন';
+      if (!form.eventDate) newErrors.eventDate = 'Enter event date';
+      if (!form.eventType) newErrors.eventType = 'Select event type';
+      if (!form.eventSlot) newErrors.eventSlot = 'Select slot';
     } else {
-      if (!form.checkin) newErrors.checkin = 'Check-in তারিখ দিন';
-      if (!form.checkout) newErrors.checkout = 'Check-out তারিখ দিন';
+      if (!form.checkin) newErrors.checkin = 'Enter check-in date';
+      if (!form.checkout) newErrors.checkout = 'Enter check-out date';
       if (form.checkin && form.checkout && form.checkout <= form.checkin) {
-        newErrors.checkout = 'Check-out তারিখ Check-in এর পরে দিন';
+        newErrors.checkout = 'Check-out date must be after check-in';
+      }
+      if (form.bookingType === 'cabin') {
+        const hasValidRoom = roomDetails.some(r => r.cabin.trim() !== '');
+        if (!hasValidRoom) newErrors.rooms = 'Select at least one cabin';
       }
     }
     return newErrors;
@@ -79,17 +109,63 @@ export default function BookingForm({ isOpen, onClose }: BookingFormProps) {
     setSubmitError('');
 
     try {
-      await submitNetlifyForm('booking-request', {
-        ...form,
-        season_type: activeSeason,
-        submittedAt: new Date().toISOString(),
+      const roomsString = form.bookingType === 'cabin' 
+        ? roomDetails.filter(r => r.cabin).map(r => `${r.cabin} (${r.pax} persons)`).join(', ')
+        : `Full Boat - ${form.guests} Guests, ${form.acPreference}`;
+
+      const res = await fetch('/api/public/book', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...form,
+          rooms: roomsString,
+          totalEstimatedPrice: getEstimatedPrice(),
+          season_type: activeSeason,
+        }),
       });
+
+      if (!res.ok) {
+        throw new Error('Failed to save booking in DB');
+      }
+
       setSubmitted(true);
     } catch {
-      setSubmitError('বুকিং রিকোয়েস্ট পাঠানো যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন বা WhatsApp-এ যোগাযোগ করুন।');
+      setSubmitError('Failed to send booking request. Please try again or contact via WhatsApp.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const getEstimatedPrice = () => {
+    if (activeSeason === 'padma') return null;
+    
+    if (form.bookingType === 'full') {
+      const isAC = form.acPreference === 'AC';
+      const g = parseInt(form.guests, 10);
+      if (g === 16) return isAC ? 180000 : 150000;
+      if (g === 18) return isAC ? 200000 : 165000;
+      if (g === 20) return isAC ? 215000 : 180000;
+      if (g === 22) return isAC ? 230000 : 195000;
+      if (g === 25) return isAC ? 250000 : 210000;
+      return null;
+    }
+    
+    let total = 0;
+    for (const r of roomDetails) {
+      if (!r.cabin) continue;
+      const selectedCabin = cabins.find((c: any) => c.name === r.cabin);
+      if (!selectedCabin) continue;
+      
+      let pricePerPerson = selectedCabin.rawPricePerNight || 0;
+      if (r.pax === 2 && selectedCabin.rawPrice2Pax) pricePerPerson = selectedCabin.rawPrice2Pax;
+      if (r.pax === 3 && selectedCabin.rawPrice3Pax) pricePerPerson = selectedCabin.rawPrice3Pax;
+      
+      total += pricePerPerson * r.pax;
+    }
+    
+    return total > 0 ? total : null;
   };
 
   const buildWhatsappMessage = () => {
@@ -112,21 +188,23 @@ Please confirm availability and package details.`;
       return encodeURIComponent(msg);
     }
 
-    const msg = `আসসালামু আলাইকুম,
-আমি *${siteConfig.name}* এ বুকিং করতে চাই।
+    const estimatedTotal = getEstimatedPrice();
+    const msg = `Hello,
+I would like to book at *${siteConfig.name}*.
 
-*নাম:* ${form.name}
-*ফোন:* ${form.phone}
+*Name:* ${form.name}
+*Phone:* ${form.phone}
 *Check-in:* ${form.checkin}
 *Check-out:* ${form.checkout}
-*অতিথি সংখ্যা:* ${form.guests} জন
-*বুকিং ধরন:* ${form.bookingType === 'full' ? 'Full Boat' : 'Cabin Wise'}
-${form.cabin ? `*কেবিন:* ${form.cabin}` : ''}
-${form.package ? `*প্যাকেজ:* ${form.package}` : ''}
-*পেমেন্ট:* ${form.payment}
-${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
+*Booking Type:* ${form.bookingType === 'full' ? 'Full Boat' : 'Cabin Wise'}
+${form.bookingType === 'cabin' ? `*Rooms:* ${roomDetails.filter(r => r.cabin).map(r => `${r.cabin} (${r.pax} persons)`).join(', ')}` : ''}
+*Total Guests:* ${form.guests}
+*Estimated Price:* ${estimatedTotal ? `৳${estimatedTotal.toLocaleString()}` : 'TBD'}
+*Special Request:* ${form.request || 'None'}
+${form.request ? `*Special Request:* ${form.request}` : ''}
+${estimatedTotal ? `\n*Estimated Package Total:* ৳${estimatedTotal.toLocaleString()}` : ''}
 
-ধন্যবাদ।`;
+Thank you.`;
     return encodeURIComponent(msg);
   };
 
@@ -152,11 +230,11 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
       <div
-        className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-xl md:max-w-2xl max-h-[95vh] sm:max-h-[92vh] overflow-y-auto"
+        className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-xl md:max-w-2xl max-h-[95vh] sm:max-h-[92vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-gradient-to-r from-[hsl(197,80%,28%)] to-[hsl(173,58%,40%)] p-4 sm:p-6 rounded-t-3xl">
+        <div className="z-20 shrink-0 bg-gradient-to-r from-[hsl(197,80%,28%)] to-[hsl(173,58%,40%)] p-3 sm:p-4 rounded-t-3xl sm:rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-white">{seasonData.bookingForm.title}</h2>
@@ -171,29 +249,30 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
           </div>
         </div>
 
+        <div className="overflow-y-auto flex-1">
         {/* Success State */}
         {submitted ? (
           <div className="p-6 sm:p-8 text-center">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-5 sm:mb-6">
               <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-600" />
             </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">{seasonData.bookingForm.success}</h3>
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">{seasonData.bookingForm.success}</h3>
             <p className="text-slate-500 text-sm sm:text-base mb-5 sm:mb-6">
               {seasonData.bookingForm.successDescription}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={handleWhatsapp}
-                className="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 sm:px-6 py-3 rounded-2xl transition-colors min-h-[48px]"
+                className="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 sm:px-6 py-2 rounded-2xl transition-colors min-h-[42px]"
               >
                 <MessageCircle className="w-5 h-5" />
-                WhatsApp-এ যোগাযোগ করুন
+                Contact via WhatsApp
               </button>
               <button
                 onClick={handleClose}
-                className="flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 sm:px-6 py-3 rounded-2xl transition-colors min-h-[48px]"
+                className="flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 sm:px-6 py-2 rounded-2xl transition-colors min-h-[42px]"
               >
-                বন্ধ করুন
+                Close
               </button>
             </div>
           </div>
@@ -204,7 +283,7 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
             data-netlify="true"
             netlify-honeypot="bot-field"
             onSubmit={handleSubmit}
-            className="p-4 sm:p-6 space-y-4"
+            className="p-4 sm:p-5 space-y-3"
           >
             <input type="hidden" name="form-name" value="booking-request" />
             <p className="hidden">
@@ -219,25 +298,45 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
                 />
               </label>
             </p>
+
+            {activeSeason === 'haor' && (
+              <div className="flex bg-slate-100 p-1 rounded-xl mb-4">
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, bookingType: 'cabin' })}
+                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${form.bookingType === 'cabin' ? 'bg-white shadow-sm text-[hsl(197,80%,30%)]' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Room Booking
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, bookingType: 'full' })}
+                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${form.bookingType === 'full' ? 'bg-white shadow-sm text-[hsl(197,80%,30%)]' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Full Boat Booking
+                </button>
+              </div>
+            )}
+
             {/* Row: Name & Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                  <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" />পুরো নাম *</span>
+                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                  <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" />Full Name *</span>
                 </label>
                 <input
                   name="name"
                   type="text"
                   value={form.name}
                   onChange={(e) => { setForm({ ...form, name: e.target.value }); setErrors({ ...errors, name: '' }); }}
-                  placeholder="আপনার নাম লিখুন"
-                  className={`w-full px-3.5 sm:px-4 py-3 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px] ${errors.name ? 'border-red-400' : 'border-slate-200'}`}
+                  placeholder="Enter your name"
+                  className={`w-full px-3.5 sm:px-4 py-2 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px] ${errors.name ? 'border-red-400' : 'border-slate-200'}`}
                 />
                 {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                  <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" />ফোন নম্বর *</span>
+                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                  <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" />Phone Number *</span>
                 </label>
                 <input
                   name="phone"
@@ -245,30 +344,17 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
                   value={form.phone}
                   onChange={(e) => { setForm({ ...form, phone: e.target.value }); setErrors({ ...errors, phone: '' }); }}
                   placeholder="01XXXXXXXXX"
-                  className={`w-full px-3.5 sm:px-4 py-3 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px] ${errors.phone ? 'border-red-400' : 'border-slate-200'}`}
+                  className={`w-full px-3.5 sm:px-4 py-2 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px] ${errors.phone ? 'border-red-400' : 'border-slate-200'}`}
                 />
                 {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
               </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">ইমেইল (ঐচ্ছিক)</label>
-              <input
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="example@email.com"
-                className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
-              />
             </div>
 
             {activeSeason === 'padma' ? (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
                       <span className="flex items-center gap-1.5"><CalendarCheck className="w-3.5 h-3.5" />Event Date *</span>
                     </label>
                     <input
@@ -276,17 +362,17 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
                       type="date"
                       value={form.eventDate}
                       onChange={(e) => { setForm({ ...form, eventDate: e.target.value }); setErrors({ ...errors, eventDate: '' }); }}
-                      className={`w-full px-3.5 sm:px-4 py-3 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px] ${errors.eventDate ? 'border-red-400' : 'border-slate-200'}`}
+                      className={`w-full px-3.5 sm:px-4 py-2 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px] ${errors.eventDate ? 'border-red-400' : 'border-slate-200'}`}
                     />
                     {errors.eventDate && <p className="text-red-500 text-xs mt-1">{errors.eventDate}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Event Type *</label>
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Event Type *</label>
                     <select
                       name="eventType"
                       value={form.eventType}
                       onChange={(e) => setForm({ ...form, eventType: e.target.value })}
-                      className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                      className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
                     >
                       {seasonData.bookingForm.mode === 'padma' && seasonData.bookingForm.eventTypes.map((item) => (
                         <option key={item} value={item}>{item}</option>
@@ -297,12 +383,12 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Preferred Slot *</label>
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Preferred Slot *</label>
                     <select
                       name="eventSlot"
                       value={form.eventSlot}
                       onChange={(e) => setForm({ ...form, eventSlot: e.target.value })}
-                      className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                      className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
                     >
                       {seasonData.bookingForm.mode === 'padma' && seasonData.bookingForm.slots.map((item) => (
                         <option key={item} value={item}>{item}</option>
@@ -310,14 +396,14 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
                       <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />Number of Guests *</span>
                     </label>
                     <select
                       name="guestRange"
                       value={form.guestRange}
                       onChange={(e) => setForm({ ...form, guestRange: e.target.value })}
-                      className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                      className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
                     >
                       {seasonData.bookingForm.mode === 'padma' && seasonData.bookingForm.guestRanges.map((item) => (
                         <option key={item} value={item}>{item}</option>
@@ -331,122 +417,179 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
                 {/* Row: Dates */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
                       <span className="flex items-center gap-1.5"><CalendarCheck className="w-3.5 h-3.5" />Check-in *</span>
                     </label>
-                    <input
-                      name="checkin"
-                      type="date"
-                      value={form.checkin}
-                      onChange={(e) => { setForm({ ...form, checkin: e.target.value }); setErrors({ ...errors, checkin: '' }); }}
-                      className={`w-full px-3.5 sm:px-4 py-3 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px] ${errors.checkin ? 'border-red-400' : 'border-slate-200'}`}
-                    />
+                    <Popover open={isCheckinOpen} onOpenChange={setIsCheckinOpen}>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className={`w-full text-left px-3.5 sm:px-4 py-2 rounded-xl border text-slate-800 text-sm bg-slate-50 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px] ${!form.checkin ? 'text-slate-500' : ''} ${errors.checkin ? 'border-red-400' : 'border-slate-200'}`}
+                        >
+                          {form.checkin ? new Date(form.checkin + 'T00:00:00').toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : 'dd/mm/yyyy'}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <AvailabilityCalendar 
+                          inline 
+                          selectedDate={form.checkin} 
+                          onSelectDate={(newCheckin) => {
+                            const nextDay = new Date(newCheckin);
+                            nextDay.setDate(nextDay.getDate() + 1);
+                            let newCheckout = nextDay.toISOString().split('T')[0];
+                            
+                            if (activeSeason === 'haor') {
+                              const slot = tripSlots.find(t => t.start_date === newCheckin);
+                              if (slot) newCheckout = slot.end_date;
+                            }
+                            setForm({ ...form, checkin: newCheckin, checkout: newCheckout }); 
+                            setErrors({ ...errors, checkin: '' }); 
+                            setIsCheckinOpen(false);
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     {errors.checkin && <p className="text-red-500 text-xs mt-1">{errors.checkin}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
                       <span className="flex items-center gap-1.5"><CalendarCheck className="w-3.5 h-3.5" />Check-out *</span>
                     </label>
-                    <input
-                      name="checkout"
-                      type="date"
-                      value={form.checkout}
-                      onChange={(e) => { setForm({ ...form, checkout: e.target.value }); setErrors({ ...errors, checkout: '' }); }}
-                      className={`w-full px-3.5 sm:px-4 py-3 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px] ${errors.checkout ? 'border-red-400' : 'border-slate-200'}`}
-                    />
+                    <Popover open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          disabled={activeSeason === 'haor'}
+                          className={`w-full text-left px-3.5 sm:px-4 py-2 rounded-xl border text-slate-800 text-sm ${activeSeason === 'haor' ? 'bg-slate-100 cursor-not-allowed' : 'bg-slate-50 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)]'} transition-all min-h-[42px] ${!form.checkout ? 'text-slate-500' : ''} ${errors.checkout ? 'border-red-400' : 'border-slate-200'}`}
+                        >
+                          {form.checkout ? new Date(form.checkout + 'T00:00:00').toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : 'dd/mm/yyyy'}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <AvailabilityCalendar 
+                          inline 
+                          selectedDate={form.checkout} 
+                          onSelectDate={(newCheckout) => {
+                            setForm({ ...form, checkout: newCheckout }); 
+                            setErrors({ ...errors, checkout: '' });
+                            setIsCheckoutOpen(false);
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     {errors.checkout && <p className="text-red-500 text-xs mt-1">{errors.checkout}</p>}
                   </div>
                 </div>
 
-                {/* Row: Guests & Booking Type */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                      <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />অতিথির সংখ্যা</span>
-                    </label>
-                    <select
-                      name="guests"
-                      value={form.guests}
-                      onChange={(e) => setForm({ ...form, guests: e.target.value })}
-                      className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
-                    >
-                      {[1,2,3,4,5,6,8,10,12,15,20,24].map((n) => (
-                        <option key={n} value={n}>{n} জন</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                      <span className="flex items-center gap-1.5"><Anchor className="w-3.5 h-3.5" />বুকিং ধরন</span>
-                    </label>
-                    <select
-                      name="bookingType"
-                      value={form.bookingType}
-                      onChange={(e) => setForm({ ...form, bookingType: e.target.value })}
-                      className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
-                    >
-                      <option value="cabin">কেবিন বুকিং</option>
-                      <option value="full">পুরো বোট (Full Boat)</option>
-                    </select>
-                  </div>
-                </div>
+
               </>
             )}
 
-            {/* Cabin Select */}
+            {/* Cabin Select & Sharing */}
             {activeSeason === 'haor' && form.bookingType === 'cabin' && (
-              <div>
-                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                  <span className="flex items-center gap-1.5"><BedDouble className="w-3.5 h-3.5" />কেবিন বেছে নিন</span>
+              <div className="space-y-3 sm:space-y-4">
+                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                  <span className="flex items-center gap-1.5"><BedDouble className="w-3.5 h-3.5" />Rooms & Guests</span>
                 </label>
-                <select
-                  name="cabin"
-                  value={form.cabin}
-                  onChange={(e) => setForm({ ...form, cabin: e.target.value })}
-                  className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                {roomDetails.map((detail, index) => (
+                  <div key={index} className="flex gap-2 sm:gap-3 items-center">
+                    <select
+                      value={detail.cabin}
+                      onChange={(e) => {
+                        const newDetails = [...roomDetails];
+                        newDetails[index].cabin = e.target.value;
+                        setRoomDetails(newDetails);
+                      }}
+                      className="flex-1 px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
+                    >
+                      <option value="">-- Select Cabin --</option>
+                      {cabins.filter((c: any) => c.available).map((c: any) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    
+                    <select
+                      value={detail.pax}
+                      onChange={(e) => {
+                        const newDetails = [...roomDetails];
+                        newDetails[index].pax = Number(e.target.value);
+                        setRoomDetails(newDetails);
+                      }}
+                      className="w-24 sm:w-32 px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
+                    >
+                      <option value={2}>2 Persons</option>
+                      <option value={3}>3 Persons</option>
+                    </select>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setRoomDetails(roomDetails.filter((_, i) => i !== index))}
+                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                ))}
+                
+                <button
+                  type="button"
+                  onClick={() => setRoomDetails([...roomDetails, { cabin: '', pax: 2 }])}
+                  className="w-full py-2.5 sm:py-3 mt-1 rounded-xl border-2 border-dashed border-[hsl(197,80%,38%)] text-[hsl(197,80%,38%)] text-sm font-bold flex items-center justify-center gap-1 hover:bg-[hsl(195,95%,95%)] transition-colors shadow-sm"
                 >
-                  <option value="">-- কেবিন সিলেক্ট করুন --</option>
-                  {cabins.filter((c) => c.available).map((c) => (
-                    <option key={c.id} value={c.name}>
-                      {c.name} – ৳{c.pricePerNight.toLocaleString()}/রাত
-                    </option>
-                  ))}
-                </select>
+                  + Add Another Room
+                </button>
+                {errors.rooms && <p className="text-red-500 text-xs mt-1">{errors.rooms}</p>}
               </div>
             )}
 
-            {/* Package Select */}
-            <div>
-              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                <span className="flex items-center gap-1.5"><Package className="w-3.5 h-3.5" />প্যাকেজ (ঐচ্ছিক)</span>
-              </label>
-              <select
-                name="package"
-                value={form.package}
-                onChange={(e) => setForm({ ...form, package: e.target.value })}
-                className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
-              >
-                <option value="">-- প্যাকেজ সিলেক্ট করুন --</option>
-                {packages.map((p) => {
-                  const display = p as typeof p & PackageDisplayFields;
-                  return (
-                    <option key={display.id} value={display.title}>
-                      {display.title} – {display.priceDisplay || `৳${display.price.toLocaleString()}`}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
+            {/* Full Boat Setup */}
+            {activeSeason === 'haor' && form.bookingType === 'full' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                    <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />Number of Guests *</span>
+                  </label>
+                  <select
+                    value={form.guests}
+                    onChange={(e) => setForm({ ...form, guests: e.target.value })}
+                    className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
+                  >
+                    <option value="16">16 Persons</option>
+                    <option value="18">18 Persons</option>
+                    <option value="20">20 Persons</option>
+                    <option value="22">22 Persons</option>
+                    <option value="25">25 Persons</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                    <span className="flex items-center gap-1.5">AC Preference *</span>
+                  </label>
+                  <select
+                    value={form.acPreference}
+                    onChange={(e) => setForm({ ...form, acPreference: e.target.value })}
+                    className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
+                  >
+                    <option value="AC">With AC</option>
+                    <option value="Non AC">Without AC (Non AC)</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+
 
             {activeSeason === 'padma' && seasonData.bookingForm.mode === 'padma' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Food Package</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Food Package</label>
                   <select
                     name="foodPackage"
                     value={form.foodPackage}
                     onChange={(e) => setForm({ ...form, foodPackage: e.target.value })}
-                    className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                    className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
                   >
                     {seasonData.bookingForm.foodPackages.map((item) => (
                       <option key={item} value={item}>{item}</option>
@@ -454,12 +597,12 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Decoration Required?</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Decoration Required?</label>
                   <select
                     name="decorationRequired"
                     value={form.decorationRequired}
                     onChange={(e) => setForm({ ...form, decorationRequired: e.target.value })}
-                    className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                    className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
                   >
                     {seasonData.bookingForm.decorationOptions.map((item) => (
                       <option key={item} value={item}>{item}</option>
@@ -467,12 +610,12 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Sound System Required?</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Sound System Required?</label>
                   <select
                     name="soundSystemRequired"
                     value={form.soundSystemRequired}
                     onChange={(e) => setForm({ ...form, soundSystemRequired: e.target.value })}
-                    className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[48px]"
+                    className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
                   >
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
@@ -481,24 +624,36 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
               </div>
             )}
 
+            {/* Estimated Total Price */}
+            {activeSeason === 'haor' && getEstimatedPrice() && (
+              <div className="bg-[hsl(195,95%,95%)] border border-[hsl(195,85%,85%)] rounded-xl p-3 sm:p-4 my-2 flex items-center justify-between">
+                <div>
+                  <div className="text-xs sm:text-sm font-semibold text-[hsl(197,80%,30%)]">Estimated Package Total:</div>
+                  <div className="text-xs text-slate-500 mt-0.5">Final price and availability will be confirmed by Kuhelika team.</div>
+                </div>
+                <div className="text-xl sm:text-2xl font-black text-[hsl(197,80%,30%)]">
+                  ৳{getEstimatedPrice()?.toLocaleString()}
+                </div>
+              </div>
+            )}
+
             {/* Payment Method */}
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-2">
-                <span className="flex items-center gap-1.5"><CreditCard className="w-3.5 h-3.5" />পেমেন্ট পদ্ধতি</span>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                <span className="flex items-center gap-1.5"><CreditCard className="w-3.5 h-3.5" />Payment Method</span>
               </label>
               <input type="hidden" name="payment" value={form.payment} />
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {[
                   { value: 'bkash', label: 'bKash' },
                   { value: 'nagad', label: 'Nagad' },
                   { value: 'bank', label: 'Bank Transfer' },
-                  { value: 'cash', label: 'Cash' },
                 ].map((p) => (
                   <button
                     type="button"
                     key={p.value}
                     onClick={() => setForm({ ...form, payment: p.value })}
-                    className={`py-2.5 px-3 rounded-xl border-2 text-sm font-semibold transition-all min-h-[44px] ${
+                    className={`py-2 px-3 rounded-xl border-2 text-sm font-semibold transition-all min-h-[40px] ${
                       form.payment === p.value
                         ? 'border-[hsl(197,80%,38%)] bg-[hsl(195,95%,92%)] text-[hsl(197,80%,28%)]'
                         : 'border-slate-200 text-slate-600 hover:border-slate-300'
@@ -508,21 +663,42 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
                   </button>
                 ))}
               </div>
-            </div>
+              
+              {/* Payment Info Display */}
+              {form.payment && (
+                <div className="mt-3 p-3 sm:p-4 rounded-xl bg-[hsl(197,80%,98%)] border border-[hsl(197,80%,90%)] text-sm text-slate-700">
+                  {form.payment === 'bkash' && (
+                    <div>
+                      <p className="font-semibold mb-1">bKash Details</p>
+                      <p className="whitespace-pre-wrap">{siteConfig.bkashNumber || 'Please contact for bKash details.'}</p>
+                    </div>
+                  )}
+                  {form.payment === 'nagad' && (
+                    <div>
+                      <p className="font-semibold mb-1">Nagad Details</p>
+                      <p className="whitespace-pre-wrap">{siteConfig.nagadNumber || 'Please contact for Nagad details.'}</p>
+                    </div>
+                  )}
+                  {form.payment === 'bank' && (
+                    <div>
+                      <p className="font-semibold mb-1">Bank Transfer Details</p>
+                      <p className="whitespace-pre-wrap">{siteConfig.bankInfo || 'Please contact for bank details.'}</p>
+                    </div>
+                  )}
 
-            {/* Special Request */}
-            <div>
-              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                <span className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" />বিশেষ অনুরোধ (ঐচ্ছিক)</span>
-              </label>
-              <textarea
-                name="request"
-                value={form.request}
-                onChange={(e) => setForm({ ...form, request: e.target.value })}
-                placeholder={activeSeason === 'padma' ? 'আপনার ইভেন্ট, ডেকোরেশন, খাবার বা বিশেষ প্রয়োজন লিখুন...' : 'বার্থডে ডেকোরেশন, হালাল খাবার...'}
-                rows={3}
-                className="w-full px-3.5 sm:px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all resize-none"
-              />
+                  <div className="mt-4 pt-3 border-t border-[hsl(197,80%,90%)]">
+                    <label className="block text-xs sm:text-sm font-semibold text-[hsl(197,80%,30%)] mb-1">Please provide the transaction ID here after making the payment</label>
+                    <input
+                      name="transactionId"
+                      type="text"
+                      value={form.transactionId}
+                      onChange={(e) => setForm({ ...form, transactionId: e.target.value })}
+                      placeholder="Transaction ID"
+                      className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -535,26 +711,19 @@ ${form.request ? `*বিশেষ অনুরোধ:* ${form.request}` : ''}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 bg-[hsl(197,80%,30%)] hover:bg-[hsl(197,80%,22%)] disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-bold py-3.5 sm:py-4 rounded-2xl transition-all shadow-lg hover:shadow-xl min-h-[52px]"
+                className="w-full flex items-center justify-center gap-2 bg-[hsl(197,80%,30%)] hover:bg-[hsl(197,80%,22%)] disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-bold py-2 sm:py-4 rounded-2xl transition-all shadow-lg hover:shadow-xl min-h-[46px]"
               >
                 <Send className="w-4 h-4" />
-                {isSubmitting ? 'পাঠানো হচ্ছে...' : seasonData.bookingForm.submit}
+                {isSubmitting ? 'Sending...' : 'Book Now'}
               </button>
-              <button
-                type="button"
-                onClick={handleWhatsapp}
-                disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 sm:py-4 rounded-2xl transition-all shadow-lg hover:shadow-xl min-h-[52px]"
-              >
-                <MessageCircle className="w-4 h-4" />
-                WhatsApp-এ বুক করুন
-              </button>
+
             </div>
             <p className="text-center text-xs text-slate-400 pb-1">
-              বুকিং রিকোয়েস্টের পর আমরা ২৪ ঘণ্টার মধ্যে কনফার্ম করব।
+              We will confirm within 24 hours after your booking request.
             </p>
           </form>
         )}
+        </div>
       </div>
     </div>
   );

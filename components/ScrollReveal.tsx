@@ -13,7 +13,7 @@ interface ScrollRevealProps {
   duration?: number;
   distance?: number;
   direction?: Direction;
-  amount?: number;
+  amount?: number | "some" | "all";
   once?: boolean;
 }
 
@@ -42,7 +42,7 @@ export function ScrollReveal({
   duration = 0.65,
   distance = 34,
   direction = 'up',
-  amount = 0.16,
+  amount = 'some',
   once = true,
 }: ScrollRevealProps) {
   const reduceMotion = useReducedMotion();
@@ -88,7 +88,7 @@ interface StaggerRevealProps {
   delay?: number;
   stagger?: number;
   distance?: number;
-  amount?: number;
+  amount?: number | "some" | "all";
   once?: boolean;
 }
 
@@ -99,7 +99,7 @@ export function StaggerReveal({
   delay = 0,
   stagger = 0.08,
   distance = 26,
-  amount = 0.12,
+  amount = 'some',
   once = true,
 }: StaggerRevealProps) {
   const reduceMotion = useReducedMotion();
@@ -141,7 +141,7 @@ export function StaggerReveal({
       variants={container}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once, amount, margin: '0px 0px -64px 0px' }}
+      viewport={{ once, amount, margin: '0px 0px 96px 0px' }}
     >
       {Children.map(children, (child) => (
         <motion.div className={cn('min-w-0', itemClassName)} variants={item}>

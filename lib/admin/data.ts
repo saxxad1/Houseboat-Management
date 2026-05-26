@@ -15,11 +15,13 @@ import type {
   Payment,
   Room,
   TourPackage,
+  TripSlot,
   WebsiteContent,
 } from '@/types/database';
 
 export type AdminRow =
   | AvailabilityBlock
+  | TripSlot
   | Booking
   | Customer
   | Expense
@@ -86,7 +88,7 @@ async function getAdminAccessToken() {
 
   const { data, error } = await supabase.auth.getSession();
   if (error || !data.session?.access_token) {
-    throw new Error('Admin session expired. আবার login করুন।');
+    throw new Error('Admin session expired. Please login again.');
   }
 
   return data.session.access_token;
@@ -237,6 +239,7 @@ export async function saveBookingWithCustomer(
     customer_id: customer.id,
     booking_type: values.booking_type || 'cabin_wise',
     room_id: values.booking_type === 'full_boat' ? null : values.room_id || null,
+    room_details: values.booking_type === 'full_boat' ? null : values.room_details || null,
     package_id: values.package_id || null,
     check_in_date: values.check_in_date!,
     check_out_date: values.check_out_date!,
@@ -258,6 +261,8 @@ export async function saveBookingWithCustomer(
     decoration_required: Boolean(values.decoration_required),
     sound_system_required: Boolean(values.sound_system_required),
     payment_method: values.payment_method || null,
+    transaction_id: values.transaction_id || null,
+    trip_slot_id: values.trip_slot_id || null,
   });
 }
 
@@ -293,6 +298,7 @@ export async function recordPayment(values: Partial<Payment>) {
         amount: Number(values.amount || 0),
         income_date: values.payment_date || new Date().toISOString().slice(0, 10),
         note: values.note || '',
+        trip_slot_id: booking.trip_slot_id || null,
       });
     }
   }
@@ -312,6 +318,7 @@ export async function fetchAdminDataset() {
     availability,
     gallery,
     content,
+    trip_slots,
   ] = await Promise.all([
     listRows<HouseboatSettings>('houseboat_settings'),
     listRows<Room>('rooms'),
@@ -324,6 +331,7 @@ export async function fetchAdminDataset() {
     listRows<AvailabilityBlock>('availability_blocks'),
     listRows<GalleryImage>('gallery'),
     listRows<WebsiteContent>('website_content'),
+    listRows<TripSlot>('trip_slots'),
   ]);
 
   return {
@@ -338,5 +346,6 @@ export async function fetchAdminDataset() {
     availability,
     gallery,
     content,
+    trip_slots,
   };
 }

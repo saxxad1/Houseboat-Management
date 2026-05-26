@@ -13,7 +13,11 @@ export default function Header({ onBookNow }: HeaderProps) {
   const { siteConfig, seasonData } = usePublicData();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const navLinks = seasonData.nav.links;
+  
+  // Filter out the packages link if the section is hidden via admin
+  const navLinks = seasonData.nav.links.filter(link => 
+    link.href !== '#packages' || seasonData.packagesSection?.is_active !== false
+  );
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);

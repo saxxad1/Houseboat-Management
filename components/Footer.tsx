@@ -19,21 +19,21 @@ export default function Footer() {
   const whatsappMessage = encodeURIComponent(
     activeSeason === 'padma'
       ? `Hello, I want to book a Padma River event cruise for ${siteConfig.name}. Please confirm availability and package details.`
-      : `আসসালামু আলাইকুম! আমি ${siteConfig.name} এর হাওর/হাউসবোট বুকিং সম্পর্কে জানতে চাই।`
+      : `Hello! I would like to know about haor/houseboat booking for ${siteConfig.name}.`
   );
   const whatsappUrl = `https://wa.me/${siteConfig.whatsapp}?text=${whatsappMessage}`;
   const services = activeSeason === 'padma'
     ? ['Slot Booking', 'Full Boat Event', 'Birthday Event', 'Corporate Event', 'Dinner Cruise', 'Custom Event']
-    : ['কেবিন বুকিং', 'Full Boat বুকিং', 'ফ্যামিলি প্যাকেজ', 'গ্রুপ ট্যুর', 'কর্পোরেট প্যাকেজ', 'কাস্টম ট্যুর'];
+    : ['Cabin Booking', 'Full Boat Booking', 'Family Package', 'Group Tour', 'Corporate Package', 'Custom Tour'];
 
   return (
-    <footer className="bg-[hsl(197,80%,10%)] text-white">
+    <footer className="bg-[hsl(195,50%,96%)] text-slate-800 border-t border-slate-200 pb-24 sm:pb-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 pb-6 sm:pb-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 mb-8 sm:mb-12">
           {/* Brand — full width on mobile */}
           <div className="col-span-2 md:col-span-1">
-            <Logo className="mb-3 w-[142px] sm:mb-4 sm:w-[164px]" imageClassName="drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]" />
-            <p className="text-white/60 text-sm leading-relaxed mb-4">
+            <Logo className="mb-3 w-[142px] sm:mb-4 sm:w-[164px]" imageClassName="drop-shadow-none" />
+            <p className="text-slate-500 text-sm leading-relaxed mb-4">
               {siteConfig.description}
             </p>
             <div className="flex gap-2.5 sm:gap-3">
@@ -41,7 +41,7 @@ export default function Footer() {
                 href={siteConfig.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-blue-600 transition-colors"
+                className="w-9 h-9 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 text-slate-500 transition-all"
                 aria-label="Facebook"
               >
                 <Facebook className="w-4 h-4" />
@@ -50,14 +50,14 @@ export default function Footer() {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-emerald-600 transition-colors"
+                className="w-9 h-9 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 text-slate-500 transition-all"
                 aria-label="WhatsApp"
               >
                 <MessageCircle className="w-4 h-4" />
               </a>
               <a
                 href={`tel:${siteConfig.phone}`}
-                className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-[hsl(197,80%,38%)] transition-colors"
+                className="w-9 h-9 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:bg-[hsl(197,80%,95%)] hover:border-[hsl(197,80%,80%)] hover:text-[hsl(197,80%,40%)] text-slate-500 transition-all"
                 aria-label="Phone"
               >
                 <Phone className="w-4 h-4" />
@@ -67,13 +67,13 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-bold text-xs uppercase tracking-widest text-white/40 mb-3 sm:mb-5">Quick Links</h3>
+            <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-3 sm:mb-5">Quick Links</h3>
             <ul className="space-y-2">
               {seasonData.nav.links.slice(0, 6).map((link) => (
                 <li key={link.href}>
                   <button
                     onClick={() => scrollTo(link.href)}
-                    className="text-white/70 hover:text-white text-xs sm:text-sm transition-colors text-left leading-relaxed"
+                    className="text-slate-500 hover:text-[hsl(197,80%,40%)] text-xs sm:text-sm transition-colors text-left leading-relaxed font-medium"
                   >
                     {link.label}
                   </button>
@@ -84,36 +84,36 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h3 className="font-bold text-xs uppercase tracking-widest text-white/40 mb-3 sm:mb-5">সেবাসমূহ</h3>
-            <ul className="space-y-2 text-white/70 text-xs sm:text-sm">
+            <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-3 sm:mb-5">Services</h3>
+            <ul className="space-y-2 text-slate-500 text-xs sm:text-sm font-medium">
               {services.map((service) => <li key={service}>{service}</li>)}
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h3 className="font-bold text-xs uppercase tracking-widest text-white/40 mb-3 sm:mb-5">যোগাযোগ</h3>
+            <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-3 sm:mb-5">Contact</h3>
             <ul className="space-y-2.5">
               <li>
-                <a href={`tel:${siteConfig.phone}`} className="flex items-start gap-2 text-white/70 hover:text-white transition-colors text-xs sm:text-sm">
+                <a href={`tel:${siteConfig.phone}`} className="flex items-start gap-2 text-slate-500 hover:text-[hsl(197,80%,40%)] transition-colors text-xs sm:text-sm font-medium">
                   <Phone className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-[hsl(197,80%,55%)]" />
                   <span>{siteConfig.phone}</span>
                 </a>
               </li>
               <li>
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 text-white/70 hover:text-white transition-colors text-xs sm:text-sm">
-                  <MessageCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-emerald-400" />
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 text-slate-500 hover:text-emerald-600 transition-colors text-xs sm:text-sm font-medium">
+                  <MessageCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-emerald-500" />
                   <span>WhatsApp</span>
                 </a>
               </li>
               <li>
-                <a href={`mailto:${siteConfig.email}`} className="flex items-start gap-2 text-white/70 hover:text-white transition-colors text-xs sm:text-sm">
-                  <Mail className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-[hsl(38,90%,65%)]" />
+                <a href={`mailto:${siteConfig.email}`} className="flex items-start gap-2 text-slate-500 hover:text-[hsl(38,90%,55%)] transition-colors text-xs sm:text-sm font-medium">
+                  <Mail className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-[hsl(38,90%,55%)]" />
                   <span className="break-all">{siteConfig.email}</span>
                 </a>
               </li>
-              <li className="flex items-start gap-2 text-white/70 text-xs sm:text-sm">
-                <MapPin className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-rose-400" />
+              <li className="flex items-start gap-2 text-slate-500 text-xs sm:text-sm font-medium">
+                <MapPin className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-rose-500" />
                 <span>{siteConfig.location}</span>
               </li>
             </ul>
@@ -121,11 +121,11 @@ export default function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-white/10 pt-5 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
-          <p className="text-white/40 text-xs sm:text-sm text-center sm:text-left">
-            &copy; {currentYear} {siteConfig.name}. সর্বস্বত্ব সংরক্ষিত।
+        <div className="border-t border-slate-200 pt-5 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+          <p className="text-slate-400 text-xs sm:text-sm text-center sm:text-left font-medium">
+            &copy; {currentYear} {siteConfig.name}. All rights reserved.
           </p>
-          <p className="text-white/30 text-xs flex items-center gap-1.5">
+          <p className="text-slate-400 text-xs flex items-center gap-1.5 font-medium">
             Made with <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-500 fill-rose-500" /> in Bangladesh
           </p>
         </div>

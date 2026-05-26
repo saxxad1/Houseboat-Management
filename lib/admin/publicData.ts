@@ -3,7 +3,7 @@
 import { isSupabaseConfigured } from '@/lib/supabase/client';
 import { cabins as fallbackRooms, siteConfig } from '@/data/houseboatData';
 import type { SeasonType, SeasonalContent } from '@/data/seasonalData';
-import type { AvailabilityBlock, GalleryImage, HouseboatSettings, Room, TourPackage, WebsiteContent } from '@/types/database';
+import type { AvailabilityBlock, GalleryImage, HouseboatSettings, Room, TourPackage, TripSlot, WebsiteContent } from '@/types/database';
 
 export async function loadPublicHouseboatData() {
   if (!isSupabaseConfigured()) {
@@ -23,6 +23,7 @@ export async function loadPublicHouseboatData() {
     gallery: (result.gallery || []) as GalleryImage[],
     content: (result.content || []) as WebsiteContent[],
     availability: (result.availability || []) as AvailabilityBlock[],
+    trip_slots: (result.trip_slots || []) as TripSlot[],
   };
 }
 
@@ -42,6 +43,9 @@ export function mapSettingsToSiteConfig(settings?: HouseboatSettings | null, sea
     location: baseSite.location,
     locationEn: baseSite.locationEn,
     logoUrl: settings.logo_url || '/logo-kuhelika-clean.png',
+    bkashNumber: settings.bkash_number || undefined,
+    nagadNumber: settings.nagad_number || undefined,
+    bankInfo: settings.bank_info || undefined,
   };
 }
 
@@ -49,9 +53,9 @@ function textOr<T extends string | null | undefined>(value: T, fallback: string)
   return typeof value === 'string' && value.trim() ? value : fallback;
 }
 
-function contentFor(content: WebsiteContent[], season: SeasonType, key: string) {
+function contentFor(content: WebsiteContent[], season: SeasonType, key: string, includeInactive = false) {
   const keys = new Set([key, `${season}_${key}`, `${key}_${season}`, `${season}:${key}`, `${key}:${season}`]);
-  return content.find((row) => row.is_active && keys.has(row.section_key));
+  return content.find((row) => (row.is_active || includeInactive) && keys.has(row.section_key));
 }
 
 export function getEffectiveSeasonalData(
@@ -75,7 +79,7 @@ export function getEffectiveSeasonalData(
   const hero = contentFor(content, season, 'hero');
   const about = contentFor(content, season, 'about');
   const cabinsSection = contentFor(content, season, season === 'padma' ? 'event_spaces' : 'cabins') || contentFor(content, season, 'cabins');
-  const packagesSection = contentFor(content, season, season === 'padma' ? 'event_packages' : 'packages') || contentFor(content, season, 'packages');
+  const packagesSection = contentFor(content, season, season === 'padma' ? 'event_packages' : 'packages', true) || contentFor(content, season, 'packages', true);
   const availability = contentFor(content, season, 'availability');
   const itinerary = contentFor(content, season, 'itinerary');
   const facilities = contentFor(content, season, 'facilities');
@@ -103,6 +107,7 @@ export function getEffectiveSeasonalData(
           title: textOr(about.title, seasonData.about.title),
           subtitle: textOr(about.subtitle, seasonData.about.subtitle),
           story: textOr(about.content, seasonData.about.story),
+          is_active: about.is_active ?? seasonData.about.is_active,
         }
       : seasonData.about,
     cabinsSection: cabinsSection
@@ -112,6 +117,7 @@ export function getEffectiveSeasonalData(
           subtitle: textOr(cabinsSection.subtitle, seasonData.cabinsSection.subtitle),
           fullBoatDescription: textOr(cabinsSection.content, seasonData.cabinsSection.fullBoatDescription),
           fullBoatButton: textOr(cabinsSection.button_text, seasonData.cabinsSection.fullBoatButton),
+          is_active: cabinsSection.is_active ?? seasonData.cabinsSection.is_active,
         }
       : seasonData.cabinsSection,
     packagesSection: packagesSection
@@ -120,6 +126,7 @@ export function getEffectiveSeasonalData(
           title: textOr(packagesSection.title, seasonData.packagesSection.title),
           subtitle: textOr(packagesSection.subtitle, seasonData.packagesSection.subtitle),
           note: textOr(packagesSection.content, seasonData.packagesSection.note),
+          is_active: packagesSection.is_active ?? seasonData.packagesSection.is_active,
         }
       : seasonData.packagesSection,
     availability: availability
@@ -127,6 +134,7 @@ export function getEffectiveSeasonalData(
           ...seasonData.availability,
           title: textOr(availability.title, seasonData.availability.title),
           subtitle: textOr(availability.subtitle, seasonData.availability.subtitle),
+          is_active: availability.is_active ?? seasonData.availability.is_active,
         }
       : seasonData.availability,
     itinerary: itinerary
@@ -135,6 +143,7 @@ export function getEffectiveSeasonalData(
           title: textOr(itinerary.title, seasonData.itinerary.title),
           subtitle: textOr(itinerary.subtitle, seasonData.itinerary.subtitle),
           note: textOr(itinerary.content, seasonData.itinerary.note),
+          is_active: itinerary.is_active ?? seasonData.itinerary.is_active,
         }
       : seasonData.itinerary,
     facilitiesSection: facilities
@@ -144,6 +153,7 @@ export function getEffectiveSeasonalData(
           subtitle: textOr(facilities.subtitle, seasonData.facilitiesSection.subtitle),
           bannerDescription: textOr(facilities.content, seasonData.facilitiesSection.bannerDescription),
           bannerImage: textOr(facilities.image_url, seasonData.facilitiesSection.bannerImage),
+          is_active: facilities.is_active ?? seasonData.facilitiesSection.is_active,
         }
       : seasonData.facilitiesSection,
     gallery: gallery
@@ -151,6 +161,7 @@ export function getEffectiveSeasonalData(
           ...seasonData.gallery,
           title: textOr(gallery.title, seasonData.gallery.title),
           subtitle: textOr(gallery.subtitle, seasonData.gallery.subtitle),
+          is_active: gallery.is_active ?? seasonData.gallery.is_active,
         }
       : seasonData.gallery,
     testimonials: testimonials
@@ -158,6 +169,7 @@ export function getEffectiveSeasonalData(
           ...seasonData.testimonials,
           title: textOr(testimonials.title, seasonData.testimonials.title),
           subtitle: textOr(testimonials.subtitle, seasonData.testimonials.subtitle),
+          is_active: testimonials.is_active ?? seasonData.testimonials.is_active,
         }
       : seasonData.testimonials,
     cta: cta
@@ -190,26 +202,55 @@ export function getEffectiveSeasonalData(
 }
 
 export function mapRoomsToCabins(rooms: Room[], season: SeasonType = 'haor') {
-  const filtered = rooms.filter((room) => (room.season_type || 'haor') === season);
-  if (!filtered.length) return [];
-  return filtered.map((room, index) => ({
-    id: index + 1,
-    name: room.name,
-    nameEn: room.slug,
-    image: room.image_url || fallbackRooms[index % fallbackRooms.length]?.image || '',
-    bedType: room.bed_type || '',
-    capacity: room.capacity,
-    hasWashroom: room.has_attached_washroom,
-    hasAC: room.has_ac,
-    pricePerNight: room.price_per_night,
-    priceLabel: season === 'padma' ? (room.price_per_night > 0 ? `৳${room.price_per_night.toLocaleString()} থেকে` : 'Quote on request') : undefined,
-    unitLabel: season === 'padma' ? 'Event setup' : undefined,
-    size: '',
-    features: room.facilities || [],
-    available: room.status === 'active',
-    badge: index === 0 ? 'Premium' : '',
-    buttonLabel: season === 'padma' ? 'এই ইভেন্ট স্পেস বুক করুন' : undefined,
-  }));
+  if (!rooms || !rooms.length) return [];
+
+  // First try to filter by exact season match
+  let filtered = rooms.filter((room) => {
+    const roomSeason = room.season_type;
+    // Include rooms with matching season, or null/undefined/empty season_type (treat as haor)
+    if (!roomSeason || roomSeason === '') return season === 'haor';
+    return roomSeason === season;
+  });
+
+  // If no rooms match the season, show ALL rooms as fallback (don't return blank)
+  if (!filtered.length) {
+    filtered = rooms;
+  }
+  return filtered.map((room, index) => {
+    // Decode capacity hack: if capacity >= 1000, it means e.g. 2003 -> "2-3"
+    let rawCap: string | number = room.capacity || 2;
+    if (typeof rawCap === 'number' && rawCap >= 1000) {
+      rawCap = `${Math.floor(rawCap / 1000)}-${rawCap % 1000}`;
+    }
+
+    return {
+      id: room.slug || `room-${index}`,
+      name: room.name,
+      nameEn: room.slug,
+      desc: room.description || '',
+      image: room.image_url || fallbackRooms[index % fallbackRooms.length]?.image || '',
+      bedType: room.bed_type || 'Double Bed',
+      capacity: rawCap,
+      capacityLabel: String(rawCap).toLowerCase().includes('person') 
+        ? String(rawCap) 
+        : `${rawCap} Persons`,
+      bath: room.has_attached_washroom ? 'Private Bath' : 'Shared Bath',
+      ac: room.has_ac ? 'AC Available' : 'Non-AC',
+      mainPrice: `৳${(room.price_per_night || 0).toLocaleString()}`,
+      price2Pax: room.price_2_pax ? `৳${room.price_2_pax.toLocaleString()} (2 Persons)` : undefined,
+      price3Pax: room.price_3_pax ? `৳${room.price_3_pax.toLocaleString()} (3 Persons)` : undefined,
+      rawPricePerNight: room.price_per_night || 0,
+      rawPrice2Pax: room.price_2_pax || null,
+      rawPrice3Pax: room.price_3_pax || null,
+      priceLabel: season === 'padma' ? 'Event setup' : '/ person',
+      unitLabel: season === 'padma' ? 'Event setup' : undefined,
+      size: '',
+      features: Array.isArray(room.facilities) ? room.facilities : (room.facilities ? String(room.facilities).split(',').map((s: string) => s.trim()).filter(Boolean) : []),
+      available: room.status === 'active',
+      badge: index === 0 ? 'Premium' : '',
+      buttonLabel: season === 'padma' ? 'Book this event space' : undefined,
+    };
+  });
 }
 
 export function mapPackagesToPublic(packages: TourPackage[], season: SeasonType = 'haor') {
@@ -221,8 +262,8 @@ export function mapPackagesToPublic(packages: TourPackage[], season: SeasonType 
     titleEn: pkg.slug,
     duration: pkg.duration || '',
     price: pkg.price,
-    priceDisplay: season === 'padma' ? (pkg.price > 0 ? `৳${pkg.price.toLocaleString()} থেকে` : 'Custom Quote') : undefined,
-    priceNote: season === 'padma' ? 'প্যাকেজ থেকে শুরু' : 'প্যাকেজ অনুযায়ী',
+    priceDisplay: season === 'padma' ? (pkg.price > 0 ? `From ৳${pkg.price.toLocaleString()}` : 'Custom Quote') : undefined,
+    priceNote: season === 'padma' ? 'Starts from package' : 'According to package',
     maxGuests: pkg.max_guests,
     meals: season === 'padma' ? (pkg.best_for || pkg.meal_info || '') : (pkg.meal_info || ''),
     time: pkg.suggested_time || undefined,
@@ -235,15 +276,8 @@ export function mapPackagesToPublic(packages: TourPackage[], season: SeasonType 
 }
 
 export function mapGalleryToPublic(gallery: GalleryImage[], season: SeasonType = 'haor') {
-  const filtered = gallery.filter((image) => {
-    const category = image.category || '';
-    if (season === 'padma') {
-      return ['Padma River', 'Padma Bridge', 'Event Decoration', 'Birthday', 'Corporate', 'Dining', 'Rooftop', 'Sunset', 'Moonlight'].includes(category);
-    }
-    return !['Padma River', 'Padma Bridge', 'Event Decoration', 'Birthday', 'Corporate', 'Dining', 'Sunset', 'Moonlight'].includes(category);
-  });
-  if (!filtered.length) return [];
-  return filtered.map((image, index) => ({
+  if (!gallery || !gallery.length) return [];
+  return gallery.map((image, index) => ({
     id: index + 1,
     src: image.image_url,
     alt: image.title || 'Houseboat gallery image',

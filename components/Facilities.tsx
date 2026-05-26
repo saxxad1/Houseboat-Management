@@ -19,10 +19,10 @@ export default function Facilities() {
   const section = seasonData.facilitiesSection;
 
   return (
-    <section id="facilities" className="py-16 md:py-28 bg-[hsl(195,100%,97%)]">
+    <section id="facilities" className="py-10 md:py-16 bg-[hsl(195,100%,97%)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-10 md:mb-16">
+        <div className="text-center mb-8 md:mb-12">
           <div className="inline-flex items-center gap-2 bg-white border border-[hsl(195,85%,82%)] rounded-full px-4 py-1.5 mb-4">
             <ShieldCheck className="w-4 h-4 text-[hsl(197,80%,30%)]" />
             <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">{section.badge}</span>
@@ -54,26 +54,6 @@ export default function Facilities() {
           })}
         </StaggerReveal>
 
-        {/* Bottom Banner */}
-        <div className="mt-10 sm:mt-14 relative overflow-hidden rounded-2xl sm:rounded-3xl">
-          <Image
-            src={section.bannerImage}
-            alt="Houseboat rooftop"
-            width={1400}
-            height={600}
-            sizes="100vw"
-            className="h-44 w-full object-cover sm:h-56 md:h-72"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(197,80%,10%)]/80 to-[hsl(197,80%,10%)]/40" />
-          <div className="absolute inset-0 flex flex-col justify-center px-5 sm:px-8 md:px-12">
-            <h3 className="text-white text-lg sm:text-2xl md:text-3xl font-bold mb-1.5 sm:mb-2 max-w-lg">
-              {section.bannerTitle}
-            </h3>
-            <p className="text-white/80 text-xs sm:text-sm md:text-base max-w-md">
-              {section.bannerDescription}
-            </p>
-          </div>
-        </div>
       </div>
     </section>
   );

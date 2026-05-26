@@ -24,7 +24,7 @@ export default function LoginForm() {
 
     try {
       if (!email || !password) {
-        throw new Error('Email এবং password দিন');
+        throw new Error('Provide email and password');
       }
 
       if (!isSupabaseConfigured()) {
@@ -42,7 +42,7 @@ export default function LoginForm() {
       const adminCheck = await verifyAdminAccess(data.session?.access_token);
       if (!adminCheck.isAdmin) {
         await supabase.auth.signOut();
-        throw new Error(adminCheck.error || 'এই user admin_profiles table-এ admin হিসেবে যুক্ত নেই');
+        throw new Error(adminCheck.error || 'This user is not added as an admin in the admin_profiles table');
       }
       router.replace('/admin/dashboard');
     } catch (err) {
@@ -59,7 +59,7 @@ export default function LoginForm() {
           <div className="mb-8 text-center">
             <Logo className="mx-auto mb-4 w-40" imageClassName="drop-shadow-sm" priority />
             <h1 className="text-2xl font-bold text-slate-900">Admin Login</h1>
-            <p className="mt-2 text-sm text-slate-500">কুহেলিকা হাউসবোট ম্যানেজমেন্ট প্যানেল</p>
+            <p className="mt-2 text-sm text-slate-500">Kuhelika Houseboat Management Panel</p>
           </div>
 
           <form onSubmit={submit} className="space-y-4">
@@ -97,7 +97,7 @@ export default function LoginForm() {
 
             {!isSupabaseConfigured() && (
               <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
-                Supabase env সেট করা নেই। এখন demo mode চলছে, যেকোনো email/password দিয়ে ঢোকা যাবে।
+                Supabase env is not set. Running in demo mode, you can log in with any email/password.
               </p>
             )}
 

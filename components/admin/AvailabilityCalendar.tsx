@@ -17,10 +17,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { normalizeSeason, seasonMeta, type SeasonType } from '@/data/seasonalData';
 import { deleteRow, fetchAdminDataset, saveRow, rangesOverlap } from '@/lib/admin/data';
 import { statusColors } from '@/lib/admin/constants';
-import type { AvailabilityBlock, AvailabilityStatus, Booking, Customer, EventSlot, EventSlotStatus, Room } from '@/types/database';
+import type { AvailabilityBlock, AvailabilityStatus, Booking, Customer, EventSlot, EventSlotStatus, Room, TripSlot } from '@/types/database';
 
-const weekdays = ['রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহঃ', 'শুক্র', 'শনি'];
-const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const statusLabels: Record<string, { long: string; short: string }> = {
   available: { long: 'Available', short: 'Free' },
@@ -57,11 +57,12 @@ function activeBooking(booking: Booking) {
 
 export default function AvailabilityCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
+  const [selectedDates, setSelectedDates] = useState<string[]>([new Date().toISOString().slice(0, 10)]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [blocks, setBlocks] = useState<AvailabilityBlock[]>([]);
+  const [tripSlots, setTripSlots] = useState<TripSlot[]>([]);
   const [activeSeason, setActiveSeason] = useState<SeasonType>('haor');
   const [eventSlot, setEventSlot] = useState<EventSlot>('morning');
   const [eventSlotStatus, setEventSlotStatus] = useState<EventSlotStatus>('available');
@@ -74,6 +75,7 @@ export default function AvailabilityCalendar() {
     setBookings(data.bookings);
     setCustomers(data.customers);
     setBlocks(data.availability);
+    setTripSlots(data.trip_slots || []);
     const season = normalizeSeason(data.settings[0]?.active_season || window.localStorage.getItem('kuhelika-active-season'));
     setActiveSeason(season);
   };
@@ -89,6 +91,8 @@ export default function AvailabilityCalendar() {
 
   const visibleRooms = rooms.filter((room) => (room.season_type || 'haor') === 'haor');
 
+  const selectedDate = selectedDates[0] || new Date().toISOString().slice(0, 10);
+
   const selectedBookings = bookings.filter((booking) => {
     if (!activeBooking(booking)) return false;
     if (activeSeason === 'padma') {
@@ -97,7 +101,7 @@ export default function AvailabilityCalendar() {
     return (booking.season_type || 'haor') === 'haor'
       && rangesOverlap(selectedDate, selectedDateNext(selectedDate), booking.check_in_date, booking.check_out_date);
   });
-
+  
   const selectedBlock = blocks.find((block) =>
     block.date === selectedDate && !block.room_id && !block.event_slot && (block.season_type || 'haor') === activeSeason
   );
@@ -107,8 +111,15 @@ export default function AvailabilityCalendar() {
 
   const statusForDate = (date: string) => {
     const dayBlocks = blocks.filter((block) => block.date === date && (block.season_type || 'haor') === activeSeason);
-    if (dayBlocks.some((block) => block.status === 'maintenance')) return 'maintenance';
-    if (dayBlocks.some((block) => block.status === 'blocked' && !block.room_id && !block.event_slot)) return 'blocked';
+    
+    if (activeSeason === 'haor') {
+      const activeTrip = tripSlots.find(slot => date >= slot.start_date && date <= slot.end_date);
+      if (activeTrip && activeTrip.status !== 'available') return activeTrip.status;
+    } else {
+      if (dayBlocks.some((block) => block.status === 'maintenance')) return 'maintenance';
+      if (dayBlocks.some((block) => block.status === 'blocked' && !block.room_id && !block.event_slot)) return 'blocked';
+      if (dayBlocks.some((block) => block.status === 'fully_booked' && !block.room_id && !block.event_slot)) return 'fully_booked';
+    }
 
     if (activeSeason === 'padma') {
       const dayBookings = bookings.filter((booking) =>
@@ -147,16 +158,37 @@ export default function AvailabilityCalendar() {
     return booked ? 'fully_booked' : 'available';
   };
 
-  const blockDate = async (status: 'blocked' | 'maintenance') => {
-    await saveRow<AvailabilityBlock>('availability_blocks', {
-      id: selectedBlock?.id,
-      date: selectedDate,
-      room_id: null,
-      status,
-      season_type: activeSeason,
-      reason,
-      note,
-    });
+  const blockDate = async (status: 'blocked' | 'maintenance' | 'fully_booked' | 'available') => {
+    if (activeSeason === 'haor') {
+      const startDate = selectedDates[0];
+      const endDate = selectedDates[selectedDates.length - 1];
+      const existing = tripSlots.find(slot => slot.start_date === startDate);
+      
+      await saveRow<TripSlot>('trip_slots', {
+        id: existing?.id,
+        start_date: startDate,
+        end_date: endDate,
+        duration_label: `${selectedDates.length} Days ${Math.max(selectedDates.length - 1, 1)} Night`,
+        status,
+        reason,
+        note,
+      });
+    } else {
+      for (const date of selectedDates) {
+        const existing = blocks.find((block) =>
+          block.date === date && !block.room_id && !block.event_slot && (block.season_type || 'haor') === activeSeason
+        );
+        await saveRow<AvailabilityBlock>('availability_blocks', {
+          id: existing?.id,
+          date,
+          room_id: null,
+          status: status === 'available' ? 'available' : status,
+          season_type: activeSeason,
+          reason,
+          note,
+        });
+      }
+    }
     await load();
   };
 
@@ -167,32 +199,94 @@ export default function AvailabilityCalendar() {
         : eventSlotStatus === 'inquiry_pending'
           ? 'partially_booked'
           : eventSlotStatus;
-    await saveRow<AvailabilityBlock>('availability_blocks', {
-      id: selectedSlotBlock?.id,
-      date: selectedDate,
-      room_id: null,
-      status: availabilityStatus,
-      season_type: 'padma',
-      event_slot: eventSlot,
-      slot_status: eventSlotStatus,
-      reason,
-      note,
-    });
+    
+    for (const date of selectedDates) {
+      const existing = blocks.find((block) =>
+        block.date === date && block.event_slot === eventSlot && (block.season_type || 'haor') === 'padma'
+      );
+      await saveRow<AvailabilityBlock>('availability_blocks', {
+        id: existing?.id,
+        date,
+        room_id: null,
+        status: availabilityStatus,
+        season_type: 'padma',
+        event_slot: eventSlot,
+        slot_status: eventSlotStatus,
+        reason,
+        note,
+      });
+    }
     await load();
   };
 
   const releaseSlot = async () => {
-    if (!selectedSlotBlock) return;
-    await deleteRow('availability_blocks', selectedSlotBlock.id);
+    for (const date of selectedDates) {
+      const existing = blocks.find((block) =>
+        block.date === date && block.event_slot === eventSlot && (block.season_type || 'haor') === 'padma'
+      );
+      if (existing) {
+        await deleteRow('availability_blocks', existing.id);
+      }
+    }
     await load();
   };
 
   const releaseDate = async () => {
-    if (!selectedBlock) return;
-    await deleteRow('availability_blocks', selectedBlock.id);
+    if (activeSeason === 'haor') {
+      const startDate = selectedDates[0];
+      const existing = tripSlots.find(slot => slot.start_date === startDate || (startDate >= slot.start_date && startDate <= slot.end_date));
+      if (existing) {
+        await deleteRow('trip_slots', existing.id);
+      }
+    } else {
+      for (const date of selectedDates) {
+        const existing = blocks.find((block) =>
+          block.date === date && !block.room_id && !block.event_slot && (block.season_type || 'haor') === activeSeason
+        );
+        if (existing) {
+          await deleteRow('availability_blocks', existing.id);
+        }
+      }
+    }
     setReason('');
     setNote('');
     await load();
+  };
+
+  const toggleDate = (key: string) => {
+    if (activeSeason === 'haor') {
+      const existingTrip = tripSlots.find(slot => key >= slot.start_date && key <= slot.end_date);
+      if (existingTrip) {
+        const datesInTrip: string[] = [];
+        let curr = new Date(existingTrip.start_date);
+        const end = new Date(existingTrip.end_date);
+        while (curr <= end) {
+          datesInTrip.push(curr.toISOString().slice(0, 10));
+          curr.setDate(curr.getDate() + 1);
+        }
+        setSelectedDates(datesInTrip);
+        return;
+      }
+
+      setSelectedDates((prev) => {
+        const prevTrip = prev.length > 0 ? tripSlots.find(slot => prev[0] >= slot.start_date && prev[0] <= slot.end_date) : null;
+        if (prevTrip) {
+          return [key];
+        }
+        if (prev.includes(key)) {
+          return prev.filter((d) => d !== key);
+        }
+        return [...prev, key].sort();
+      });
+      return;
+    }
+
+    setSelectedDates((prev) => {
+      if (prev.includes(key)) {
+        return prev.filter((d) => d !== key);
+      }
+      return [...prev, key].sort();
+    });
   };
 
   return (
@@ -213,16 +307,39 @@ export default function AvailabilityCalendar() {
               const day = index + 1;
               const key = dateKey(year, month, day);
               const status = statusForDate(key);
-              const label = statusLabels[status] || { long: status.replace('_', ' '), short: status };
+              
+              const tripSlot = activeSeason === 'haor' ? tripSlots.find(slot => key >= slot.start_date && key <= slot.end_date) : null;
+              const isTripStart = tripSlot && tripSlot.start_date === key;
+              const isTripEnd = tripSlot && tripSlot.end_date === key;
+              
+              const prevKey = dateKey(year, month, day - 1);
+              const nextKey = dateKey(year, month, day + 1);
+              const isJoinedWithPrev = tripSlot && prevKey >= tripSlot.start_date;
+              const isJoinedWithNext = tripSlot && nextKey <= tripSlot.end_date;
+
+              let label = statusLabels[status] || { long: status.replace('_', ' '), short: status };
+              if (tripSlot && status !== 'available') {
+                label = { long: isTripStart ? 'Check-in' : isTripEnd ? 'Check-out' : 'Booked', short: isTripStart ? 'In' : isTripEnd ? 'Out' : 'Bkd' };
+              }
+
               return (
                 <button
                   key={key}
                   type="button"
-                  onClick={() => setSelectedDate(key)}
-                  className={`min-h-[58px] rounded-lg border p-1 text-left transition-all hover:shadow-sm sm:min-h-[86px] sm:p-2 ${
-                    selectedDate === key ? 'border-[hsl(197,80%,30%)] ring-2 ring-[hsl(197,80%,30%)]/20' : 'border-slate-200'
-                  }`}
+                  onClick={() => toggleDate(key)}
+                  className={`relative min-w-0 overflow-hidden min-h-[58px] rounded-lg border p-1 text-left transition-all hover:shadow-sm sm:min-h-[86px] sm:p-2 
+                    ${selectedDates.includes(key) ? 'border-[hsl(197,80%,30%)] ring-2 ring-[hsl(197,80%,30%)]/20 z-10' : tripSlot ? 'border-indigo-300' : 'border-slate-200'} 
+                    ${isJoinedWithPrev ? '!rounded-tl-none !rounded-bl-none border-l-0' : ''} 
+                    ${isJoinedWithNext ? '!rounded-tr-none !rounded-br-none border-r-0' : ''}
+                    ${tripSlot ? 'bg-indigo-50/60' : 'bg-white'}
+                  `}
                 >
+                  {isJoinedWithNext && !selectedDates.includes(key) && tripSlot && (
+                    <div className="absolute top-[-1px] -right-[5px] sm:-right-[9px] w-[10px] sm:w-[18px] h-[calc(100%+2px)] bg-indigo-50 border-y border-indigo-300 z-[-1] pointer-events-none" />
+                  )}
+                  {isJoinedWithNext && selectedDates.includes(key) && selectedDates.includes(nextKey) && tripSlot && (
+                    <div className="absolute top-[-1px] -right-[5px] sm:-right-[9px] w-[10px] sm:w-[18px] h-[calc(100%+2px)] bg-indigo-50 border-y-2 border-[hsl(197,80%,30%)] z-[-1] pointer-events-none" />
+                  )}
                   <div className="font-semibold text-xs sm:text-base">{day}</div>
                   <Badge className={`mt-2 max-w-full truncate px-1.5 text-[9px] sm:mt-3 sm:px-2.5 sm:text-xs ${statusColors[status]}`}>
                     <span className="sm:hidden">{label.short}</span>
@@ -238,7 +355,7 @@ export default function AvailabilityCalendar() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between gap-3 text-lg">
-            <span>{selectedDate}</span>
+            <span>{selectedDates.length > 1 ? `${selectedDates[0]} to ${selectedDates[selectedDates.length - 1]}` : selectedDate}</span>
             <Badge className={statusColors[activeSeason]}>{seasonMeta[activeSeason].adminName}</Badge>
           </CardTitle>
           <p className="text-sm text-slate-500">
@@ -307,11 +424,17 @@ export default function AvailabilityCalendar() {
                 <Button variant="secondary" disabled={!selectedSlotBlock} onClick={releaseSlot}>Release slot</Button>
               </div>
             )}
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className={`grid gap-2 ${activeSeason === 'haor' ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>
+              {activeSeason === 'haor' && (
+                <Button variant="default" onClick={() => blockDate('available')} className="bg-[hsl(197,80%,35%)] hover:bg-[hsl(197,80%,30%)]">Create Trip</Button>
+              )}
               <Button variant="outline" onClick={() => blockDate('blocked')}>Block date</Button>
               <Button variant="outline" onClick={() => blockDate('maintenance')}>Maintenance</Button>
+              <Button variant="outline" onClick={() => blockDate('fully_booked')}>Fully Booked</Button>
             </div>
-            <Button variant="secondary" className="w-full" disabled={!selectedBlock} onClick={releaseDate}>Release blocked date</Button>
+            <Button variant="secondary" className="w-full" disabled={activeSeason === 'haor' ? !tripSlots.some(t => t.start_date === selectedDates[0] || (selectedDates[0] >= t.start_date && selectedDates[0] <= t.end_date)) : !selectedBlock} onClick={releaseDate}>
+              {activeSeason === 'haor' ? 'Delete Trip Slot' : 'Release blocked date'}
+            </Button>
           </div>
 
           <div className="space-y-2">

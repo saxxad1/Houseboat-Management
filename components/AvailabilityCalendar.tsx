@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, BedDouble, Users } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePublicData } from '@/components/PublicDataProvider';
 import type { AvailabilityStatus } from '@/types/database';
 
@@ -13,6 +14,13 @@ interface DayStatus {
   availableSlots?: string[];
   bookedSlots?: string[];
   price?: number;
+  tripInfo?: {
+    isStart: boolean;
+    isEnd: boolean;
+    duration: string;
+    start_date: string;
+    end_date: string;
+  };
 }
 
 const mockCalendarData: Record<string, DayStatus> = {
@@ -50,10 +58,10 @@ const mockCalendarData: Record<string, DayStatus> = {
 };
 
 const statusConfig = {
-  available: { label: 'Available', bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500', hover: 'hover:bg-emerald-200' },
-  partial: { label: 'Partial', bg: 'bg-amber-100', text: 'text-amber-700', dot: 'bg-amber-500', hover: 'hover:bg-amber-200' },
-  full: { label: 'Full', bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500', hover: '' },
-  blocked: { label: 'Blocked', bg: 'bg-slate-100', text: 'text-slate-500', dot: 'bg-slate-400', hover: '' },
+  available: { label: 'Available', bg: 'bg-emerald-50 border border-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500', hover: 'hover:bg-emerald-100 hover:border-emerald-300 hover:shadow-md hover:-translate-y-0.5' },
+  partial: { label: 'Partial', bg: 'bg-amber-50 border border-amber-100', text: 'text-amber-700', dot: 'bg-amber-500', hover: 'hover:bg-amber-100 hover:border-amber-300 hover:shadow-md hover:-translate-y-0.5' },
+  full: { label: 'Full', bg: 'bg-rose-50 border border-rose-100 opacity-80', text: 'text-rose-700', dot: 'bg-rose-500', hover: '' },
+  blocked: { label: 'Blocked', bg: 'bg-slate-50 border border-slate-100 opacity-60', text: 'text-slate-400', dot: 'bg-slate-300', hover: '' },
 };
 
 const publicStatusMap: Record<AvailabilityStatus, Status> = {
@@ -64,15 +72,28 @@ const publicStatusMap: Record<AvailabilityStatus, Status> = {
   maintenance: 'blocked',
 };
 
-const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
-const weekdays = ['রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহঃ', 'শুক্র', 'শনি'];
-const weekdaysMobile = ['র', 'সো', 'ম', 'বু', 'বৃ', 'শু', 'শ'];
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const weekdaysMobile = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-export default function AvailabilityCalendar() {
-  const { availability, cabins, activeSeason, seasonData } = usePublicData();
+export interface AvailabilityCalendarProps {
+  inline?: boolean;
+  selectedDate?: string | null;
+  onSelectDate?: (date: string) => void;
+}
+
+export default function AvailabilityCalendar({ inline, selectedDate: propSelectedDate, onSelectDate }: AvailabilityCalendarProps = {}) {
+  const { availability, tripSlots, cabins, activeSeason, seasonData } = usePublicData();
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [localSelectedDate, setLocalSelectedDate] = useState<string | null>(null);
+  const [direction, setDirection] = useState(0);
+
+  const selectedDate = propSelectedDate !== undefined ? propSelectedDate : localSelectedDate;
+  const setSelectedDate = (date: string | null) => {
+    if (onSelectDate && date) onSelectDate(date);
+    if (propSelectedDate === undefined) setLocalSelectedDate(date);
+  };
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -80,8 +101,31 @@ export default function AvailabilityCalendar() {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+  const prevMonth = () => {
+    setDirection(-1);
+    setCurrentDate(new Date(year, month - 1, 1));
+  };
+  const nextMonth = () => {
+    setDirection(1);
+    setCurrentDate(new Date(year, month + 1, 1));
+  };
+
+  const variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 30 : -30,
+      opacity: 0
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 30 : -30,
+      opacity: 0
+    })
+  };
 
   const getDateKey = (day: number) => {
     const m = String(month + 1).padStart(2, '0');
@@ -90,7 +134,7 @@ export default function AvailabilityCalendar() {
   };
 
   const availableCabinCount = cabins.filter((cabin) => cabin.available).length || cabins.length;
-  const startingPrice = cabins.length ? Math.min(...cabins.map((cabin) => cabin.pricePerNight)) : 3500;
+  const startingPrice = 10000;
   const isPadma = activeSeason === 'padma';
   const eventSlots = isPadma && 'slots' in seasonData.availability
     ? [...seasonData.availability.slots]
@@ -114,18 +158,29 @@ export default function AvailabilityCalendar() {
         price: status === 'full' || status === 'blocked' ? 0 : 30000,
       };
     }
-    if (blocks.length) {
-      const status = blocks.some((block) => block.status === 'maintenance' || block.status === 'blocked')
-        ? 'blocked'
-        : publicStatusMap[blocks[0].status];
+
+    const trip = tripSlots.find((slot) => date >= slot.start_date && date <= slot.end_date);
+    if (trip) {
+      const isStart = date === trip.start_date;
+      const isEnd = date === trip.end_date;
+      const status = publicStatusMap[trip.status];
+      // Note: In real app, booked cabins would be checked from bookings table for this trip slot.
+      // For now we assume if it's partially booked, some cabins are taken.
       return {
         status,
-        availableCabins: status === 'available' ? availableCabinCount : status === 'partial' ? Math.max(availableCabinCount - blocks.length, 1) : 0,
+        availableCabins: status === 'available' ? availableCabinCount : status === 'partial' ? Math.max(availableCabinCount - 1, 1) : 0,
         price: status === 'full' || status === 'blocked' ? 0 : startingPrice,
+        tripInfo: {
+          isStart,
+          isEnd,
+          duration: trip.duration_label || '2 Days 1 Night',
+          start_date: trip.start_date,
+          end_date: trip.end_date,
+        },
       };
     }
 
-    return mockCalendarData[date] || {
+    return {
       status: 'available',
       availableCabins: availableCabinCount,
       price: startingPrice,
@@ -134,173 +189,202 @@ export default function AvailabilityCalendar() {
 
   const selectedData = selectedDate ? getDayData(selectedDate) : null;
 
-  return (
-    <section id="availability" className="py-16 md:py-28 bg-[hsl(195,100%,97%)]">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-10 md:mb-16">
-          <div className="inline-flex items-center gap-2 bg-white border border-[hsl(195,85%,82%)] rounded-full px-4 py-1.5 mb-4">
-            <Calendar className="w-4 h-4 text-[hsl(197,80%,30%)]" />
-            <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">{seasonData.availability.badge}</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
-            {seasonData.availability.title}
-          </h2>
-          <p className="text-slate-500 text-sm sm:text-base md:text-lg max-w-xl mx-auto">
-            {seasonData.availability.subtitle}
-          </p>
-          <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-4" />
-        </div>
 
-        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Calendar */}
-          <div className="lg:col-span-2 bg-white rounded-2xl sm:rounded-3xl shadow-md border border-slate-100 p-4 sm:p-6">
-            {/* Month Navigation */}
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
+  const calendarGrid = (
+    <div className={`bg-white/80 backdrop-blur-xl rounded-[2rem] ${inline ? 'p-3 sm:p-4' : 'shadow-xl shadow-slate-200/50 border border-white p-5 sm:p-8'} relative`}>
+      {/* Month Navigation */}
+            <div className="flex items-center justify-between mb-6 sm:mb-8">
               <button
                 onClick={prevMonth}
-                className="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors min-w-[36px]"
+                className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center hover:bg-white hover:shadow-md hover:scale-105 transition-all text-slate-600"
               >
-                <ChevronLeft className="w-5 h-5 text-slate-600" />
+                <ChevronLeft className="w-5 h-5" />
               </button>
-              <h3 className="font-bold text-slate-800 text-base sm:text-lg">
-                {months[month]} {year}
-              </h3>
+              <AnimatePresence mode="popLayout" custom={direction}>
+                <motion.h3 
+                  key={month}
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="font-bold text-slate-800 text-lg sm:text-xl"
+                >
+                  {months[month]} {year}
+                </motion.h3>
+              </AnimatePresence>
               <button
                 onClick={nextMonth}
-                className="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors min-w-[36px]"
+                className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center hover:bg-white hover:shadow-md hover:scale-105 transition-all text-slate-600"
               >
-                <ChevronRight className="w-5 h-5 text-slate-600" />
+                <ChevronRight className="w-5 h-5" />
               </button>
             </div>
 
             {/* Weekday Headers */}
-            <div className="grid grid-cols-7 mb-1">
+            <div className="grid grid-cols-7 mb-3">
               {weekdays.map((d, i) => (
                 <div key={d} className="text-center py-2">
-                  <span className="hidden sm:inline text-xs font-semibold text-slate-400">{d}</span>
-                  <span className="sm:hidden text-xs font-semibold text-slate-400">{weekdaysMobile[i]}</span>
+                  <span className="hidden sm:inline text-xs font-bold text-slate-400 uppercase tracking-wider">{d}</span>
+                  <span className="sm:hidden text-xs font-bold text-slate-400 uppercase">{weekdaysMobile[i]}</span>
                 </div>
               ))}
             </div>
 
             {/* Days Grid */}
-            <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
-              {[...Array(firstDay)].map((_, i) => (
-                <div key={`empty-${i}`} />
-              ))}
-              {[...Array(daysInMonth)].map((_, i) => {
-                const day = i + 1;
-                const key = getDateKey(day);
-                const data = getDayData(key);
-                const isToday = key === today.toISOString().split('T')[0];
-                const isSelected = key === selectedDate;
-                const isDisabled = data?.status === 'full' || data?.status === 'blocked';
-                const cfg = data ? statusConfig[data.status] : null;
+            <div className="relative overflow-hidden min-h-[300px] sm:min-h-[380px]">
+              <AnimatePresence custom={direction} mode="popLayout">
+                <motion.div 
+                  key={month}
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="grid grid-cols-7 gap-1.5 sm:gap-2 absolute w-full top-0 left-0"
+                >
+                  {[...Array(firstDay)].map((_, i) => (
+                    <div key={`empty-${i}`} />
+                  ))}
+                  {[...Array(daysInMonth)].map((_, i) => {
+                    const day = i + 1;
+                    const key = getDateKey(day);
+                    const data = getDayData(key);
+                    
+                    const isToday = key === today.toISOString().split('T')[0];
+                    const isSelected = key === selectedDate;
+                    const isDisabled = data?.status === 'full' || data?.status === 'blocked' || data?.tripInfo?.isEnd;
+                    let cfg = data ? statusConfig[data.status] : null;
 
-                return (
-                  <button
-                    key={day}
-                    onClick={() => !isDisabled && setSelectedDate(isSelected ? null : key)}
-                    disabled={isDisabled}
-                    className={`
-                      aspect-square rounded-lg sm:rounded-xl flex flex-col items-center justify-center transition-all duration-150
-                      ${isSelected ? 'bg-[hsl(197,80%,30%)] text-white shadow-md' : ''}
-                      ${!isSelected && cfg ? `${cfg.bg} ${cfg.text} ${cfg.hover}` : ''}
-                      ${!cfg && !isSelected ? 'text-slate-300' : ''}
-                      ${isToday && !isSelected ? 'ring-2 ring-[hsl(197,80%,38%)]' : ''}
-                      ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-                    `}
-                  >
-                    <span className="text-xs sm:text-sm font-medium">{day}</span>
-                    {cfg && (
-                      <span className={`text-[7px] sm:text-[9px] leading-none mt-0.5 ${isSelected ? 'text-white/80' : ''}`}>
-                        {data?.availableCabins !== undefined && data.availableCabins > 0 ? data.availableCabins : data?.status === 'available' ? '' : '✕'}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                    // If it's a trip slot, override the color to make it distinct, 
+                    // unless it's full/blocked in which case keep the red/gray color.
+                    if (data?.tripInfo && data.status !== 'full' && data.status !== 'blocked') {
+                      cfg = {
+                        bg: 'bg-indigo-50 border-indigo-300',
+                        text: 'text-indigo-800',
+                        hover: 'hover:bg-indigo-100 hover:border-indigo-400',
+                        dot: 'bg-indigo-500'
+                      };
+                    }
 
-            {/* Legend */}
-            <div className="flex flex-wrap gap-2 sm:gap-3 mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-100">
-              {Object.entries(statusConfig).map(([key, cfg]) => (
-                <div key={key} className="flex items-center gap-1.5">
-                  <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0 ${cfg.dot}`} />
-                  <span className="text-[10px] sm:text-xs text-slate-500">{cfg.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+                    // Join logic for adjacent fully booked/blocked dates, and TripSlots
+                    const prevKey = getDateKey(day - 1);
+                    const nextKey = getDateKey(day + 1);
+                    const prevData = day > 1 ? getDayData(prevKey) : null;
+                    const nextData = day < daysInMonth ? getDayData(nextKey) : null;
+                    
+                    const isSameTripAsPrev = data?.tripInfo && prevData?.tripInfo && data.tripInfo.start_date === prevData.tripInfo.start_date;
+                    const isSameTripAsNext = data?.tripInfo && nextData?.tripInfo && data.tripInfo.start_date === nextData.tripInfo.start_date;
 
-          {/* Sidebar Summary */}
-          <div className="space-y-3 sm:space-y-4">
-            {selectedDate && selectedData ? (
-              <div className="bg-white rounded-2xl sm:rounded-3xl shadow-md border border-slate-100 p-4 sm:p-6">
-                <h4 className="font-bold text-slate-800 mb-3 sm:mb-4 text-base sm:text-lg">
-                  {new Date(selectedDate + 'T00:00:00').toLocaleDateString('bn-BD', {
-                    day: 'numeric', month: 'long', year: 'numeric',
+                    const isJoinedWithPrev = isSameTripAsPrev || (isDisabled && !data?.tripInfo && prevData?.status === data?.status && !prevData?.tripInfo);
+                    const isJoinedWithNext = isSameTripAsNext || (isDisabled && !data?.tripInfo && nextData?.status === data?.status && !nextData?.tripInfo);
+
+                    return (
+                      <motion.button
+                        key={day}
+                        onClick={() => !isDisabled && setSelectedDate(isSelected ? null : key)}
+                        disabled={isDisabled}
+                        whileHover={!isDisabled && !isSelected ? { scale: 1.05 } : {}}
+                        whileTap={!isDisabled ? { scale: 0.95 } : {}}
+                        className={`
+                          relative aspect-square rounded-2xl flex flex-col items-center justify-center transition-all duration-200 min-w-0 overflow-hidden
+                          ${isSelected ? 'bg-gradient-to-br from-[hsl(197,80%,40%)] to-[hsl(197,80%,30%)] text-white shadow-lg shadow-[hsl(197,80%,30%)]/30 scale-105 z-20' : 'z-10'}
+                          ${!isSelected && cfg ? `${cfg.bg} ${cfg.text} ${cfg.hover}` : ''}
+                          ${!cfg && !isSelected ? 'text-slate-300' : ''}
+                          ${isToday && !isSelected ? 'ring-2 ring-offset-2 ring-[hsl(197,80%,38%)]/50 font-bold' : ''}
+                          ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}
+                          ${isJoinedWithPrev ? '!rounded-tl-none !rounded-bl-none border-l-0' : ''}
+                          ${isJoinedWithNext ? '!rounded-tr-none !rounded-br-none border-r-0' : ''}
+                        `}
+                      >
+                        {/* Bridge gap for next adjacent date */}
+                        {isJoinedWithNext && !isSelected && cfg && (
+                          <div className={`absolute top-[-1px] -right-[6px] sm:-right-[8px] w-[12px] sm:w-[16px] h-[calc(100%+2px)] ${cfg.bg.split(' ')[0]} border-y border-y-inherit ${cfg.bg.split(' ')[1] || ''} z-[-1] pointer-events-none`} />
+                        )}
+                        <span className="text-[13px] sm:text-base font-medium z-10">{day}</span>
+                        {cfg && !data?.tripInfo && data?.status !== 'available' && (
+                          <span className={`text-[9px] sm:text-[10px] font-semibold tracking-tighter leading-none mt-0.5 z-10 ${isSelected ? 'text-white/90' : ''}`}>
+                            ✕
+                          </span>
+                        )}
+                        {data?.tripInfo?.isStart && (
+                          <span className="text-[8px] sm:text-[9px] font-bold tracking-tighter leading-none mt-0.5 z-10 text-indigo-600 whitespace-nowrap overflow-hidden max-w-[95%]">
+                            {inline ? 'IN' : <><span className="sm:hidden">IN</span><span className="hidden sm:inline">Check-in</span></>}
+                          </span>
+                        )}
+                        {data?.tripInfo?.isEnd && (
+                          <span className="text-[8px] sm:text-[9px] font-bold tracking-tighter leading-none mt-0.5 z-10 text-indigo-600 whitespace-nowrap overflow-hidden max-w-[95%]">
+                            {inline ? 'OUT' : <><span className="sm:hidden">OUT</span><span className="hidden sm:inline">Checkout</span></>}
+                          </span>
+                        )}
+                      </motion.button>
+                    );
                   })}
-                </h4>
-
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-center justify-between p-2.5 sm:p-3 bg-slate-50 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2.5 h-2.5 rounded-full ${statusConfig[selectedData.status].dot}`} />
-                      <span className="text-xs sm:text-sm text-slate-600">অবস্থা</span>
-                    </div>
-                    <span className={`text-xs sm:text-sm font-bold ${statusConfig[selectedData.status].text}`}>
-                      {statusConfig[selectedData.status].label}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 sm:p-3 bg-slate-50 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <BedDouble className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(197,80%,38%)]" />
-                      <span className="text-xs sm:text-sm text-slate-600">{isPadma ? 'Available Slots' : 'উপলব্ধ কেবিন'}</span>
-                    </div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-800">{selectedData.availableCabins} / {isPadma ? eventSlots.length : cabins.length || 6}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 sm:p-3 bg-slate-50 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(197,80%,38%)]" />
-                      <span className="text-xs sm:text-sm text-slate-600">{isPadma ? 'Booked Slots' : 'বুকড কেবিন'}</span>
-                    </div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-800">{(isPadma ? eventSlots.length : cabins.length || 6) - (selectedData.availableCabins || 0)} / {isPadma ? eventSlots.length : cabins.length || 6}</span>
-                  </div>
-
-                  {isPadma && (
-                    <div className="p-2.5 sm:p-3 bg-slate-50 rounded-xl">
-                      <div className="text-xs text-slate-500 mb-1">Active Season</div>
-                      <div className="text-sm font-bold text-[hsl(197,80%,30%)]">Padma Event Season</div>
-                    </div>
-                  )}
-
-                  {selectedData.price && selectedData.price > 0 && (
-                    <div className="p-3 bg-[hsl(195,95%,92%)] rounded-xl">
-                      <div className="text-xs text-[hsl(197,80%,38%)] font-medium mb-1">{isPadma ? 'Starting Event Price' : 'শুরুর মূল্য (প্রতি রাত)'}</div>
-                      <div className="text-xl sm:text-2xl font-black text-[hsl(197,80%,28%)]">
-                        ৳{selectedData.price.toLocaleString()}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl sm:rounded-3xl shadow-md border border-slate-100 p-5 sm:p-6 text-center">
-                <Calendar className="w-8 h-8 sm:w-10 sm:h-10 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-400 text-sm">একটি তারিখ সিলেক্ট করুন বিস্তারিত দেখতে</p>
-              </div>
-            )}
-
-            <div className="bg-amber-50 border border-amber-200 rounded-xl sm:rounded-2xl p-3 sm:p-4">
-              <p className="text-amber-800 text-xs sm:text-sm leading-relaxed">
-                <strong>নোট:</strong> এই ক্যালেন্ডারটি আনুমানিক। নিশ্চিত তারিখের জন্য সরাসরি আমাদের সাথে যোগাযোগ করুন।
-              </p>
+                </motion.div>
+              </AnimatePresence>
             </div>
+            
+      {/* Legend */}
+      <div className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-5 mt-4 sm:mt-2 pt-5 border-t border-slate-100">
+        {Object.entries(statusConfig).map(([key, cfg]) => (
+          <div key={key} className="flex items-center gap-2">
+            <div className={`w-3 h-3 rounded-full shadow-sm ${cfg.dot}`} />
+            <span className="text-xs font-medium text-slate-500">{cfg.label}</span>
           </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (inline) {
+    return calendarGrid;
+  }
+
+  return (
+    <section id="availability" className="py-10 md:py-16 bg-gradient-to-b from-white to-[hsl(195,100%,97%)] relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute -top-[10%] -left-[10%] w-[50%] max-w-[600px] aspect-square rounded-full bg-emerald-50/50 blur-[100px]" />
+        <div className="absolute bottom-[10%] -right-[10%] w-[40%] max-w-[500px] aspect-square rounded-full bg-[hsl(197,80%,90%)]/30 blur-[80px]" />
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Header */}
+        <div className="text-center mb-8 md:mb-12 px-4 relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-md border border-slate-100 shadow-sm rounded-full px-4 py-1.5 mb-4"
+          >
+            <Calendar className="w-4 h-4 text-[hsl(197,80%,30%)]" />
+            <span className="text-[hsl(197,80%,30%)] text-sm font-semibold">{seasonData.availability.badge}</span>
+          </motion.div>
+          <motion.h2 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-800 mb-4 tracking-tight"
+          >
+            {seasonData.availability.title}
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-slate-500 text-sm sm:text-base md:text-lg max-w-xl mx-auto"
+          >
+            {seasonData.availability.subtitle}
+          </motion.p>
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          {calendarGrid}
         </div>
       </div>
     </section>

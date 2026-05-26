@@ -15,7 +15,7 @@ export default function BookingCTA({ onBookNow }: BookingCTAProps) {
   const whatsappMessage = encodeURIComponent(
     activeSeason === 'padma'
       ? `Hello, I want to book a Padma River event cruise for ${siteConfig.name}. Please confirm availability and package details.`
-      : `আসসালামু আলাইকুম! আমি ${siteConfig.name} এর হাওর/হাউসবোট বুকিং সম্পর্কে জানতে চাই।`
+      : `Hello! I would like to know about Haor/Houseboat booking for ${siteConfig.name}.`
   );
 
   return (
@@ -63,7 +63,7 @@ export default function BookingCTA({ onBookNow }: BookingCTAProps) {
             className="flex items-center justify-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white font-bold px-6 sm:px-8 py-3.5 sm:py-4 rounded-full border border-white/30 hover:border-white/50 transition-all duration-200 text-base sm:text-lg min-h-[52px]"
           >
             <Phone className="w-5 h-5 flex-shrink-0" />
-            ফোন করুন
+            Call Now
           </a>
           <a
             href={`https://wa.me/${siteConfig.whatsapp}?text=${whatsappMessage}`}

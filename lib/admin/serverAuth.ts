@@ -13,6 +13,7 @@ export const adminTables: AdminTableName[] = [
   'income',
   'expenses',
   'availability_blocks',
+  'trip_slots',
   'gallery',
   'website_content',
 ];
@@ -61,7 +62,7 @@ export async function getVerifiedAdminContext(request: NextRequest) {
 
   if (!profile) {
     return {
-      error: NextResponse.json({ error: 'এই user admin_profiles table-এ admin হিসেবে যুক্ত নেই' }, { status: 403 }),
+      error: NextResponse.json({ error: 'This user is not added as an admin in the admin_profiles table' }, { status: 403 }),
     };
   }
 
