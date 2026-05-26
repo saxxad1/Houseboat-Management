@@ -8,7 +8,9 @@ import type {
   HouseboatSettings,
   Income,
   Payment,
+  Review,
   Room,
+  SpecialDate,
   TourPackage,
   WebsiteContent,
 } from '@/types/database';
@@ -48,9 +50,9 @@ export const demoRooms: Room[] = cabins.map((room, index) => ({
   image_url: room.image,
   bed_type: room.bedType,
   capacity: room.capacity,
-  price_per_night: room.pricePerNight,
-  has_attached_washroom: room.hasWashroom,
-  has_ac: room.hasAC,
+  price_per_night: parseInt((room.mainPrice || '0').replace(/\D/g, ''), 10) || 10000,
+  has_attached_washroom: room.bath === 'Private Bath',
+  has_ac: room.ac !== 'Non-AC',
   facilities: room.features,
   status: room.available ? 'active' : 'inactive',
   sort_order: index + 1,
@@ -244,6 +246,34 @@ export const demoWebsiteContent: WebsiteContent[] = [
   },
 ];
 
+export const demoReviews: Review[] = [
+  {
+    id: 'review-001',
+    name: 'Sumaiya Khan',
+    location: 'Dhaka',
+    rating: 5,
+    review: 'Beautiful houseboat, clean cabins, and very helpful team.',
+    avatar: 'SK',
+    is_published: true,
+    created_at: now,
+    updated_at: now,
+  },
+];
+
+export const demoSpecialDates: SpecialDate[] = [
+  {
+    id: 'special-date-001',
+    date: '2026-06-01',
+    title: 'Demo public holiday',
+    date_type: 'public_holiday',
+    is_discount_excluded: true,
+    is_active: true,
+    note: 'Add full moon and government holidays here.',
+    created_at: now,
+    updated_at: now,
+  },
+];
+
 export const demoTableData = {
   admin_profiles: [],
   houseboat_settings: [demoSettings],
@@ -256,6 +286,8 @@ export const demoTableData = {
   expenses: demoExpenses,
   availability_blocks: demoAvailabilityBlocks,
   trip_slots: [],
+  special_dates: demoSpecialDates,
   gallery: demoGallery,
   website_content: demoWebsiteContent,
+  reviews: demoReviews,
 };

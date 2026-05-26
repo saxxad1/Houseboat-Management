@@ -14,6 +14,7 @@ export type SeasonType = 'haor' | 'padma';
 export type DisplayMode = 'cabin' | 'event_space';
 export type EventSlot = 'morning' | 'afternoon' | 'evening' | 'moonlight' | 'full_day' | 'custom';
 export type EventSlotStatus = 'available' | 'inquiry_pending' | 'booked' | 'blocked' | 'maintenance';
+export type SpecialDateType = 'public_holiday' | 'full_moon' | 'custom_no_discount' | 'other';
 
 export interface BaseRow {
   id: string;
@@ -112,6 +113,9 @@ export interface Booking extends BaseRow {
   check_in_date: string;
   check_out_date: string;
   number_of_guests: number;
+  subtotal_amount?: number | null;
+  discount_amount?: number | null;
+  discount_reason?: string | null;
   total_amount: number;
   advance_amount: number;
   due_amount: number;
@@ -201,6 +205,15 @@ export interface Review extends BaseRow {
   is_published: boolean;
 }
 
+export interface SpecialDate extends BaseRow {
+  date: string;
+  title: string;
+  date_type: SpecialDateType;
+  is_discount_excluded: boolean;
+  is_active: boolean;
+  note: string | null;
+}
+
 export type AdminTableName =
   | 'admin_profiles'
   | 'houseboat_settings'
@@ -213,6 +226,7 @@ export type AdminTableName =
   | 'expenses'
   | 'availability_blocks'
   | 'trip_slots'
+  | 'special_dates'
   | 'gallery'
   | 'website_content'
   | 'reviews';
@@ -231,6 +245,7 @@ export interface Database {
       expenses: { Row: Expense; Insert: Partial<Expense>; Update: Partial<Expense> };
       availability_blocks: { Row: AvailabilityBlock; Insert: Partial<AvailabilityBlock>; Update: Partial<AvailabilityBlock> };
       trip_slots: { Row: TripSlot; Insert: Partial<TripSlot>; Update: Partial<TripSlot> };
+      special_dates: { Row: SpecialDate; Insert: Partial<SpecialDate>; Update: Partial<SpecialDate> };
       gallery: { Row: GalleryImage; Insert: Partial<GalleryImage>; Update: Partial<GalleryImage> };
       website_content: { Row: WebsiteContent; Insert: Partial<WebsiteContent>; Update: Partial<WebsiteContent> };
       reviews: { Row: Review; Insert: Partial<Review>; Update: Partial<Review> };

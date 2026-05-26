@@ -46,6 +46,9 @@ const defaultForm = {
   check_in_date: '',
   check_out_date: '',
   number_of_guests: '2',
+  subtotal_amount: '0',
+  discount_amount: '0',
+  discount_reason: '',
   total_amount: '0',
   advance_amount: '0',
   payment_status: 'unpaid',
@@ -107,6 +110,9 @@ export default function BookingForm({
             check_in_date: booking.check_in_date,
             check_out_date: booking.check_out_date,
             number_of_guests: String(booking.number_of_guests),
+            subtotal_amount: String(booking.subtotal_amount ?? booking.total_amount),
+            discount_amount: String(booking.discount_amount || 0),
+            discount_reason: booking.discount_reason || '',
             total_amount: String(booking.total_amount),
             advance_amount: String(booking.advance_amount),
             payment_status: booking.payment_status,
@@ -177,6 +183,9 @@ export default function BookingForm({
           booking_code: booking?.booking_code,
           room_id: parsed.room_id || null,
           package_id: parsed.package_id || null,
+          subtotal_amount: parsed.subtotal_amount,
+          discount_amount: parsed.discount_amount,
+          discount_reason: parsed.discount_reason,
           due_amount: dueAmount,
           season_type: parsed.season_type,
           event_type: parsed.event_type,
@@ -378,6 +387,18 @@ export default function BookingForm({
           <div className="space-y-2">
             <Label>Total amount</Label>
             <Input type="number" min="0" value={form.total_amount} onChange={(event) => setField('total_amount', event.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Subtotal before discount</Label>
+            <Input type="number" min="0" value={form.subtotal_amount} onChange={(event) => setField('subtotal_amount', event.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Discount amount</Label>
+            <Input type="number" min="0" value={form.discount_amount} onChange={(event) => setField('discount_amount', event.target.value)} />
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label>Discount reason</Label>
+            <Input value={form.discount_reason} onChange={(event) => setField('discount_reason', event.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Advance amount</Label>

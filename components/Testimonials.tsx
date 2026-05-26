@@ -1,46 +1,26 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Star, Quote, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { usePublicData } from '@/components/PublicDataProvider';
-import { getReviews } from '@/lib/actions/reviews';
-import type { Review } from '@/types/database';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Testimonials() {
-  const { seasonData, content } = usePublicData();
+  const { seasonData, content, reviews } = usePublicData();
   
   const isHidden = content?.find(c => c.section_key === 'reviews_section_hidden')?.is_active;
 
   const fallbackTestimonials = seasonData.testimonials.items;
   const stats = seasonData.testimonials.stats;
   
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
-
   const carouselRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  useEffect(() => {
-    async function loadReviews() {
-      try {
-        const data = await getReviews();
-        // Only use published reviews
-        const published = data.filter(r => r.is_published);
-        setReviews(published.length > 0 ? published : []);
-      } catch (error) {
-        console.error('Failed to fetch reviews:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadReviews();
-  }, []);
-
-  const displayReviews = reviews.length > 0 
-    ? reviews 
-    : fallbackTestimonials.map((t, i) => ({
+  const displayReviews = useMemo(() => (
+    reviews.length > 0
+      ? reviews
+      : fallbackTestimonials.map((t, i) => ({
         id: String(i),
         name: t.name,
         location: t.location,
@@ -50,21 +30,22 @@ export default function Testimonials() {
         is_published: true,
         created_at: '',
         updated_at: ''
-      }));
+      }))
+  ), [fallbackTestimonials, reviews]);
 
-  const checkScroll = () => {
+  const checkScroll = useCallback(() => {
     if (carouselRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
       setCanScrollLeft(scrollLeft > 0);
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
     }
-  };
+  }, []);
 
   useEffect(() => {
     checkScroll();
     window.addEventListener('resize', checkScroll);
     return () => window.removeEventListener('resize', checkScroll);
-  }, [displayReviews]);
+  }, [checkScroll, displayReviews]);
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     const carousel = carouselRef.current;
@@ -128,12 +109,7 @@ export default function Testimonials() {
         </div>
 
         {/* Review Cards - Horizontal Carousel */}
-        {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="w-10 h-10 border-4 border-slate-200 border-t-[hsl(197,80%,30%)] rounded-full animate-spin" />
-          </div>
-        ) : (
-          <div className="relative group px-12 sm:px-16 md:px-24 lg:px-32 max-w-[100vw]">
+        <div className="relative group px-12 sm:px-16 md:px-24 lg:px-32 max-w-[100vw]">
             {/* Navigation Arrows (PC) */}
             <button
               onClick={() => scrollCarousel('left')}
@@ -186,7 +162,7 @@ export default function Testimonials() {
                     </div>
 
                     <p className="text-slate-700 text-sm sm:text-base leading-relaxed flex-1 mb-6 font-medium relative z-10 italic">
-                      "{review.review}"
+                      &ldquo;{review.review}&rdquo;
                     </p>
 
                     <div className="flex items-center gap-3 sm:gap-4 pt-5 sm:pt-6 border-t border-slate-100 relative z-10">
@@ -202,8 +178,7 @@ export default function Testimonials() {
                 ))}
               </AnimatePresence>
             </div>
-          </div>
-        )}
+        </div>
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
-import type { AdminTableName } from '@/types/database';
+import type { AdminProfile, AdminTableName, Database } from '@/types/database';
 
 export const adminTables: AdminTableName[] = [
   'admin_profiles',
@@ -14,15 +15,25 @@ export const adminTables: AdminTableName[] = [
   'expenses',
   'availability_blocks',
   'trip_slots',
+  'special_dates',
   'gallery',
   'website_content',
+  'reviews',
 ];
 
 export function isAdminTableName(table: string): table is AdminTableName {
   return adminTables.includes(table as AdminTableName);
 }
 
-export async function getVerifiedAdminContext(request: NextRequest) {
+type VerifiedAdminContext = {
+  supabase: SupabaseClient<Database>;
+  user: User;
+  profile: Pick<AdminProfile, 'id' | 'full_name' | 'role'>;
+};
+
+type AdminContextResult = VerifiedAdminContext | { error: NextResponse };
+
+export async function getVerifiedAdminContext(request: NextRequest): Promise<AdminContextResult> {
   const supabase = getSupabaseServiceClient();
   const authHeader = request.headers.get('authorization') || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();

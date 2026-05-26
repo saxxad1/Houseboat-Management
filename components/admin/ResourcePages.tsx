@@ -30,7 +30,6 @@ export function RoomsAdminPage() {
       ]}
       fields={[
         { name: 'name', label: 'Room name', required: true },
-        { name: 'slug', label: 'Slug', required: true },
         { name: 'season_type', label: 'Season', type: 'select', options: [{ value: 'haor', label: 'Haor cabin' }, { value: 'padma', label: 'Padma event space' }] },
         { name: 'display_mode', label: 'Display mode', type: 'select', options: [{ value: 'cabin', label: 'Cabin' }, { value: 'event_space', label: 'Event space' }] },
         { name: 'image_url', label: 'Room Images (Up to 4)', type: 'images', colSpan: 'full' },
@@ -72,7 +71,6 @@ export function PackagesAdminPage() {
       ]}
       fields={[
         { name: 'title', label: 'Title', required: true },
-        { name: 'slug', label: 'Slug', required: true },
         { name: 'season_type', label: 'Season', type: 'select', options: [{ value: 'haor', label: 'Haor package' }, { value: 'padma', label: 'Padma event package' }] },
         { name: 'image_url', label: 'Package image', type: 'image', colSpan: 'full' },
         { name: 'description', label: 'Description', type: 'textarea' },
@@ -241,6 +239,44 @@ export function ContentAdminPage() {
         { name: 'button_text', label: 'Button text' },
         { name: 'button_url', label: 'Button URL' },
         { name: 'is_active', label: 'Active', type: 'boolean', defaultValue: true },
+      ]}
+    />
+  );
+}
+
+export function DiscountAdminPage() {
+  return (
+    <AdminResourcePage
+      table="special_dates"
+      title="Discount Controls"
+      description="Manage full moon, government holidays, and custom no-discount dates. Thursday, Friday, and Saturday are excluded automatically."
+      addLabel="Add No-discount Date"
+      searchKeys={['title', 'date', 'date_type']}
+      columns={[
+        { key: 'date', label: 'Date', type: 'date' },
+        { key: 'title', label: 'Title' },
+        { key: 'date_type', label: 'Type', type: 'status' },
+        { key: 'is_discount_excluded', label: 'No Discount', type: 'boolean' },
+        { key: 'is_active', label: 'Active', type: 'boolean' },
+        { key: 'note', label: 'Note' },
+      ]}
+      fields={[
+        { name: 'date', label: 'Date', type: 'date', required: true },
+        { name: 'title', label: 'Title', required: true },
+        {
+          name: 'date_type',
+          label: 'Date type',
+          type: 'select',
+          options: [
+            { value: 'public_holiday', label: 'Government holiday' },
+            { value: 'full_moon', label: 'Full moon' },
+            { value: 'custom_no_discount', label: 'Custom no-discount date' },
+            { value: 'other', label: 'Other' },
+          ],
+        },
+        { name: 'is_discount_excluded', label: 'Exclude this date from discount', type: 'boolean', defaultValue: true },
+        { name: 'is_active', label: 'Active', type: 'boolean', defaultValue: true },
+        { name: 'note', label: 'Note', type: 'textarea', colSpan: 'full' },
       ]}
     />
   );

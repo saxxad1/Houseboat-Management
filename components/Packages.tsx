@@ -51,7 +51,7 @@ export default function Packages({ onBookNow }: PackagesProps) {
 
 function PackagesContent({ onBookNow }: PackagesProps) {
   const { packages, seasonData } = usePublicData();
-  const section = seasonData.packagesSection;
+  const section = seasonData.packagesSection as typeof seasonData.packagesSection & { is_active?: boolean };
 
   if (section && section.is_active === false) {
     return null;
@@ -110,8 +110,7 @@ function PackagesContent({ onBookNow }: PackagesProps) {
                     </span>
                   )}
 
-                  <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-1 tracking-tight">{pkg.title}</h3>
-                  <p className="text-slate-500 text-xs sm:text-sm mb-5 font-medium">{pkg.titleEn}</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-5 tracking-tight">{pkg.title}</h3>
 
                   {/* Price */}
                   <div className="mb-6 bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white shadow-inner">

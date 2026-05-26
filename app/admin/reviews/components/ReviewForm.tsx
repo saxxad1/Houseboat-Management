@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import type { Review } from '@/types/database';
-import { createReview, updateReview } from '@/lib/actions/reviews';
+import { saveRow } from '@/lib/admin/data';
 import { toast } from 'sonner';
 
 const reviewSchema = z.object({
@@ -60,15 +60,12 @@ export default function ReviewForm({ initialData, open, onOpenChange, onSuccess 
   async function onSubmit(values: z.infer<typeof reviewSchema>) {
     try {
       setLoading(true);
-      if (initialData) {
-        const result = await updateReview(initialData.id, values);
-        if (result && result.error) throw new Error(result.error);
-        toast.success('Review updated successfully');
-      } else {
-        const result = await createReview(values);
-        if (result && result.error) throw new Error(result.error);
-        toast.success('Review added successfully');
-      }
+      await saveRow<Review>('reviews', {
+        id: initialData?.id,
+        ...values,
+        location: values.location || null,
+      });
+      toast.success(initialData ? 'Review updated successfully' : 'Review added successfully');
       onSuccess();
       onOpenChange(false);
       form.reset();

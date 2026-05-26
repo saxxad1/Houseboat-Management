@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fetchAdminDataset, saveRow } from '@/lib/admin/data';
@@ -124,7 +124,7 @@ export function TripDetails({ id }: { id: string }) {
     }
   };
   
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     const data = await fetchAdminDataset();
       const foundTrip = data.trip_slots.find((t) => t.id === id);
       if (!foundTrip) {
@@ -149,11 +149,11 @@ export function TripDetails({ id }: { id: string }) {
       setManualExpenses(parsedData.manualExpenses || []);
       
       setLoading(false);
-    };
+    }, [id, router]);
 
   useEffect(() => {
     loadData();
-  }, [id, router]);
+  }, [loadData]);
 
   if (loading || !trip) {
     return <div className="p-8 text-center text-slate-500">Loading trip details...</div>;

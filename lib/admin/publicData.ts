@@ -3,7 +3,7 @@
 import { isSupabaseConfigured } from '@/lib/supabase/client';
 import { cabins as fallbackRooms, siteConfig } from '@/data/houseboatData';
 import type { SeasonType, SeasonalContent } from '@/data/seasonalData';
-import type { AvailabilityBlock, GalleryImage, HouseboatSettings, Room, TourPackage, TripSlot, WebsiteContent } from '@/types/database';
+import type { AvailabilityBlock, GalleryImage, HouseboatSettings, Review, Room, SpecialDate, TourPackage, TripSlot, WebsiteContent } from '@/types/database';
 
 export async function loadPublicHouseboatData() {
   if (!isSupabaseConfigured()) {
@@ -24,6 +24,8 @@ export async function loadPublicHouseboatData() {
     content: (result.content || []) as WebsiteContent[],
     availability: (result.availability || []) as AvailabilityBlock[],
     trip_slots: (result.trip_slots || []) as TripSlot[],
+    special_dates: (result.special_dates || []) as SpecialDate[],
+    reviews: (result.reviews || []) as Review[],
   };
 }
 
@@ -107,7 +109,7 @@ export function getEffectiveSeasonalData(
           title: textOr(about.title, seasonData.about.title),
           subtitle: textOr(about.subtitle, seasonData.about.subtitle),
           story: textOr(about.content, seasonData.about.story),
-          is_active: about.is_active ?? seasonData.about.is_active,
+          is_active: about.is_active ?? true,
         }
       : seasonData.about,
     cabinsSection: cabinsSection
@@ -117,7 +119,7 @@ export function getEffectiveSeasonalData(
           subtitle: textOr(cabinsSection.subtitle, seasonData.cabinsSection.subtitle),
           fullBoatDescription: textOr(cabinsSection.content, seasonData.cabinsSection.fullBoatDescription),
           fullBoatButton: textOr(cabinsSection.button_text, seasonData.cabinsSection.fullBoatButton),
-          is_active: cabinsSection.is_active ?? seasonData.cabinsSection.is_active,
+          is_active: cabinsSection.is_active ?? true,
         }
       : seasonData.cabinsSection,
     packagesSection: packagesSection
@@ -126,7 +128,7 @@ export function getEffectiveSeasonalData(
           title: textOr(packagesSection.title, seasonData.packagesSection.title),
           subtitle: textOr(packagesSection.subtitle, seasonData.packagesSection.subtitle),
           note: textOr(packagesSection.content, seasonData.packagesSection.note),
-          is_active: packagesSection.is_active ?? seasonData.packagesSection.is_active,
+          is_active: packagesSection.is_active ?? true,
         }
       : seasonData.packagesSection,
     availability: availability
@@ -134,7 +136,7 @@ export function getEffectiveSeasonalData(
           ...seasonData.availability,
           title: textOr(availability.title, seasonData.availability.title),
           subtitle: textOr(availability.subtitle, seasonData.availability.subtitle),
-          is_active: availability.is_active ?? seasonData.availability.is_active,
+          is_active: availability.is_active ?? true,
         }
       : seasonData.availability,
     itinerary: itinerary
@@ -143,7 +145,7 @@ export function getEffectiveSeasonalData(
           title: textOr(itinerary.title, seasonData.itinerary.title),
           subtitle: textOr(itinerary.subtitle, seasonData.itinerary.subtitle),
           note: textOr(itinerary.content, seasonData.itinerary.note),
-          is_active: itinerary.is_active ?? seasonData.itinerary.is_active,
+          is_active: itinerary.is_active ?? true,
         }
       : seasonData.itinerary,
     facilitiesSection: facilities
@@ -153,7 +155,7 @@ export function getEffectiveSeasonalData(
           subtitle: textOr(facilities.subtitle, seasonData.facilitiesSection.subtitle),
           bannerDescription: textOr(facilities.content, seasonData.facilitiesSection.bannerDescription),
           bannerImage: textOr(facilities.image_url, seasonData.facilitiesSection.bannerImage),
-          is_active: facilities.is_active ?? seasonData.facilitiesSection.is_active,
+          is_active: facilities.is_active ?? true,
         }
       : seasonData.facilitiesSection,
     gallery: gallery
@@ -161,7 +163,7 @@ export function getEffectiveSeasonalData(
           ...seasonData.gallery,
           title: textOr(gallery.title, seasonData.gallery.title),
           subtitle: textOr(gallery.subtitle, seasonData.gallery.subtitle),
-          is_active: gallery.is_active ?? seasonData.gallery.is_active,
+          is_active: gallery.is_active ?? true,
         }
       : seasonData.gallery,
     testimonials: testimonials
@@ -169,7 +171,7 @@ export function getEffectiveSeasonalData(
           ...seasonData.testimonials,
           title: textOr(testimonials.title, seasonData.testimonials.title),
           subtitle: textOr(testimonials.subtitle, seasonData.testimonials.subtitle),
-          is_active: testimonials.is_active ?? seasonData.testimonials.is_active,
+          is_active: testimonials.is_active ?? true,
         }
       : seasonData.testimonials,
     cta: cta
@@ -208,7 +210,7 @@ export function mapRoomsToCabins(rooms: Room[], season: SeasonType = 'haor') {
   let filtered = rooms.filter((room) => {
     const roomSeason = room.season_type;
     // Include rooms with matching season, or null/undefined/empty season_type (treat as haor)
-    if (!roomSeason || roomSeason === '') return season === 'haor';
+    if (!roomSeason || (roomSeason as string) === '') return season === 'haor';
     return roomSeason === season;
   });
 
@@ -224,7 +226,9 @@ export function mapRoomsToCabins(rooms: Room[], season: SeasonType = 'haor') {
     }
 
     return {
-      id: room.slug || `room-${index}`,
+      id: room.id || room.slug || `room-${index}`,
+      dbId: room.id,
+      slug: room.slug,
       name: room.name,
       nameEn: room.slug,
       desc: room.description || '',

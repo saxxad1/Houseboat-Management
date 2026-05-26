@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Plus, Edit2, Trash2, Star, Eye, EyeOff } from 'lucide-react';
-import { getReviews, deleteReview, getReviewSectionStatus, toggleReviewSectionStatus } from '@/lib/actions/reviews';
-import type { Review } from '@/types/database';
+import { deleteRow, listRows, saveRow } from '@/lib/admin/data';
+import type { Review, WebsiteContent } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -19,6 +19,8 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
+const reviewsHiddenSectionKey = 'reviews_section_hidden';
+
 export default function ReviewsAdminPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,31 +29,30 @@ export default function ReviewsAdminPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       setLoading(true);
       const [data, status] = await Promise.all([
-        getReviews(),
-        getReviewSectionStatus()
+        listRows<Review>('reviews'),
+        listRows<WebsiteContent>('website_content')
       ]);
       setReviews(data);
-      setIsSectionVisible(status);
+      setIsSectionVisible(!status.find((row) => row.section_key === reviewsHiddenSectionKey)?.is_active);
     } catch (error) {
       toast.error('Failed to load reviews');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchReviews();
-  }, []);
+  }, [fetchReviews]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this review?')) return;
     try {
-      const result = await deleteReview(id);
-      if (result && result.error) throw new Error(result.error);
+      await deleteRow('reviews', id);
       toast.success('Review deleted successfully');
       fetchReviews();
     } catch (error: any) {
@@ -72,9 +73,15 @@ export default function ReviewsAdminPage() {
   const handleToggleSection = async (checked: boolean) => {
     try {
       setIsToggleLoading(true);
-      const result = await toggleReviewSectionStatus(checked);
-      if (result && result.error) throw new Error(result.error);
+      const content = await listRows<WebsiteContent>('website_content');
+      const existing = content.find((row) => row.section_key === reviewsHiddenSectionKey);
+      await saveRow<WebsiteContent>('website_content', {
+        id: existing?.id,
+        section_key: reviewsHiddenSectionKey,
+        is_active: !checked,
+      });
       setIsSectionVisible(checked);
+      window.dispatchEvent(new Event('kuhelika-public-data-change'));
       toast.success(checked ? 'Reviews section is now visible on the website' : 'Reviews section is now hidden from the website');
     } catch (error: any) {
       toast.error(error.message || 'Failed to toggle section visibility');
@@ -130,7 +137,7 @@ export default function ReviewsAdminPage() {
             ) : reviews.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-10 text-slate-500">
-                  No reviews found. Click 'Add Review' to create one.
+                  {'No reviews found. Click "Add Review" to create one.'}
                 </TableCell>
               </TableRow>
             ) : (

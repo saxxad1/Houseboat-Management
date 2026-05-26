@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { getPackageSectionStatus, togglePackageSectionStatus } from '@/lib/actions/packages';
+import { listRows, saveRow } from '@/lib/admin/data';
+import type { WebsiteContent } from '@/types/database';
 
 export default function PackagesSectionToggle() {
   const [isVisible, setIsVisible] = useState(true);
@@ -13,8 +14,8 @@ export default function PackagesSectionToggle() {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const status = await getPackageSectionStatus();
-        setIsVisible(status);
+        const content = await listRows<WebsiteContent>('website_content');
+        setIsVisible(content.find((row) => row.section_key === 'packages')?.is_active ?? true);
       } catch (error) {
         console.error('Failed to load status', error);
       } finally {
@@ -27,9 +28,17 @@ export default function PackagesSectionToggle() {
   const handleToggle = async (checked: boolean) => {
     try {
       setIsLoading(true);
-      const result = await togglePackageSectionStatus(checked);
-      if (result && result.error) throw new Error(result.error);
+      const content = await listRows<WebsiteContent>('website_content');
+      const existing = content.find((row) => row.section_key === 'packages');
+      await saveRow<WebsiteContent>('website_content', {
+        id: existing?.id,
+        section_key: 'packages',
+        is_active: checked,
+        title: existing?.title || 'Tour Packages',
+        subtitle: existing?.subtitle || 'Choose from our carefully crafted itineraries for the perfect getaway.',
+      });
       setIsVisible(checked);
+      window.dispatchEvent(new Event('kuhelika-public-data-change'));
       toast.success(checked ? 'Tour Packages section is now visible on the website' : 'Tour Packages section is now hidden from the website');
     } catch (error: any) {
       toast.error(error.message || 'Failed to toggle section visibility');

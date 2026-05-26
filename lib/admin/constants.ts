@@ -9,6 +9,7 @@ import {
   Image,
   LayoutDashboard,
   Package,
+  Percent,
   ReceiptText,
   Settings,
   Star,
@@ -24,6 +25,7 @@ export const adminNavItems = [
   { href: '/admin/trips', label: 'Trips', labelBn: 'Trips', icon: Package },
   { href: '/admin/rooms', label: 'Rooms/Cabins', labelBn: 'Rooms/Cabins', icon: BedDouble },
   { href: '/admin/packages', label: 'Packages', labelBn: 'Packages', icon: Package },
+  { href: '/admin/discount', label: 'Discount', labelBn: 'Discount', icon: Percent },
   { href: '/admin/customers', label: 'Customers', labelBn: 'Customers', icon: Users },
   { href: '/admin/payments', label: 'Payments', labelBn: 'Payments', icon: CreditCard },
   { href: '/admin/income', label: 'Income', labelBn: 'Income', icon: Wallet },
@@ -76,6 +78,10 @@ export const statusColors: Record<string, string> = {
   partially_booked: 'bg-amber-100 text-amber-800',
   fully_booked: 'bg-red-100 text-red-800',
   blocked: 'bg-slate-200 text-slate-700',
+  public_holiday: 'bg-rose-50 text-rose-700 border-rose-200',
+  full_moon: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  custom_no_discount: 'bg-amber-50 text-amber-700 border-amber-200',
+  other: 'bg-slate-50 text-slate-600 border-slate-200',
 };
 
 export const paymentMethods = [
@@ -109,6 +115,7 @@ export const pageTitles: Record<string, { title: string; subtitle: string }> = {
   '/admin/trips': { title: 'Trips Management', subtitle: 'Manage trip slots, income, expenses, and profit' },
   '/admin/rooms': { title: 'Rooms/Cabins', subtitle: 'Manage cabins, prices, capacity, and facilities' },
   '/admin/packages': { title: 'Packages', subtitle: 'Manage tour packages, prices, and included services' },
+  '/admin/discount': { title: 'Discount', subtitle: 'Control 10% weekday discount exclusions, full moon dates, and government holidays' },
   '/admin/customers': { title: 'Customers', subtitle: 'Customer list and booking history' },
   '/admin/payments': { title: 'Payments', subtitle: 'Track advances, dues, and transactions' },
   '/admin/income': { title: 'Income', subtitle: 'Accounting for bookings and other income' },
@@ -128,4 +135,3 @@ export const dashboardMetricIcons = {
   money: Wallet,
   rooms: BedDouble,
 };
-

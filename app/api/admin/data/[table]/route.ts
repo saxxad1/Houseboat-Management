@@ -20,14 +20,24 @@ async function getTable(context: RouteContext) {
   return table;
 }
 
+function requireOwnerAdmin(table: string, role?: string) {
+  if (table === 'admin_profiles' && role !== 'admin') {
+    return NextResponse.json({ error: 'Only admins can manage admin profiles' }, { status: 403 });
+  }
+
+  return null;
+}
+
 export async function GET(request: NextRequest, context: RouteContext) {
   const admin = await getVerifiedAdminContext(request);
-  if (admin.error) return admin.error;
+  if ('error' in admin) return admin.error;
 
   const table = await getTable(context);
   if (!isAdminTableName(table)) {
     return NextResponse.json({ error: 'Invalid admin table' }, { status: 400 });
   }
+  const roleError = requireOwnerAdmin(table, admin.profile?.role);
+  if (roleError) return roleError;
 
   const db = admin.supabase as any;
   const { data, error } = await db.from(table).select('*');
@@ -40,12 +50,14 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
 export async function POST(request: NextRequest, context: RouteContext) {
   const admin = await getVerifiedAdminContext(request);
-  if (admin.error) return admin.error;
+  if ('error' in admin) return admin.error;
 
   const table = await getTable(context);
   if (!isAdminTableName(table)) {
     return NextResponse.json({ error: 'Invalid admin table' }, { status: 400 });
   }
+  const roleError = requireOwnerAdmin(table, admin.profile?.role);
+  if (roleError) return roleError;
 
   const body = await request.json().catch(() => ({}));
   const row = (body.row || {}) as Partial<AdminRow> & { id?: string };
@@ -100,12 +112,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
   const admin = await getVerifiedAdminContext(request);
-  if (admin.error) return admin.error;
+  if ('error' in admin) return admin.error;
 
   const table = await getTable(context);
   if (!isAdminTableName(table)) {
     return NextResponse.json({ error: 'Invalid admin table' }, { status: 400 });
   }
+  const roleError = requireOwnerAdmin(table, admin.profile?.role);
+  if (roleError) return roleError;
 
   const id = request.nextUrl.searchParams.get('id');
   if (!id) {

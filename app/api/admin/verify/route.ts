@@ -3,7 +3,7 @@ import { getVerifiedAdminContext } from '@/lib/admin/serverAuth';
 
 export async function GET(request: NextRequest) {
   const admin = await getVerifiedAdminContext(request);
-  if (admin.error) {
+  if ('error' in admin) {
     const body = await admin.error.json();
     return NextResponse.json({ isAdmin: false, error: body.error }, { status: admin.error.status });
   }

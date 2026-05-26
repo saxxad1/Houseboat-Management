@@ -1,5 +1,4 @@
--- Create reviews table
-create table public.reviews (
+create table if not exists public.reviews (
     id uuid default gen_random_uuid() primary key,
     name text not null,
     location text,
@@ -15,6 +14,12 @@ create table public.reviews (
 alter table public.reviews enable row level security;
 
 -- Policies
+drop policy if exists "Public published reviews are viewable by everyone." on public.reviews;
+drop policy if exists "Admins can view all reviews." on public.reviews;
+drop policy if exists "Admins can insert reviews." on public.reviews;
+drop policy if exists "Admins can update reviews." on public.reviews;
+drop policy if exists "Admins can delete reviews." on public.reviews;
+
 create policy "Public published reviews are viewable by everyone."
     on public.reviews for select
     using ( is_published = true );
@@ -22,24 +27,27 @@ create policy "Public published reviews are viewable by everyone."
 create policy "Admins can view all reviews."
     on public.reviews for select
     to authenticated
-    using ( true );
+    using ( public.is_admin() );
 
 create policy "Admins can insert reviews."
     on public.reviews for insert
     to authenticated
-    with check ( true );
+    with check ( public.is_admin() );
 
 create policy "Admins can update reviews."
     on public.reviews for update
     to authenticated
-    using ( true )
-    with check ( true );
+    using ( public.is_admin() )
+    with check ( public.is_admin() );
 
 create policy "Admins can delete reviews."
     on public.reviews for delete
     to authenticated
-    using ( true );
+    using ( public.is_admin() );
 
 -- Create trigger for updated_at
-create trigger handle_updated_at before update on public.reviews
-  for each row execute procedure moddatetime (updated_at);
+drop trigger if exists handle_updated_at on public.reviews;
+drop trigger if exists reviews_updated_at on public.reviews;
+
+create trigger reviews_updated_at before update on public.reviews
+  for each row execute function public.set_updated_at();

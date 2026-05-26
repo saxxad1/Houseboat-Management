@@ -23,6 +23,9 @@ export const bookingSchema = z
     check_in_date: z.string().min(1, 'Check-in date is required'),
     check_out_date: z.string().min(1, 'Check-out date is required'),
     number_of_guests: z.coerce.number().int().positive('Guest number must be positive'),
+    subtotal_amount: optionalNumber,
+    discount_amount: optionalNumber,
+    discount_reason: z.string().optional().nullable(),
     total_amount: optionalNumber,
     advance_amount: optionalNumber,
     payment_status: z.enum(['unpaid', 'partially_paid', 'paid', 'refunded']),
@@ -39,6 +42,7 @@ export const bookingSchema = z
     decoration_required: booleanFromForm.optional().default(false),
     sound_system_required: booleanFromForm.optional().default(false),
     payment_method: z.enum(['cash', 'bkash', 'nagad', 'bank', 'other']).optional(),
+    transaction_id: z.string().optional().nullable(),
     trip_slot_id: z.string().optional().nullable(),
   })
   .superRefine((value, ctx) => {

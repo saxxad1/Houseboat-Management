@@ -64,6 +64,8 @@ const statusConfig = {
   blocked: { label: 'Blocked', bg: 'bg-slate-50 border border-slate-100 opacity-60', text: 'text-slate-400', dot: 'bg-slate-300', hover: '' },
 };
 
+type StatusConfig = (typeof statusConfig)[Status];
+
 const publicStatusMap: Record<AvailabilityStatus, Status> = {
   available: 'available',
   partially_booked: 'partial',
@@ -234,7 +236,7 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
             </div>
 
             {/* Days Grid */}
-            <div className="relative overflow-hidden min-h-[300px] sm:min-h-[380px]">
+            <div className="relative overflow-hidden">
               <AnimatePresence custom={direction} mode="popLayout">
                 <motion.div 
                   key={month}
@@ -244,7 +246,7 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
                   animate="center"
                   exit="exit"
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="grid grid-cols-7 gap-1.5 sm:gap-2 absolute w-full top-0 left-0"
+                  className="grid grid-cols-7 gap-1.5 sm:gap-2 w-full"
                 >
                   {[...Array(firstDay)].map((_, i) => (
                     <div key={`empty-${i}`} />
@@ -263,11 +265,12 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
                     // unless it's full/blocked in which case keep the red/gray color.
                     if (data?.tripInfo && data.status !== 'full' && data.status !== 'blocked') {
                       cfg = {
+                        label: 'Trip',
                         bg: 'bg-indigo-50 border-indigo-300',
                         text: 'text-indigo-800',
                         hover: 'hover:bg-indigo-100 hover:border-indigo-400',
                         dot: 'bg-indigo-500'
-                      };
+                      } satisfies StatusConfig;
                     }
 
                     // Join logic for adjacent fully booked/blocked dates, and TripSlots
@@ -383,7 +386,7 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
           </motion.p>
         </div>
 
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-md sm:max-w-lg lg:max-w-2xl mx-auto">
           {calendarGrid}
         </div>
       </div>

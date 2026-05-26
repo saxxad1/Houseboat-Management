@@ -13,10 +13,11 @@ export default function Header({ onBookNow }: HeaderProps) {
   const { siteConfig, seasonData } = usePublicData();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const packagesSection = seasonData.packagesSection as typeof seasonData.packagesSection & { is_active?: boolean };
   
   // Filter out the packages link if the section is hidden via admin
   const navLinks = seasonData.nav.links.filter(link => 
-    link.href !== '#packages' || seasonData.packagesSection?.is_active !== false
+    link.href !== '#packages' || packagesSection?.is_active !== false
   );
 
   useEffect(() => {

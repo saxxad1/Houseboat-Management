@@ -43,6 +43,7 @@ export const metadata: Metadata = {
       'An unforgettable experience on a luxury houseboat floating in the blue waters of Tanguar Haor.',
     type: 'website',
     locale: 'en_US',
+    images: ['/hero-kuhelika-houseboat.jpg'],
   },
 };
 
@@ -57,7 +58,7 @@ export default function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'LodgingBusiness',
     name: 'Kuhelika Houseboat',
-    image: 'https://kuhelika.com/images/hero.jpg',
+    image: 'https://kuhelika.com/hero-kuhelika-houseboat.jpg',
     description: 'An unforgettable experience on a luxury houseboat floating in the blue waters of Tanguar Haor.',
     address: {
       '@type': 'PostalAddress',

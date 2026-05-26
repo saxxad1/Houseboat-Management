@@ -5,6 +5,7 @@ import { X, CircleCheck as CheckCircle2, Send, MessageCircle, Phone, User, Calen
 import { usePublicData } from '@/components/PublicDataProvider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
+import { calculateBookingDiscount } from '@/lib/discounts';
 
 
 interface BookingFormProps {
@@ -23,7 +24,7 @@ const initialForm = {
   checkin: '',
   checkout: '',
   guests: '16',
-  bookingType: 'cabin',
+  bookingType: 'cabin' as 'cabin' | 'full',
   acPreference: 'AC',
   package: '',
   request: '',
@@ -31,7 +32,7 @@ const initialForm = {
   transactionId: '',
   eventDate: '',
   eventType: 'Birthday',
-  eventSlot: 'Morning Slot',
+  eventSlot: 'morning',
   guestRange: '20-30',
   foodPackage: 'Snacks Only',
   decorationRequired: 'Discuss Later',
@@ -42,8 +43,32 @@ type PackageDisplayFields = {
   priceDisplay?: string;
 };
 
+type SelectedRoomDetail = {
+  roomId: string;
+  roomName: string;
+  pax: number;
+  subtotal: number;
+};
+
+const eventSlotValues: Record<string, string> = {
+  'Morning Slot': 'morning',
+  'Afternoon Slot': 'afternoon',
+  'Evening Slot': 'evening',
+  'Moonlight Slot': 'moonlight',
+  'Full Day Event': 'full_day',
+  'Custom Slot': 'custom',
+};
+
+function normalizeEventSlot(value: string) {
+  return eventSlotValues[value] || value;
+}
+
+function getEventSlotLabel(value: string) {
+  return Object.entries(eventSlotValues).find(([, slot]) => slot === value)?.[0] || value;
+}
+
 export default function BookingForm({ isOpen, onClose, initialCabin, initialBookingType = 'cabin', initialCheckInDate, initialCheckOutDate }: BookingFormProps) {
-  const { siteConfig, cabins, packages, activeSeason, seasonData, tripSlots } = usePublicData();
+  const { siteConfig, cabins, packages, activeSeason, seasonData, tripSlots, specialDates } = usePublicData();
   const [form, setForm] = useState({ ...initialForm, bookingType: initialBookingType });
   const [roomDetails, setRoomDetails] = useState<{cabin: string, pax: number}[]>([{cabin: '', pax: 2}]);
   const [submitted, setSubmitted] = useState(false);
@@ -58,7 +83,7 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
     if (isOpen) {
       setForm(prev => ({ 
         ...prev, 
-        bookingType: initialBookingType,
+        bookingType: initialBookingType as 'cabin' | 'full',
         checkin: initialCheckInDate || prev.checkin,
         checkout: initialCheckOutDate || prev.checkout
       }));
@@ -92,6 +117,31 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
     return newErrors;
   };
 
+  const getCabinPrice = (selectedCabin: any, pax: number) => {
+    let pricePerPerson = selectedCabin.rawPricePerNight || 0;
+    if (pax === 2 && selectedCabin.rawPrice2Pax) pricePerPerson = selectedCabin.rawPrice2Pax;
+    if (pax === 3 && selectedCabin.rawPrice3Pax) pricePerPerson = selectedCabin.rawPrice3Pax;
+    return Number(pricePerPerson || 0);
+  };
+
+  const getSelectedRoomDetails = (): SelectedRoomDetail[] => {
+    return roomDetails
+      .filter((room) => room.cabin.trim() !== '')
+      .map((room) => {
+        const selectedCabin = cabins.find((c: any) => c.name === room.cabin);
+        const roomId = String((selectedCabin as any)?.dbId || (selectedCabin as any)?.id || '');
+        const roomName = String((selectedCabin as any)?.name || room.cabin);
+        const pricePerPerson = selectedCabin ? getCabinPrice(selectedCabin, room.pax) : 0;
+
+        return {
+          roomId,
+          roomName,
+          pax: room.pax,
+          subtotal: pricePerPerson * room.pax,
+        };
+      });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs = validate();
@@ -109,8 +159,12 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
     setSubmitError('');
 
     try {
+      const selectedRoomDetails = getSelectedRoomDetails();
+      const guestCount = form.bookingType === 'cabin'
+        ? selectedRoomDetails.reduce((sum, room) => sum + room.pax, 0)
+        : Number(form.guests || 1);
       const roomsString = form.bookingType === 'cabin' 
-        ? roomDetails.filter(r => r.cabin).map(r => `${r.cabin} (${r.pax} persons)`).join(', ')
+        ? selectedRoomDetails.map(r => `${r.roomName} (${r.pax} persons)`).join(', ')
         : `Full Boat - ${form.guests} Guests, ${form.acPreference}`;
 
       const res = await fetch('/api/public/book', {
@@ -120,9 +174,15 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
         },
         body: JSON.stringify({
           ...form,
+          guests: String(guestCount || 1),
           rooms: roomsString,
-          totalEstimatedPrice: getEstimatedPrice(),
+          roomDetails: selectedRoomDetails,
+          subtotalEstimatedPrice: priceSummary.subtotalAmount,
+          discountAmount: priceSummary.discountAmount,
+          discountReason: priceSummary.discountReason,
+          totalEstimatedPrice: priceSummary.totalAmount,
           season_type: activeSeason,
+          botField,
         }),
       });
 
@@ -157,16 +217,17 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
       if (!r.cabin) continue;
       const selectedCabin = cabins.find((c: any) => c.name === r.cabin);
       if (!selectedCabin) continue;
-      
-      let pricePerPerson = selectedCabin.rawPricePerNight || 0;
-      if (r.pax === 2 && selectedCabin.rawPrice2Pax) pricePerPerson = selectedCabin.rawPrice2Pax;
-      if (r.pax === 3 && selectedCabin.rawPrice3Pax) pricePerPerson = selectedCabin.rawPrice3Pax;
-      
+
+      const pricePerPerson = getCabinPrice(selectedCabin, r.pax);
       total += pricePerPerson * r.pax;
     }
     
     return total > 0 ? total : null;
   };
+
+  const estimatedSubtotal = getEstimatedPrice();
+  const bookingDate = activeSeason === 'padma' ? form.eventDate : form.checkin;
+  const priceSummary = calculateBookingDiscount(estimatedSubtotal || 0, bookingDate, specialDates);
 
   const buildWhatsappMessage = () => {
     if (activeSeason === 'padma') {
@@ -176,7 +237,7 @@ Name: ${form.name}
 Phone: ${form.phone}
 Event Date: ${form.eventDate}
 Event Type: ${form.eventType}
-Preferred Slot: ${form.eventSlot}
+Preferred Slot: ${getEventSlotLabel(form.eventSlot)}
 Guests: ${form.guestRange}
 Package: ${form.package || 'Not selected'}
 Food Package: ${form.foodPackage}
@@ -188,7 +249,8 @@ Please confirm availability and package details.`;
       return encodeURIComponent(msg);
     }
 
-    const estimatedTotal = getEstimatedPrice();
+    const estimatedTotal = priceSummary.totalAmount;
+    const selectedRoomDetails = getSelectedRoomDetails();
     const msg = `Hello,
 I would like to book at *${siteConfig.name}*.
 
@@ -197,12 +259,11 @@ I would like to book at *${siteConfig.name}*.
 *Check-in:* ${form.checkin}
 *Check-out:* ${form.checkout}
 *Booking Type:* ${form.bookingType === 'full' ? 'Full Boat' : 'Cabin Wise'}
-${form.bookingType === 'cabin' ? `*Rooms:* ${roomDetails.filter(r => r.cabin).map(r => `${r.cabin} (${r.pax} persons)`).join(', ')}` : ''}
+${form.bookingType === 'cabin' ? `*Rooms:* ${selectedRoomDetails.map(r => `${r.roomName} (${r.pax} persons)`).join(', ')}` : ''}
 *Total Guests:* ${form.guests}
 *Estimated Price:* ${estimatedTotal ? `৳${estimatedTotal.toLocaleString()}` : 'TBD'}
+${priceSummary.discountAmount ? `*Discount:* ৳${priceSummary.discountAmount.toLocaleString()} (${priceSummary.discountReason})` : ''}
 *Special Request:* ${form.request || 'None'}
-${form.request ? `*Special Request:* ${form.request}` : ''}
-${estimatedTotal ? `\n*Estimated Package Total:* ৳${estimatedTotal.toLocaleString()}` : ''}
 
 Thank you.`;
     return encodeURIComponent(msg);
@@ -391,7 +452,7 @@ Thank you.`;
                       className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
                     >
                       {seasonData.bookingForm.mode === 'padma' && seasonData.bookingForm.slots.map((item) => (
-                        <option key={item} value={item}>{item}</option>
+                        <option key={item} value={normalizeEventSlot(item)}>{item}</option>
                       ))}
                     </select>
                   </div>
@@ -625,14 +686,31 @@ Thank you.`;
             )}
 
             {/* Estimated Total Price */}
-            {activeSeason === 'haor' && getEstimatedPrice() && (
-              <div className="bg-[hsl(195,95%,95%)] border border-[hsl(195,85%,85%)] rounded-xl p-3 sm:p-4 my-2 flex items-center justify-between">
+            {activeSeason === 'haor' && priceSummary.subtotalAmount > 0 && (
+              <div className="bg-[hsl(195,95%,95%)] border border-[hsl(195,85%,85%)] rounded-xl p-3 sm:p-4 my-2">
                 <div>
                   <div className="text-xs sm:text-sm font-semibold text-[hsl(197,80%,30%)]">Estimated Package Total:</div>
                   <div className="text-xs text-slate-500 mt-0.5">Final price and availability will be confirmed by Kuhelika team.</div>
                 </div>
-                <div className="text-xl sm:text-2xl font-black text-[hsl(197,80%,30%)]">
-                  ৳{getEstimatedPrice()?.toLocaleString()}
+                <div className="mt-3 space-y-1 text-sm">
+                  <div className="flex items-center justify-between gap-4 text-slate-600">
+                    <span>Subtotal</span>
+                    <span className="font-semibold">৳{priceSummary.subtotalAmount.toLocaleString()}</span>
+                  </div>
+                  {priceSummary.discountAmount > 0 ? (
+                    <div className="flex items-center justify-between gap-4 text-emerald-700">
+                      <span>{priceSummary.discountReason}</span>
+                      <span className="font-bold">-৳{priceSummary.discountAmount.toLocaleString()}</span>
+                    </div>
+                  ) : priceSummary.discountReason ? (
+                    <div className="text-xs font-medium text-amber-700">{priceSummary.discountReason}</div>
+                  ) : null}
+                  <div className="flex items-center justify-between gap-4 border-t border-[hsl(195,85%,85%)] pt-2">
+                    <span className="font-bold text-[hsl(197,80%,30%)]">Payable total</span>
+                    <span className="text-xl sm:text-2xl font-black text-[hsl(197,80%,30%)]">
+                      ৳{priceSummary.totalAmount.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}

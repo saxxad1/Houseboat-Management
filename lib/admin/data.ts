@@ -13,7 +13,9 @@ import type {
   HouseboatSettings,
   Income,
   Payment,
+  Review,
   Room,
+  SpecialDate,
   TourPackage,
   TripSlot,
   WebsiteContent,
@@ -29,7 +31,9 @@ export type AdminRow =
   | HouseboatSettings
   | Income
   | Payment
+  | Review
   | Room
+  | SpecialDate
   | TourPackage
   | WebsiteContent
   | (BaseRow & Record<string, unknown>);
@@ -43,7 +47,7 @@ function cloneRows<T>(rows: T[]): T[] {
 }
 
 function getSeedRows<T extends AdminRow>(table: AdminTableName) {
-  return cloneRows((demoTableData[table] || []) as T[]);
+  return cloneRows(((demoTableData as any)[table] || []) as T[]);
 }
 
 export function isDemoMode() {
@@ -225,6 +229,8 @@ export async function saveBookingWithCustomer(
     note: foundCustomer?.note || '',
   });
   const totalAmount = Number(values.total_amount || 0);
+  const subtotalAmount = Number(values.subtotal_amount ?? totalAmount);
+  const discountAmount = Number(values.discount_amount || 0);
   const advanceAmount = Number(values.advance_amount || 0);
   const dueAmount = Math.max(totalAmount - advanceAmount, 0);
   const paymentStatus = totalAmount <= 0 || advanceAmount <= 0
@@ -244,6 +250,9 @@ export async function saveBookingWithCustomer(
     check_in_date: values.check_in_date!,
     check_out_date: values.check_out_date!,
     number_of_guests: Number(values.number_of_guests || 1),
+    subtotal_amount: subtotalAmount,
+    discount_amount: discountAmount,
+    discount_reason: values.discount_reason || null,
     total_amount: totalAmount,
     advance_amount: advanceAmount,
     due_amount: dueAmount,
@@ -319,6 +328,7 @@ export async function fetchAdminDataset() {
     gallery,
     content,
     trip_slots,
+    special_dates,
   ] = await Promise.all([
     listRows<HouseboatSettings>('houseboat_settings'),
     listRows<Room>('rooms'),
@@ -332,6 +342,7 @@ export async function fetchAdminDataset() {
     listRows<GalleryImage>('gallery'),
     listRows<WebsiteContent>('website_content'),
     listRows<TripSlot>('trip_slots'),
+    listRows<SpecialDate>('special_dates'),
   ]);
 
   return {
@@ -347,5 +358,6 @@ export async function fetchAdminDataset() {
     gallery,
     content,
     trip_slots,
+    special_dates,
   };
 }

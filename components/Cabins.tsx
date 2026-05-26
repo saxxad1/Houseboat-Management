@@ -1,9 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { BedDouble, Users, Bath, Wind, CircleCheck as CheckCircle, Circle as XCircle, Banknote, Anchor, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BedDouble, Users, Wind, CircleCheck as CheckCircle, Anchor, ChevronLeft, ChevronRight } from 'lucide-react';
 import { usePublicData } from '@/components/PublicDataProvider';
-import { StaggerReveal } from '@/components/ScrollReveal';
 import useEmblaCarousel from 'embla-carousel-react';
 import { useCallback } from 'react';
 
@@ -51,7 +50,7 @@ function CabinCard({
   onBookNow: (cabinName?: string) => void;
 }) {
   const imageStr = typeof display.image === 'string' ? display.image : '';
-  const rawImages = imageStr.split(',').filter(Boolean);
+  const rawImages = imageStr.split(',').map((img) => img.trim()).filter(Boolean);
   const showCarousel = rawImages.length > 1;
   
   // Embla needs enough slides to loop seamlessly. If there are only 2 or 3 images, 
@@ -87,20 +86,24 @@ function CabinCard({
             <div className="flex h-full">
               {images.map((img: string, idx: number) => (
                 <div key={idx} className="relative flex-[0_0_100%] h-full min-w-0">
-                  <img
+                  <Image
                     src={img || '/images/kuhelika/cabins/cabin-01.jpg'}
                     alt={`${display.name} image ${idx + 1}`}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    fill
+                    sizes="(min-width: 768px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <img
+          <Image
             src={images[0] || display.image || '/images/kuhelika/cabins/cabin-01.jpg'}
             alt={display.name}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            fill
+            sizes="(min-width: 768px) 50vw, 100vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-80 pointer-events-none" />
@@ -138,15 +141,20 @@ function CabinCard({
         {/* Name overlaid on image */}
         <div className="absolute bottom-4 left-4 right-4 z-10 pointer-events-none">
           <h3 className="text-xl sm:text-2xl font-black text-white mb-1 drop-shadow-md">{display.name}</h3>
-          <p className="text-white/80 text-xs sm:text-sm font-medium">{display.nameEn}{display.size ? ` · ${display.size}` : ''}</p>
+          {display.size && <p className="text-white/80 text-xs sm:text-sm font-medium">{display.size}</p>}
         </div>
       </div>
 
       {/* Body */}
-      <div className="p-5 sm:p-6 flex flex-col flex-1 bg-white/50 relative">
+      <div className="p-5 sm:p-6 flex flex-col flex-1 bg-white/50">
         {/* Price floating badge */}
-        <div className="absolute -top-6 right-5 bg-white shadow-xl shadow-slate-200/50 rounded-2xl px-4 py-2 border border-slate-100 flex flex-col items-center justify-center transform group-hover:-translate-y-1 transition-transform">
+        <div className="-mt-10 sm:-mt-12 mb-5 mx-auto w-full max-w-[280px] sm:max-w-none sm:w-fit sm:ml-auto sm:mr-0 bg-white shadow-xl shadow-slate-200/50 rounded-2xl px-4 py-3 border border-slate-100 flex flex-col items-center justify-center transform group-hover:-translate-y-1 transition-transform relative z-10">
           <div className="text-[10px] font-extrabold text-[hsl(197,80%,38%)] bg-[hsl(195,95%,92%)] px-2 py-0.5 rounded-full mb-1">2 Days 1 Night</div>
+          {!isPadma && (
+            <div className="mb-1 text-[10px] font-black uppercase tracking-wide text-emerald-600">
+              10% off on weekdays
+            </div>
+          )}
           {display.rawPrice2Pax || display.rawPrice3Pax ? (
             <div className="flex flex-col items-end gap-1.5 py-0.5">
               {display.rawPrice2Pax && (
@@ -183,7 +191,7 @@ function CabinCard({
         </div>
 
         {/* Details Grid */}
-        <div className="grid grid-cols-2 gap-3 mb-5 mt-12">
+        <div className="grid grid-cols-2 gap-3 mb-5 mt-2">
           <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50/80 border border-slate-100/50">
             <BedDouble className="w-4 h-4 text-[hsl(197,80%,38%)] shrink-0" />
             <span className="text-xs sm:text-sm font-semibold text-slate-700 leading-tight">{display.bedType}</span>
@@ -310,12 +318,16 @@ function CabinsContent({ onBookNow }: CabinsProps) {
         </div>
 
         {/* Cabin Grid - Modern Card Design */}
-        <StaggerReveal className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8" itemClassName="h-full">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {cabins.map((cabin) => {
             const display = cabin as any;
-            return <CabinCard key={display.id} display={display} isPadma={isPadma} onBookNow={onBookNow} />;
+            return (
+              <div key={display.id} className="min-w-0 h-full">
+                <CabinCard display={display} isPadma={isPadma} onBookNow={onBookNow} />
+              </div>
+            );
           })}
-        </StaggerReveal>
+        </div>
 
         {/* Full Boat CTA - Aesthetic Gradient Card */}
         <div className="mt-12 sm:mt-16 bg-gradient-to-br from-[hsl(197,80%,25%)] via-[hsl(197,80%,32%)] to-[hsl(173,58%,35%)] rounded-[2.5rem] p-8 sm:p-12 md:p-16 text-center text-white relative overflow-hidden shadow-2xl shadow-[hsl(197,80%,30%)]/30">

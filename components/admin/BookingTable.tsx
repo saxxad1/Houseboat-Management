@@ -81,7 +81,17 @@ export default function BookingTable({
                     <TableCell className="font-medium text-slate-600">{(booking.season_type || 'haor') === 'padma' ? booking.event_type || 'Event' : booking.booking_type === 'full_boat' ? 'Full boat' : room?.name || '-'}</TableCell>
                     <TableCell className="font-medium text-slate-600">{pkg?.title || '-'}</TableCell>
                     <TableCell>
+                      {Number(booking.discount_amount || 0) > 0 && (
+                        <div className="text-[11px] font-semibold text-slate-400 line-through">
+                          ৳{Number(booking.subtotal_amount || booking.total_amount).toLocaleString()}
+                        </div>
+                      )}
                       <div className="font-bold text-slate-700">৳{Number(booking.total_amount).toLocaleString()}</div>
+                      {Number(booking.discount_amount || 0) > 0 && (
+                        <div className="text-[11px] font-bold text-emerald-600 mt-0.5">
+                          Discount ৳{Number(booking.discount_amount).toLocaleString()}
+                        </div>
+                      )}
                       <div className="text-[11px] font-bold text-rose-500 mt-0.5">Due ৳{Number(booking.due_amount).toLocaleString()}</div>
                     </TableCell>
                     <TableCell>
