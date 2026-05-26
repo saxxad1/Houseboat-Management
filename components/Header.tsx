@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
 import Logo from '@/components/Logo';
 import { usePublicData } from '@/components/PublicDataProvider';
 
@@ -14,11 +15,15 @@ export default function Header({ onBookNow }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const packagesSection = seasonData.packagesSection as typeof seasonData.packagesSection & { is_active?: boolean };
+  const router = useRouter();
+  const pathname = usePathname();
   
   // Filter out the packages link if the section is hidden via admin
-  const navLinks = seasonData.nav.links.filter(link => 
+  const baseNavLinks = seasonData.nav.links.filter(link => 
     link.href !== '#packages' || packagesSection?.is_active !== false
   );
+  
+  const navLinks = [...baseNavLinks, { label: 'My Bookings', href: '/my-bookings' }];
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -28,11 +33,20 @@ export default function Header({ onBookNow }: HeaderProps) {
 
   const handleNavClick = (href: string) => {
     setIsMobileMenuOpen(false);
-    const el = document.querySelector(href);
-    if (el) {
-      const offset = 80;
-      const top = el.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top, behavior: 'smooth' });
+    
+    if (href.startsWith('#')) {
+      if (pathname !== '/') {
+        router.push(`/${href}`);
+        return;
+      }
+      const el = document.querySelector(href);
+      if (el) {
+        const offset = 80;
+        const top = el.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    } else {
+      router.push(href);
     }
   };
 
