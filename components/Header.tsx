@@ -128,7 +128,7 @@ export default function Header({ onBookNow }: HeaderProps) {
           isMobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="bg-white/98 backdrop-blur-lg border-t border-slate-100 shadow-xl px-4 py-4">
+        <div className="bg-white/95 backdrop-blur-lg border-t border-slate-100 shadow-xl px-4 py-4">
           <nav className="flex flex-col gap-1">
             {navLinks.map((link) => (
               <button
