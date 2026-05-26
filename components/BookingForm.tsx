@@ -37,6 +37,7 @@ const initialForm = {
   foodPackage: 'Snacks Only',
   decorationRequired: 'Discuss Later',
   soundSystemRequired: 'Yes',
+  paymentMode: 'advance' as 'advance' | 'full',
 };
 
 type PackageDisplayFields = {
@@ -182,6 +183,8 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
           discountReason: priceSummary.discountReason,
           totalEstimatedPrice: priceSummary.totalAmount,
           season_type: activeSeason,
+          paymentMode: form.paymentMode,
+          payableAmount: form.paymentMode === 'advance' ? Math.ceil(priceSummary.totalAmount / 2) : priceSummary.totalAmount,
           botField,
         }),
       });
@@ -228,6 +231,7 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
   const estimatedSubtotal = getEstimatedPrice();
   const bookingDate = activeSeason === 'padma' ? form.eventDate : form.checkin;
   const priceSummary = calculateBookingDiscount(estimatedSubtotal || 0, bookingDate, specialDates);
+  const payableAmount = form.paymentMode === 'advance' ? Math.ceil(priceSummary.totalAmount / 2) : priceSummary.totalAmount;
 
   const buildWhatsappMessage = () => {
     if (activeSeason === 'padma') {
@@ -263,6 +267,8 @@ ${form.bookingType === 'cabin' ? `*Rooms:* ${selectedRoomDetails.map(r => `${r.r
 *Total Guests:* ${form.guests}
 *Estimated Price:* ${estimatedTotal ? `৳${estimatedTotal.toLocaleString()}` : 'TBD'}
 ${priceSummary.discountAmount ? `*Discount:* ৳${priceSummary.discountAmount.toLocaleString()} (${priceSummary.discountReason})` : ''}
+*Payment Mode:* ${form.paymentMode === 'advance' ? '50% Advance' : '100% Full Payment'}
+*Payable Now:* ${payableAmount ? `৳${payableAmount.toLocaleString()}` : 'TBD'}
 *Special Request:* ${form.request || 'None'}
 
 Thank you.`;
@@ -705,10 +711,44 @@ Thank you.`;
                   ) : priceSummary.discountReason ? (
                     <div className="text-xs font-medium text-amber-700">{priceSummary.discountReason}</div>
                   ) : null}
-                  <div className="flex items-center justify-between gap-4 border-t border-[hsl(195,85%,85%)] pt-2">
-                    <span className="font-bold text-[hsl(197,80%,30%)]">Payable total</span>
-                    <span className="text-xl sm:text-2xl font-black text-[hsl(197,80%,30%)]">
-                      ৳{priceSummary.totalAmount.toLocaleString()}
+                  <div className="flex items-center justify-between gap-4 border-t border-[hsl(195,85%,85%)] pt-2 mt-2">
+                    <div className="flex flex-col w-full">
+                      <span className="font-bold text-[hsl(197,80%,30%)]">Payment Option</span>
+                      <div className="flex items-center gap-4 mt-2 mb-1 text-sm">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="paymentMode" 
+                            value="advance" 
+                            checked={form.paymentMode === 'advance'}
+                            onChange={() => setForm(p => ({ ...p, paymentMode: 'advance' }))}
+                            className="accent-[hsl(197,80%,30%)] w-4 h-4"
+                          />
+                          <span className="font-medium text-slate-700">50% Advance</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="paymentMode" 
+                            value="full" 
+                            checked={form.paymentMode === 'full'}
+                            onChange={() => setForm(p => ({ ...p, paymentMode: 'full' }))}
+                            className="accent-[hsl(197,80%,30%)] w-4 h-4"
+                          />
+                          <span className="font-medium text-slate-700">Full Payment</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-t border-[hsl(195,85%,85%)] pt-3 mt-1">
+                    <span className="font-bold text-[hsl(197,80%,30%)] flex flex-col">
+                      Payable total
+                      <span className="text-[11px] font-medium text-slate-500">
+                        {form.paymentMode === 'advance' ? '(50% Advance)' : '(Full Payment)'}
+                      </span>
+                    </span>
+                    <span className="text-2xl sm:text-3xl font-black text-[hsl(197,80%,30%)]">
+                      ৳{payableAmount.toLocaleString()}
                     </span>
                   </div>
                 </div>
