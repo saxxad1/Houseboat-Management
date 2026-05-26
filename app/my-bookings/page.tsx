@@ -89,7 +89,7 @@ function MyBookingsContent() {
               My Bookings
             </h1>
             <p className="text-[hsl(195,95%,92%)] text-base md:text-xl max-w-2xl mx-auto font-medium">
-              Check your booking status, details, and payment information easily using your registered mobile number.
+              Check your booking status, details, and payment information easily using the mobile number you provided during booking.
             </p>
           </ScrollReveal>
         </div>
