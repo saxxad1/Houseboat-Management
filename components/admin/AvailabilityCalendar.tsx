@@ -319,7 +319,13 @@ export default function AvailabilityCalendar() {
 
               let label = statusLabels[status] || { long: status.replace('_', ' '), short: status };
               if (tripSlot && status !== 'available') {
-                label = { long: isTripStart ? 'Check-in' : isTripEnd ? 'Check-out' : 'Booked', short: isTripStart ? 'In' : isTripEnd ? 'Out' : 'Bkd' };
+                if (status === 'blocked' || status === 'maintenance') {
+                  label = statusLabels[status] || { long: 'Maintenance', short: 'Maint' };
+                } else if (status === 'fully_booked') {
+                  label = statusLabels['fully_booked'] || { long: 'Booked', short: 'Bkd' };
+                } else {
+                  label = { long: isTripStart ? 'Check-in' : isTripEnd ? 'Check-out' : 'Booked', short: isTripStart ? 'In' : isTripEnd ? 'Out' : 'Bkd' };
+                }
               }
 
               return (

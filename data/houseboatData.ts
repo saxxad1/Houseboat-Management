@@ -24,16 +24,14 @@ export const siteConfig = {
 };
 
 export const navLinks = [
-  { label: "Home", href: "#home" },
-  { label: "About Us", href: "#about" },
   { label: "Cabins", href: "#cabins" },
   { label: "Packages", href: "#packages" },
   { label: "Itinerary", href: "#itinerary" },
   { label: "Food Menu", href: "#food-menu" },
+  { label: "Spots", href: "#destinations" },
   { label: "Gallery", href: "#gallery" },
   { label: "Facilities", href: "#facilities" },
   { label: "FAQ", href: "#faq" },
-  { label: "Contact", href: "#contact" },
 ];
 
 export const aboutContent = {
@@ -53,17 +51,71 @@ export const aboutContent = {
       desc: "Comfortable accommodation with both AC and non-AC cabin facilities.",
     },
     {
-      icon: "Utensils",
-      title: "Delicious Food",
-      desc: "Fresh fish and local cuisine served at every meal.",
+      icon: "Shield",
+      title: "Safe Journey",
+      desc: "Equipped with life jackets, fire extinguishers, and an experienced crew for your complete safety.",
     },
     {
-      icon: "Shield",
-      title: "Safety & Comfort",
-      desc: "Experienced crew, life jackets, and 24/7 security ensured.",
+      icon: "Utensils",
+      title: "Premium Dining",
+      desc: "Delicious local and traditional meals cooked fresh on board by our expert chefs.",
+    },
+    {
+      icon: "BedDouble",
+      title: "Luxury Comfort",
+      desc: "Air-conditioned cabins with premium bedding, attached washrooms, and large view windows.",
+    },
+    {
+      icon: "Camera",
+      title: "Scenic Views",
+      desc: "Unobstructed views of the haor from our spacious rooftop deck and private balconies.",
     },
   ],
-  suitableFor: ["Family", "Friend Group", "Couples", "Corporate Team", "Photographers", "Nature Lovers"],
+  suitableFor: ["Family Trips", "Corporate Outings", "Friends Gatherings", "Honeymoon Couples", "Nature Photographers", "Weekend Getaways"],
+};
+
+export const destinations = {
+  badge: "Tourist Attractions",
+  title: "Tourist Attractions",
+  subtitle: "Discover the breathtaking beauty of the most treasured natural spots during your houseboat journey.",
+  places: [
+    {
+      id: 1,
+      name: "Tanguar Haor & Watch Tower",
+      image: "/images/kuhelika/destinations/tanguar-haor-v3.jpg",
+      description: "Tanguar Haor is one of Bangladesh’s most iconic wetlands and a globally recognized Ramsar Site. Surrounded by calm blue water, open sky, and distant hills, this destination offers a peaceful escape into nature. The Watch Tower area gives guests a beautiful panoramic view of the haor and is one of the most memorable stops of the trip.",
+    },
+    {
+      id: 2,
+      name: "Niladri Lake (Tekerghat)",
+      image: "/images/kuhelika/destinations/niladri-lake-v2.jpg",
+      description: "Known for its stunning turquoise-blue water, Niladri Lake is one of the most photogenic places near Tekerghat. Formed around an old limestone quarry, this lake creates a unique scenic view with hills, water, and open landscape. It is a perfect place for photography, quiet moments, and enjoying the natural beauty of the border area.",
+    },
+    {
+      id: 3,
+      name: "Lakma Chara",
+      image: "/images/kuhelika/destinations/lakma-chara-v2.jpg",
+      description: "Lakmachhara is a peaceful streamside destination surrounded by greenery and the natural charm of the Bangladesh–Meghalaya border area. The route offers a refreshing countryside experience with hills, water streams, and calm surroundings. It is an ideal optional stop for guests who want to explore a little more beyond the main haor route.",
+    },
+    {
+      id: 4,
+      name: "Barikkatila",
+      image: "/images/kuhelika/destinations/barikkatila-v3.jpg",
+      description: "Barikka Tila is known for its beautiful hilltop views and wide-open natural landscape. From this spot, guests can enjoy sweeping views of the surrounding haor, river, and greenery. It is a wonderful place to feel the quiet beauty of Sunamganj and capture some memorable travel photos.",
+    },
+    {
+      id: 5,
+      name: "Shimul Bagan",
+      image: "/images/kuhelika/destinations/shimul-bagan-v2.jpg",
+      description: "Shimul Bagan is a charming forest of silk-cotton trees and one of the most beautiful seasonal attractions in the area. During blooming season, the red flowers create a magical view across the landscape. Even outside the blooming season, the peaceful environment and unique tree lines make it a lovely place to visit.",
+    },
+    {
+      id: 6,
+      name: "Jadhukata River",
+      image: "/images/kuhelika/destinations/jadhukata-river-v2.jpg",
+      description: "Flowing down from the Meghalaya hills, Jadukata River is famous for its clear water, natural beauty, and peaceful riverside atmosphere. The river creates a refreshing experience for guests, especially for bathing, photography, and enjoying the scenic view of hills and water together. It is one of the most enjoyable highlights of the journey.",
+    },
+  ],
 };
 
 export const cabins = [
@@ -656,8 +708,7 @@ export const faqs = [
   },
   {
     question: "What are the Check-in and Check-out times?",
-    answer:
-      "Check-in: 10 AM. Check-out: 4 PM next day. For full day tours, 8 AM to 7 PM.",
+    answer: "Check-in: 8 AM. Check-out: 7 PM next day.",
   },
   {
     question: "What happens if the weather is bad?",

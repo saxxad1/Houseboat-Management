@@ -36,13 +36,13 @@ export default function Facilities() {
           <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-4" />
         </div>
 
-        <StaggerReveal className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4" stagger={0.045}>
+        <StaggerReveal className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4" stagger={0.045} itemClassName="h-full">
           {facilities.map((facility, i) => {
             const Icon = iconMap[facility.icon] || ShieldCheck;
             return (
               <div
                 key={i}
-                className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 text-center shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-slate-100 group"
+                className="h-full bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 text-center shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-slate-100 group flex flex-col items-center justify-start"
               >
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:shadow-md transition-shadow">
                   <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />

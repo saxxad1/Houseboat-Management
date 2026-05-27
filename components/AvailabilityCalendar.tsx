@@ -313,14 +313,19 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
                             ✕
                           </span>
                         )}
-                        {data?.tripInfo?.isStart && (
+                        {data?.tripInfo?.isStart && data?.status !== 'blocked' && data?.status !== 'full' && (
                           <span className="text-[8px] sm:text-[9px] font-bold tracking-tighter leading-none mt-0.5 z-10 text-indigo-600 whitespace-nowrap overflow-hidden max-w-[95%]">
                             {inline ? 'IN' : <><span className="sm:hidden">IN</span><span className="hidden sm:inline">Check-in</span></>}
                           </span>
                         )}
-                        {data?.tripInfo?.isEnd && (
+                        {data?.tripInfo?.isEnd && data?.status !== 'blocked' && data?.status !== 'full' && (
                           <span className="text-[8px] sm:text-[9px] font-bold tracking-tighter leading-none mt-0.5 z-10 text-indigo-600 whitespace-nowrap overflow-hidden max-w-[95%]">
                             {inline ? 'OUT' : <><span className="sm:hidden">OUT</span><span className="hidden sm:inline">Checkout</span></>}
+                          </span>
+                        )}
+                        {(data?.status === 'blocked' || data?.status === 'full') && (
+                          <span className={`text-[8px] sm:text-[9px] font-bold tracking-tighter leading-none mt-0.5 z-10 whitespace-nowrap overflow-hidden max-w-[95%] ${isSelected ? 'text-white' : 'text-slate-600'}`}>
+                            {data.status === 'full' ? 'Booked' : 'Maintenance'}
                           </span>
                         )}
                       </motion.button>

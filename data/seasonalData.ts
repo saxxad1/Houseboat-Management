@@ -9,6 +9,7 @@ import {
   packages,
   siteConfig,
   testimonials,
+  destinations,
 } from '@/data/houseboatData';
 import { foodMenuData } from '@/data/foodMenu';
 
@@ -431,6 +432,7 @@ export const seasonalData = {
       secondaryTarget: '#cabins',
       stats: null,
     },
+    destinations,
     about: aboutContent,
     cabinsSection: {
       badge: 'Our Cabins',
@@ -523,6 +525,7 @@ export const seasonalData = {
       links: padmaNavLinks,
       ctaLabel: 'Book Event',
     },
+    destinations: null,
     site: {
       ...siteConfig,
       tagline: 'Your premium event experience on the Padma',
