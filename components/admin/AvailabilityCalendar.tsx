@@ -113,9 +113,12 @@ export default function AvailabilityCalendar() {
     const dayBlocks = blocks.filter((block) => block.date === date && (block.season_type || 'haor') === activeSeason);
     
     if (activeSeason === 'haor') {
-      const activeTrip = tripSlots.find(slot => date >= slot.start_date && date <= slot.end_date);
+      const activeTrip = tripSlots.find(slot => date >= slot.start_date && date <= slot.end_date && slot.duration_label !== 'Padma Day Trip');
       if (activeTrip && activeTrip.status !== 'available') return activeTrip.status;
     } else {
+      const activeTrip = tripSlots.find(slot => date >= slot.start_date && date <= slot.end_date && slot.duration_label === 'Padma Day Trip');
+      if (activeTrip && activeTrip.status !== 'available') return activeTrip.status;
+      
       if (dayBlocks.some((block) => block.status === 'maintenance')) return 'maintenance';
       if (dayBlocks.some((block) => block.status === 'blocked' && !block.room_id && !block.event_slot)) return 'blocked';
       if (dayBlocks.some((block) => block.status === 'fully_booked' && !block.room_id && !block.event_slot)) return 'fully_booked';
@@ -231,6 +234,30 @@ export default function AvailabilityCalendar() {
     await load();
   };
 
+  const createPadmaTrip = async () => {
+    const startDate = selectedDates[0];
+    const existing = tripSlots.find(slot => slot.start_date === startDate && slot.duration_label === 'Padma Day Trip');
+    await saveRow<TripSlot>('trip_slots', {
+      id: existing?.id,
+      start_date: startDate,
+      end_date: startDate,
+      duration_label: 'Padma Day Trip',
+      status: 'available',
+      reason,
+      note,
+    });
+    await load();
+  };
+
+  const releasePadmaTrip = async () => {
+    const startDate = selectedDates[0];
+    const existing = tripSlots.find(slot => slot.start_date === startDate && slot.duration_label === 'Padma Day Trip');
+    if (existing) {
+      await deleteRow('trip_slots', existing.id);
+      await load();
+    }
+  };
+
   const releaseDate = async () => {
     if (activeSeason === 'haor') {
       const startDate = selectedDates[0];
@@ -255,7 +282,7 @@ export default function AvailabilityCalendar() {
 
   const toggleDate = (key: string) => {
     if (activeSeason === 'haor') {
-      const existingTrip = tripSlots.find(slot => key >= slot.start_date && key <= slot.end_date);
+      const existingTrip = tripSlots.find(slot => key >= slot.start_date && key <= slot.end_date && slot.duration_label !== 'Padma Day Trip');
       if (existingTrip) {
         const datesInTrip: string[] = [];
         let curr = new Date(existingTrip.start_date);
@@ -264,7 +291,7 @@ export default function AvailabilityCalendar() {
           datesInTrip.push(curr.toISOString().slice(0, 10));
           curr.setDate(curr.getDate() + 1);
         }
-        setSelectedDates(datesInTrip);
+        setSelectedDates(datesInTrip.length > 0 ? datesInTrip : [key]);
         return;
       }
 
@@ -428,6 +455,12 @@ export default function AvailabilityCalendar() {
               <div className="grid gap-2 sm:grid-cols-2">
                 <Button variant="outline" onClick={saveSlot}>Save slot status</Button>
                 <Button variant="secondary" disabled={!selectedSlotBlock} onClick={releaseSlot}>Release slot</Button>
+              </div>
+            )}
+            {activeSeason === 'padma' && (
+              <div className="grid gap-2 sm:grid-cols-2 mt-2">
+                <Button variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={createPadmaTrip}>Create Padma Trip</Button>
+                <Button variant="secondary" onClick={releasePadmaTrip}>Release Padma Trip</Button>
               </div>
             )}
             <div className={`grid gap-2 ${activeSeason === 'haor' ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>

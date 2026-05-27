@@ -90,7 +90,12 @@ export function TripsDashboard() {
 
           return (
             <Card key={trip.id} className="relative overflow-hidden group hover:shadow-lg transition-all">
-              <div className="absolute top-0 right-0 p-4">
+              <div className="absolute top-0 right-0 p-4 flex items-center gap-2">
+                {trip.duration_label === 'Padma Day Trip' && (
+                  <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[hsl(197,80%,90%)] text-[hsl(197,80%,30%)] border border-[hsl(197,80%,80%)]">
+                    Padma Season
+                  </span>
+                )}
                 <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor}`}>
                   {statusLabel}
                 </span>
