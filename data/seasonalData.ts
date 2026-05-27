@@ -693,7 +693,7 @@ export const seasonalData = {
     },
     facilities: padmaFacilities,
     gallery: {
-      title: 'Gallery',
+      title: 'Photo Gallery',
       subtitle: 'Moments from Kuhelika gallery, shown for Padma season as well.',
       categories: ['All', 'Exterior', 'Interior', 'Landscape', 'Food', 'Rooftop', 'Night', 'Group'],
       images: padmaGallery,
