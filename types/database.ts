@@ -51,6 +51,7 @@ export interface HouseboatSettings extends BaseRow {
   bkash_number: string | null;
   nagad_number: string | null;
   bank_info: string | null;
+  padma_price_per_person?: number | null;
   primary_color: string | null;
   secondary_color: string | null;
   logo_url: string | null;

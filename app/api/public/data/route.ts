@@ -12,7 +12,7 @@ export async function GET() {
   const [settings, rooms, packages, gallery, content, availability, trip_slots, special_dates, reviews] = await Promise.all([
     supabase
       .from('houseboat_settings')
-      .select('id, houseboat_name, tagline, description, phone, whatsapp, email, facebook_url, location, address, bkash_number, nagad_number, bank_info, primary_color, secondary_color, logo_url, active_season, season_updated_at, created_at, updated_at')
+      .select('id, houseboat_name, tagline, description, phone, whatsapp, email, facebook_url, location, address, bkash_number, nagad_number, bank_info, padma_price_per_person, primary_color, secondary_color, logo_url, active_season, season_updated_at, created_at, updated_at')
       .limit(1)
       .maybeSingle(),
     supabase.from('rooms').select('*').eq('status', 'active').order('sort_order'),

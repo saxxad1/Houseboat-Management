@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, BedDouble, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePublicData } from '@/components/PublicDataProvider';
 import type { AvailabilityStatus } from '@/types/database';
@@ -11,8 +11,6 @@ type Status = 'available' | 'partial' | 'full' | 'blocked';
 interface DayStatus {
   status: Status;
   availableCabins?: number;
-  availableSlots?: string[];
-  bookedSlots?: string[];
   price?: number;
   tripInfo?: {
     isStart: boolean;
@@ -23,44 +21,10 @@ interface DayStatus {
   };
 }
 
-const mockCalendarData: Record<string, DayStatus> = {
-  '2026-05-01': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-02': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-03': { status: 'partial', availableCabins: 3, price: 3500 },
-  '2026-05-04': { status: 'partial', availableCabins: 2, price: 3500 },
-  '2026-05-05': { status: 'full', availableCabins: 0, price: 0 },
-  '2026-05-06': { status: 'full', availableCabins: 0, price: 0 },
-  '2026-05-07': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-08': { status: 'available', availableCabins: 5, price: 3500 },
-  '2026-05-09': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-10': { status: 'partial', availableCabins: 4, price: 3500 },
-  '2026-05-11': { status: 'blocked', availableCabins: 0, price: 0 },
-  '2026-05-12': { status: 'blocked', availableCabins: 0, price: 0 },
-  '2026-05-13': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-14': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-15': { status: 'partial', availableCabins: 1, price: 3500 },
-  '2026-05-16': { status: 'full', availableCabins: 0, price: 0 },
-  '2026-05-17': { status: 'full', availableCabins: 0, price: 0 },
-  '2026-05-18': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-19': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-20': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-21': { status: 'partial', availableCabins: 3, price: 3500 },
-  '2026-05-22': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-23': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-24': { status: 'partial', availableCabins: 2, price: 3500 },
-  '2026-05-25': { status: 'full', availableCabins: 0, price: 0 },
-  '2026-05-26': { status: 'full', availableCabins: 0, price: 0 },
-  '2026-05-27': { status: 'available', availableCabins: 5, price: 3500 },
-  '2026-05-28': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-29': { status: 'available', availableCabins: 6, price: 3500 },
-  '2026-05-30': { status: 'partial', availableCabins: 4, price: 3500 },
-  '2026-05-31': { status: 'available', availableCabins: 6, price: 3500 },
-};
-
 const statusConfig = {
   available: { label: 'Available', bg: 'bg-emerald-50 border border-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500', hover: 'hover:bg-emerald-100 hover:border-emerald-300 hover:shadow-md hover:-translate-y-0.5' },
   partial: { label: 'Partial', bg: 'bg-amber-50 border border-amber-100', text: 'text-amber-700', dot: 'bg-amber-500', hover: 'hover:bg-amber-100 hover:border-amber-300 hover:shadow-md hover:-translate-y-0.5' },
-  full: { label: 'Full', bg: 'bg-rose-50 border border-rose-100 opacity-80', text: 'text-rose-700', dot: 'bg-rose-500', hover: '' },
+  full: { label: 'Booked', bg: 'bg-rose-50 border border-rose-100 opacity-80', text: 'text-rose-700', dot: 'bg-rose-500', hover: '' },
   blocked: { label: 'Blocked', bg: 'bg-slate-50 border border-slate-100 opacity-60', text: 'text-slate-400', dot: 'bg-slate-300', hover: '' },
 };
 
@@ -138,9 +102,6 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
   const availableCabinCount = cabins.filter((cabin) => cabin.available).length || cabins.length;
   const startingPrice = 10000;
   const isPadma = activeSeason === 'padma';
-  const eventSlots = isPadma && 'slots' in seasonData.availability
-    ? [...seasonData.availability.slots]
-    : [];
 
   const getDayData = (date: string): DayStatus => {
     const blocks = availability.filter((block) => block.date === date && (block.season_type || 'haor') === activeSeason);
@@ -150,13 +111,9 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
         .filter((block) => block.slot_status === 'booked' || block.status === 'fully_booked')
         .map((block) => block.event_slot || 'custom');
       const hasFullDay = bookedSlotKeys.includes('full_day') || blocks.some((block) => block.event_slot === 'full_day');
-      const pending = blocks.some((block) => block.slot_status === 'inquiry_pending' || block.status === 'partially_booked');
-      const status: Status = blocked ? 'blocked' : hasFullDay || bookedSlotKeys.length >= eventSlots.length ? 'full' : pending || bookedSlotKeys.length > 0 ? 'partial' : 'available';
+      const status: Status = blocked ? 'blocked' : hasFullDay || bookedSlotKeys.length > 0 ? 'full' : 'available';
       return {
         status,
-        availableCabins: Math.max(eventSlots.length - (hasFullDay ? eventSlots.length : bookedSlotKeys.length), 0),
-        availableSlots: status === 'blocked' || hasFullDay ? [] : eventSlots,
-        bookedSlots: hasFullDay ? ['Full Day Event'] : bookedSlotKeys,
         price: status === 'full' || status === 'blocked' ? 0 : 30000,
       };
     }
@@ -188,9 +145,6 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
       price: startingPrice,
     };
   };
-
-  const selectedData = selectedDate ? getDayData(selectedDate) : null;
-
 
           {/* Calendar */}
   const calendarGrid = (
@@ -337,7 +291,7 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
             
       {/* Legend */}
       <div className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-5 mt-4 sm:mt-2 pt-5 border-t border-slate-100">
-        {Object.entries(statusConfig).map(([key, cfg]) => (
+        {Object.entries(statusConfig).filter(([key]) => !isPadma || key !== 'partial').map(([key, cfg]) => (
           <div key={key} className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full shadow-sm ${cfg.dot}`} />
             <span className="text-xs font-medium text-slate-500">{cfg.label}</span>

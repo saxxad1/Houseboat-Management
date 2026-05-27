@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, CircleCheck as CheckCircle2, Send, MessageCircle, Phone, User, CalendarCheck, Users, Anchor, BedDouble, Package, CreditCard, FileText } from 'lucide-react';
+import { X, CircleCheck as CheckCircle2, Send, MessageCircle, Phone, User, CalendarCheck, Users, BedDouble, CreditCard } from 'lucide-react';
 import { usePublicData } from '@/components/PublicDataProvider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
@@ -31,17 +31,13 @@ const initialForm = {
   payment: 'bkash',
   transactionId: '',
   eventDate: '',
-  eventType: 'Family Get Together',
+  eventType: 'Padma Day Long Trip',
   eventSlot: 'full_day',
-  guestRange: '20-30',
-  foodPackage: 'Padma Day Long Full Menu',
-  decorationRequired: 'Discuss Later',
-  soundSystemRequired: 'Yes',
+  guestRange: '',
+  foodPackage: '',
+  decorationRequired: 'No',
+  soundSystemRequired: 'No',
   paymentMode: 'advance' as 'advance' | 'full',
-};
-
-type PackageDisplayFields = {
-  priceDisplay?: string;
 };
 
 type SelectedRoomDetail = {
@@ -50,26 +46,6 @@ type SelectedRoomDetail = {
   pax: number;
   subtotal: number;
 };
-
-const eventSlotValues: Record<string, string> = {
-  'Morning Slot': 'morning',
-  'Afternoon Slot': 'afternoon',
-  'Evening Slot': 'evening',
-  'Moonlight Slot': 'moonlight',
-  'Full Day Event': 'full_day',
-  'Day Long Trip': 'full_day',
-  'Private Full Boat': 'full_day',
-  'Custom Group Trip': 'custom',
-  'Custom Slot': 'custom',
-};
-
-function normalizeEventSlot(value: string) {
-  return eventSlotValues[value] || value;
-}
-
-function getEventSlotLabel(value: string) {
-  return Object.entries(eventSlotValues).find(([, slot]) => slot === value)?.[0] || value;
-}
 
 export default function BookingForm({ isOpen, onClose, initialCabin, initialBookingType = 'cabin', initialCheckInDate, initialCheckOutDate }: BookingFormProps) {
   const { siteConfig, cabins, packages, activeSeason, seasonData, tripSlots, specialDates } = usePublicData();
@@ -101,29 +77,21 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
   }, [activeSeason, isOpen, initialCabin, initialBookingType, initialCheckInDate, initialCheckOutDate]);
 
   useEffect(() => {
-    if (!isOpen || activeSeason !== 'padma' || seasonData.bookingForm.mode !== 'padma' || !('eventTypes' in seasonData.bookingForm)) return;
-
-    const padmaForm = seasonData.bookingForm as typeof seasonData.bookingForm & {
-      eventTypes: readonly string[];
-      slots: readonly string[];
-      guestRanges: readonly string[];
-      foodPackages: readonly string[];
-      decorationOptions: readonly string[];
-    };
+    if (!isOpen || activeSeason !== 'padma') return;
 
     setForm((prev) => ({
       ...prev,
       bookingType: 'cabin',
-      eventType: padmaForm.eventTypes[0] || prev.eventType,
-      eventSlot: normalizeEventSlot(padmaForm.slots[0] || prev.eventSlot),
-      guestRange: padmaForm.guestRanges[1] || padmaForm.guestRanges[0] || prev.guestRange,
-      foodPackage: padmaForm.foodPackages[0] || prev.foodPackage,
-      decorationRequired: padmaForm.decorationOptions[2] || prev.decorationRequired,
+      eventType: 'Padma Day Long Trip',
+      eventSlot: 'full_day',
+      guests: prev.guests === '16' ? '20' : prev.guests,
+      guestRange: '',
+      foodPackage: '',
+      decorationRequired: 'No',
+      soundSystemRequired: 'No',
     }));
-    setRoomDetails((prev) => (
-      prev.length ? prev.map((room) => ({ ...room, pax: room.pax >= 5 ? room.pax : 5 })) : [{ cabin: '', pax: 5 }]
-    ));
-  }, [activeSeason, isOpen, seasonData]);
+    setRoomDetails([{ cabin: '', pax: 2 }]);
+  }, [activeSeason, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -146,10 +114,9 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
     if (!form.phone.trim()) newErrors.phone = 'Enter phone number';
     if (activeSeason === 'padma') {
       if (!form.eventDate) newErrors.eventDate = 'Enter event date';
-      if (!form.eventType) newErrors.eventType = 'Select event type';
-      if (!form.eventSlot) newErrors.eventSlot = 'Select slot';
-      const hasValidRoom = roomDetails.some(r => r.cabin.trim() !== '');
-      if (!hasValidRoom) newErrors.rooms = 'Select at least one Padma room';
+      if (!Number.isFinite(Number(form.guests)) || Number(form.guests) <= 0) {
+        newErrors.guests = 'Enter number of guests';
+      }
     } else {
       if (!form.checkin) newErrors.checkin = 'Enter check-in date';
       if (!form.checkout) newErrors.checkout = 'Enter check-out date';
@@ -206,13 +173,17 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
     setSubmitError('');
 
     try {
-      const selectedRoomDetails = getSelectedRoomDetails();
-      const guestCount = form.bookingType === 'cabin'
-        ? selectedRoomDetails.reduce((sum, room) => sum + room.pax, 0)
-        : Number(form.guests || 1);
-      const roomsString = form.bookingType === 'cabin' 
-        ? selectedRoomDetails.map(r => `${r.roomName} (${r.pax} persons)`).join(', ')
-        : `Full Boat - ${form.guests} Guests, ${form.acPreference}`;
+      const selectedRoomDetails = activeSeason === 'padma' ? [] : getSelectedRoomDetails();
+      const guestCount = activeSeason === 'padma'
+        ? Number(form.guests || 1)
+        : form.bookingType === 'cabin'
+          ? selectedRoomDetails.reduce((sum, room) => sum + room.pax, 0)
+          : Number(form.guests || 1);
+      const roomsString = activeSeason === 'padma'
+        ? `Padma Day Long - ${form.guests} Guests`
+        : form.bookingType === 'cabin' 
+          ? selectedRoomDetails.map(r => `${r.roomName} (${r.pax} persons)`).join(', ')
+          : `Full Boat - ${form.guests} Guests, ${form.acPreference}`;
 
       const res = await fetch('/api/public/book', {
         method: 'POST',
@@ -248,7 +219,12 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
   };
 
   const getEstimatedPrice = () => {
-    if (activeSeason === 'padma') return null;
+    if (activeSeason === 'padma') {
+      const perPerson = Number(siteConfig.padmaPricePerPerson || 0);
+      const g = parseInt(form.guests, 10);
+      if (!perPerson || !Number.isFinite(g) || g <= 0) return null;
+      return perPerson * g;
+    }
     
     if (form.bookingType === 'full') {
       const isAC = form.acPreference === 'AC';
@@ -276,28 +252,36 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
 
   const estimatedSubtotal = getEstimatedPrice();
   const bookingDate = activeSeason === 'padma' ? form.eventDate : form.checkin;
-  const priceSummary = calculateBookingDiscount(estimatedSubtotal || 0, bookingDate, specialDates);
+  const priceSummary = activeSeason === 'padma'
+    ? {
+        subtotalAmount: Math.max(Math.round(Number(estimatedSubtotal || 0)), 0),
+        discountAmount: 0,
+        totalAmount: Math.max(Math.round(Number(estimatedSubtotal || 0)), 0),
+        discountPercent: 0,
+        discountReason: null,
+        isDiscountApplied: false,
+      }
+    : calculateBookingDiscount(estimatedSubtotal || 0, bookingDate, specialDates);
   const payableAmount = form.paymentMode === 'advance' ? Math.ceil(priceSummary.totalAmount / 2) : priceSummary.totalAmount;
+  const padmaPricePerPerson = Number(siteConfig.padmaPricePerPerson || 0);
+  const showPricingSection = activeSeason === 'padma' || priceSummary.subtotalAmount > 0;
 
   const buildWhatsappMessage = () => {
     if (activeSeason === 'padma') {
-      const selectedRoomDetails = getSelectedRoomDetails();
       const msg = `Hello, I want to book a Padma Day Long cruise.
 
 Name: ${form.name}
 Phone: ${form.phone}
-Event Date: ${form.eventDate}
-Event Type: ${form.eventType}
-Preferred Slot: ${getEventSlotLabel(form.eventSlot)}
-Guests: ${form.guestRange}
-Rooms: ${selectedRoomDetails.map(r => `${r.roomName} (${r.pax} persons)`).join(', ') || 'Not selected'}
-Package: ${form.package || 'Not selected'}
-Food Package: ${form.foodPackage}
-Decoration Required: ${form.decorationRequired}
-Sound System Required: ${form.soundSystemRequired}
-Special Request: ${form.request || 'None'}
+Trip Date: ${form.eventDate}
+Guests: ${form.guests}
+Per Person Price: ${padmaPricePerPerson ? `৳${padmaPricePerPerson.toLocaleString()}` : 'TBD'}
+Estimated Total: ${priceSummary.totalAmount ? `৳${priceSummary.totalAmount.toLocaleString()}` : 'TBD'}
+Payment Mode: ${form.paymentMode === 'advance' ? '50% Advance' : '100% Full Payment'}
+Payable Now: ${payableAmount ? `৳${payableAmount.toLocaleString()}` : 'TBD'}
+Payment Method: ${form.payment}
+Transaction ID: ${form.transactionId || 'Not provided yet'}
 
-Please confirm availability and package details.`;
+Please confirm availability.`;
       return encodeURIComponent(msg);
     }
 
@@ -470,7 +454,7 @@ Thank you.`;
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
-                      <span className="flex items-center gap-1.5"><CalendarCheck className="w-3.5 h-3.5" />Event Date *</span>
+                      <span className="flex items-center gap-1.5"><CalendarCheck className="w-3.5 h-3.5" />Trip Date *</span>
                     </label>
                     <input
                       name="eventDate"
@@ -482,49 +466,24 @@ Thank you.`;
                     {errors.eventDate && <p className="text-red-500 text-xs mt-1">{errors.eventDate}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Event Type *</label>
-                    <select
-                      name="eventType"
-                      value={form.eventType}
-                      onChange={(e) => setForm({ ...form, eventType: e.target.value })}
-                      className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
-                    >
-                      {seasonData.bookingForm.mode === 'padma' && seasonData.bookingForm.eventTypes.map((item) => (
-                        <option key={item} value={item}>{item}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Preferred Slot *</label>
-                    <select
-                      name="eventSlot"
-                      value={form.eventSlot}
-                      onChange={(e) => setForm({ ...form, eventSlot: e.target.value })}
-                      className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
-                    >
-                      {seasonData.bookingForm.mode === 'padma' && seasonData.bookingForm.slots.map((item) => (
-                        <option key={item} value={normalizeEventSlot(item)}>{item}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
                     <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
                       <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />Number of Guests *</span>
                     </label>
-                    <select
-                      name="guestRange"
-                      value={form.guestRange}
-                      onChange={(e) => setForm({ ...form, guestRange: e.target.value })}
+                    <input
+                      name="guests"
+                      type="number"
+                      min={1}
+                      value={form.guests}
+                      onChange={(e) => { setForm({ ...form, guests: e.target.value }); setErrors({ ...errors, guests: '' }); }}
+                      placeholder="20"
                       className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
-                    >
-                      {seasonData.bookingForm.mode === 'padma' && seasonData.bookingForm.guestRanges.map((item) => (
-                        <option key={item} value={item}>{item}</option>
-                      ))}
-                    </select>
+                    />
+                    {errors.guests && <p className="text-red-500 text-xs mt-1">{errors.guests}</p>}
                   </div>
+                </div>
+
+                <div className="rounded-xl border border-sky-100 bg-sky-50/70 px-3.5 py-3 text-xs sm:text-sm font-medium leading-relaxed text-sky-900">
+                  Rooms are shared fresh-up/rest facilities for the day trip. Usually 4-6 guests share a room. Male and female guests are allocated separate rooms; mixed male/female sharing in the same room is not allowed.
                 </div>
               </>
             ) : (
@@ -598,66 +557,6 @@ Thank you.`;
 
 
               </>
-            )}
-
-            {activeSeason === 'padma' && (
-              <div className="space-y-3 sm:space-y-4">
-                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
-                  <span className="flex items-center gap-1.5"><BedDouble className="w-3.5 h-3.5" />Padma Rooms & Sharing</span>
-                </label>
-                {roomDetails.map((detail, index) => (
-                  <div key={index} className="flex gap-2 sm:gap-3 items-center">
-                    <select
-                      value={detail.cabin}
-                      onChange={(e) => {
-                        const newDetails = [...roomDetails];
-                        newDetails[index].cabin = e.target.value;
-                        setRoomDetails(newDetails);
-                        setErrors({ ...errors, rooms: '' });
-                      }}
-                      className="flex-1 px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
-                    >
-                      <option value="">-- Select Padma Room --</option>
-                      {cabins.filter((c: any) => c.available).map((c: any) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={detail.pax}
-                      onChange={(e) => {
-                        const newDetails = [...roomDetails];
-                        newDetails[index].pax = Number(e.target.value);
-                        setRoomDetails(newDetails);
-                      }}
-                      className="w-24 sm:w-32 px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
-                    >
-                      <option value={5}>5 Persons</option>
-                      <option value={6}>6 Persons</option>
-                      <option value={7}>7 Persons</option>
-                    </select>
-
-                    <button
-                      type="button"
-                      onClick={() => setRoomDetails(roomDetails.filter((_, i) => i !== index))}
-                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                ))}
-
-                <button
-                  type="button"
-                  onClick={() => setRoomDetails([...roomDetails, { cabin: '', pax: 5 }])}
-                  className="w-full py-2.5 sm:py-3 mt-1 rounded-xl border-2 border-dashed border-[hsl(197,80%,38%)] text-[hsl(197,80%,38%)] text-sm font-bold flex items-center justify-center gap-1 hover:bg-[hsl(195,95%,95%)] transition-colors shadow-sm"
-                >
-                  + Add Another Padma Room
-                </button>
-                {errors.rooms && <p className="text-red-500 text-xs mt-1">{errors.rooms}</p>}
-              </div>
             )}
 
             {/* Cabin Select & Sharing */}
@@ -754,59 +653,31 @@ Thank you.`;
               </div>
             )}
 
-
-
-            {activeSeason === 'padma' && seasonData.bookingForm.mode === 'padma' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Food Package</label>
-                  <select
-                    name="foodPackage"
-                    value={form.foodPackage}
-                    onChange={(e) => setForm({ ...form, foodPackage: e.target.value })}
-                    className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
-                  >
-                    {seasonData.bookingForm.foodPackages.map((item) => (
-                      <option key={item} value={item}>{item}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Decoration Required?</label>
-                  <select
-                    name="decorationRequired"
-                    value={form.decorationRequired}
-                    onChange={(e) => setForm({ ...form, decorationRequired: e.target.value })}
-                    className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
-                  >
-                    {seasonData.bookingForm.decorationOptions.map((item) => (
-                      <option key={item} value={item}>{item}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Sound System Required?</label>
-                  <select
-                    name="soundSystemRequired"
-                    value={form.soundSystemRequired}
-                    onChange={(e) => setForm({ ...form, soundSystemRequired: e.target.value })}
-                    className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
-                  >
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                  </select>
-                </div>
-              </div>
-            )}
-
             {/* Estimated Total Price */}
-            {activeSeason === 'haor' && priceSummary.subtotalAmount > 0 && (
+            {showPricingSection && (
               <div className="bg-[hsl(195,95%,95%)] border border-[hsl(195,85%,85%)] rounded-xl p-3 sm:p-4 my-2">
                 <div>
-                  <div className="text-xs sm:text-sm font-semibold text-[hsl(197,80%,30%)]">Estimated Package Total:</div>
+                  <div className="text-xs sm:text-sm font-semibold text-[hsl(197,80%,30%)]">
+                    {activeSeason === 'padma' ? 'Estimated Day Long Total:' : 'Estimated Package Total:'}
+                  </div>
                   <div className="text-xs text-slate-500 mt-0.5">Final price and availability will be confirmed by Kuhelika team.</div>
                 </div>
                 <div className="mt-3 space-y-1 text-sm">
+                  {activeSeason === 'padma' && (
+                    <div className="flex items-center justify-between gap-4 text-slate-600">
+                      <span>Per person</span>
+                      <span className="font-semibold">
+                        {padmaPricePerPerson > 0
+                          ? `৳${padmaPricePerPerson.toLocaleString()} x ${Number(form.guests || 0).toLocaleString()} guests`
+                          : 'Set from Admin > Padma Trip'}
+                      </span>
+                    </div>
+                  )}
+                  {activeSeason === 'padma' && padmaPricePerPerson <= 0 && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+                      Padma per-person price is not set yet. Add it from Admin &gt; Padma Trip to show the correct payable amount.
+                    </div>
+                  )}
                   <div className="flex items-center justify-between gap-4 text-slate-600">
                     <span>Subtotal</span>
                     <span className="font-semibold">৳{priceSummary.subtotalAmount.toLocaleString()}</span>
@@ -864,7 +735,7 @@ Thank you.`;
             )}
 
             {/* Payment Method */}
-            <div>
+            {showPricingSection && <div>
               <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
                 <span className="flex items-center gap-1.5"><CreditCard className="w-3.5 h-3.5" />Payment Method</span>
               </label>
@@ -925,7 +796,7 @@ Thank you.`;
                   </div>
                 </div>
               )}
-            </div>
+            </div>}
 
             {/* Action Buttons */}
             <div className="flex flex-col gap-3 pt-1">

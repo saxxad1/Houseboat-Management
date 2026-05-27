@@ -23,6 +23,7 @@ type PublicSiteConfig = typeof fallbackSiteConfig & {
   bkashNumber?: string;
   nagadNumber?: string;
   bankInfo?: string;
+  padmaPricePerPerson?: number;
 };
 type PublicCabin = (typeof fallbackCabins)[number];
 type PublicPackage = (typeof fallbackPackages)[number];

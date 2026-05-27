@@ -118,6 +118,8 @@ export async function POST(req: Request) {
       season_type,
       request,
       roomDetails,
+      paymentMode,
+      payableAmount,
       botField,
     } = body;
 
@@ -131,7 +133,8 @@ export async function POST(req: Request) {
 
     const isPadma = season_type === 'padma';
     const selectedRooms = isPadma ? [] : normalizeRooms(roomDetails);
-    const normalizedEventSlot = normalizeEventSlot(eventSlot);
+    const normalizedEventSlot = isPadma ? normalizeEventSlot(eventSlot || 'full_day') : normalizeEventSlot(eventSlot);
+    const normalizedEventType = isPadma ? String(eventType || 'Padma Day Long Trip') : eventType;
     const checkInDate = isPadma ? eventDate : checkin;
     const checkOutDate = isPadma && eventDate ? addDays(eventDate, 1) : checkout;
 
@@ -139,8 +142,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Valid booking dates are required' }, { status: 400 });
     }
 
-    if (isPadma && (!eventDate || !eventType || !normalizedEventSlot)) {
-      return NextResponse.json({ error: 'Event date, type, and slot are required' }, { status: 400 });
+    if (isPadma && !eventDate) {
+      return NextResponse.json({ error: 'Trip date is required' }, { status: 400 });
     }
 
     if (!isPadma && bookingType !== 'full' && selectedRooms.length === 0) {
@@ -263,8 +266,21 @@ export async function POST(req: Request) {
       : bookingMode === 'cabin_wise'
         ? normalizedRoomDetails.reduce((sum, room) => sum + Number(room.pax || 0), 0)
         : parseGuestCount(guests, 1);
+
+    let padmaPricePerPerson = 0;
+    if (isPadma) {
+      const { data: settings, error: settingsError } = await supabase
+        .from('houseboat_settings')
+        .select('padma_price_per_person')
+        .limit(1)
+        .maybeSingle();
+
+      if (settingsError) throw settingsError;
+      padmaPricePerPerson = Math.max(Math.round(Number(settings?.padma_price_per_person || 0)), 0);
+    }
+
     const subtotalAmount = isPadma
-      ? 0
+      ? padmaPricePerPerson * guestCount
       : bookingMode === 'cabin_wise'
         ? normalizedRoomDetails.reduce((sum, room) => sum + Number(room.subtotal || 0), 0)
         : getFullBoatPrice(guestCount, acPreference);
@@ -277,15 +293,31 @@ export async function POST(req: Request) {
       .from('special_dates')
       .select('date, title, date_type, is_discount_excluded, is_active')
       .eq('is_active', true);
-    const pricing = calculateBookingDiscount(
-      Number(subtotalAmount || 0),
-      checkInDate,
-      (specialDates || []) as SpecialDate[]
-    );
+    const pricing = isPadma
+      ? {
+          subtotalAmount: Number(subtotalAmount || 0),
+          discountAmount: 0,
+          totalAmount: Number(subtotalAmount || 0),
+          discountPercent: 0,
+          discountReason: null,
+          isDiscountApplied: false,
+        }
+      : calculateBookingDiscount(
+          Number(subtotalAmount || 0),
+          checkInDate,
+          (specialDates || []) as SpecialDate[]
+        );
+    const requestedPayableAmount = Math.max(Math.round(Number(payableAmount || 0)), 0);
+    const calculatedPayableAmount = paymentMode === 'full' ? pricing.totalAmount : Math.ceil(pricing.totalAmount / 2);
+    const confirmedAdvanceAmount = transactionId
+      ? Math.min(requestedPayableAmount || calculatedPayableAmount, pricing.totalAmount)
+      : 0;
     const specialRequest = [
       rooms ? `Selected Rooms: ${rooms}` : '',
+      isPadma && padmaPricePerPerson ? `Padma Price/Person: ৳${padmaPricePerPerson.toLocaleString()}` : '',
       guestRange && isPadma ? `Guest Range: ${guestRange}` : '',
       !isPadma && pricing.discountAmount ? `Discount: ${pricing.discountReason} (-৳${pricing.discountAmount.toLocaleString()})` : '',
+      paymentMode ? `Payment Mode: ${paymentMode === 'full' ? 'Full Payment' : '50% Advance'}` : '',
       request ? `Request: ${request}` : '',
     ].filter(Boolean).join('\n') || null;
 
@@ -303,18 +335,18 @@ export async function POST(req: Request) {
       discount_amount: pricing.discountAmount,
       discount_reason: pricing.discountReason,
       total_amount: pricing.totalAmount,
-      advance_amount: 0,
-      due_amount: pricing.totalAmount,
-      payment_status: 'unpaid',
+      advance_amount: confirmedAdvanceAmount,
+      due_amount: Math.max(pricing.totalAmount - confirmedAdvanceAmount, 0),
+      payment_status: confirmedAdvanceAmount >= pricing.totalAmount && pricing.totalAmount > 0 ? 'paid' : confirmedAdvanceAmount > 0 ? 'partially_paid' : 'unpaid',
       booking_status: 'pending',
       special_request: specialRequest,
       admin_note: null,
-      event_type: isPadma ? eventType : null,
+      event_type: isPadma ? normalizedEventType : null,
       event_slot: isPadma ? normalizedEventSlot : null,
       event_date: isPadma ? eventDate : null,
-      food_package: isPadma ? foodPackage : null,
-      decoration_required: isPadma ? isDeco : false,
-      sound_system_required: isPadma ? isSound : false,
+      food_package: isPadma ? null : foodPackage || null,
+      decoration_required: isPadma ? false : isDeco,
+      sound_system_required: isPadma ? false : isSound,
       payment_method: payment || null,
       transaction_id: transactionId || null,
       trip_slot_id: tripSlotId,

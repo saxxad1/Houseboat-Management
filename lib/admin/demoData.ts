@@ -33,6 +33,7 @@ export const demoSettings: HouseboatSettings = {
   bkash_number: '',
   nagad_number: '',
   bank_info: '',
+  padma_price_per_person: 0,
   primary_color: '#075985',
   secondary_color: '#f59e0b',
   logo_url: '/logo-kuhelika-clean.png',

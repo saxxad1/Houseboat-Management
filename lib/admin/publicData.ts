@@ -48,6 +48,7 @@ export function mapSettingsToSiteConfig(settings?: HouseboatSettings | null, sea
     bkashNumber: settings.bkash_number || undefined,
     nagadNumber: settings.nagad_number || undefined,
     bankInfo: settings.bank_info || undefined,
+    padmaPricePerPerson: Number(settings.padma_price_per_person || 0),
   };
 }
 
@@ -281,10 +282,12 @@ export function mapPackagesToPublic(packages: TourPackage[], season: SeasonType 
 
 export function mapGalleryToPublic(gallery: GalleryImage[], season: SeasonType = 'haor') {
   if (!gallery || !gallery.length) return [];
-  return gallery.map((image, index) => ({
-    id: index + 1,
-    src: image.image_url,
-    alt: image.title || 'Houseboat gallery image',
-    category: image.category || 'Gallery',
-  }));
+  return gallery
+    .filter((image) => Boolean(String(image.image_url || '').trim()))
+    .map((image, index) => ({
+      id: index + 1,
+      src: image.image_url,
+      alt: image.title || 'Houseboat gallery image',
+      category: image.category || 'Gallery',
+    }));
 }

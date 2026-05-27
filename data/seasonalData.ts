@@ -28,19 +28,19 @@ export const seasonMeta: Record<SeasonType, {
     bookingMode: 'Cabin / Full Boat',
   },
   padma: {
-    name: 'Padma Event Season',
+    name: 'Padma Day Long Season',
     adminName: 'Padma Season',
     location: 'Padma River, Mawa / Louhajang',
-    bookingMode: 'Event Slot / Full Boat Event',
+    bookingMode: 'Day Long Group Booking',
   },
 };
 
 const padmaNavLinks = [
-  { label: 'Cabins', href: '#cabins' },
-  { label: 'Packages', href: '#packages' },
-  { label: 'Itinerary', href: '#itinerary' },
+  { label: 'Room Info', href: '#cabins' },
+  { label: 'Day Long Package', href: '#packages' },
+  { label: 'Tour Plan', href: '#itinerary' },
   { label: 'Food Menu', href: '#food-menu' },
-  { label: 'Spots', href: '#destinations' },
+  { label: 'Highlights', href: '#destinations' },
   { label: 'Gallery', href: '#gallery' },
   { label: 'Facilities', href: '#facilities' },
   { label: 'FAQ', href: '#faq' },
@@ -53,8 +53,8 @@ export const padmaEventSpaces = [
     nameEn: 'Padma View Room 1',
     image: '/images/padma/river-view.jpg',
     bedType: '7ft x 6ft Bed',
-    capacity: '5-7 Persons',
-    capacityLabel: '5-7 Persons Share',
+    capacity: '4-6 Persons',
+    capacityLabel: '4-6 Persons Share',
     bath: 'Attached Washroom',
     ac: 'AC Support',
     mainPrice: 'Custom Quote',
@@ -63,7 +63,7 @@ export const padmaEventSpaces = [
     features: ['Attached washroom', 'Private balcony', 'Changing/rest space', 'Food included'],
     available: true,
     badge: 'Premium',
-    buttonLabel: 'Book This Room',
+    buttonLabel: 'Book Padma Day Trip',
   },
   {
     id: 'padma-room-02',
@@ -71,8 +71,8 @@ export const padmaEventSpaces = [
     nameEn: 'Padma View Room 2',
     image: '/images/padma/padma-bridge.jpg',
     bedType: '7ft x 6ft Bed',
-    capacity: '5-7 Persons',
-    capacityLabel: '5-7 Persons Share',
+    capacity: '4-6 Persons',
+    capacityLabel: '4-6 Persons Share',
     bath: 'Attached Washroom',
     ac: 'AC Support',
     mainPrice: 'Custom Quote',
@@ -81,7 +81,7 @@ export const padmaEventSpaces = [
     features: ['Padma Bridge view route', 'Attached washroom', 'Private balcony', 'Family friendly'],
     available: true,
     badge: 'Popular',
-    buttonLabel: 'Book This Room',
+    buttonLabel: 'Book Padma Day Trip',
   },
   {
     id: 'padma-room-03',
@@ -89,8 +89,8 @@ export const padmaEventSpaces = [
     nameEn: 'Padma View Room 3',
     image: '/images/padma/rooftop.jpg',
     bedType: '7ft x 6ft Bed',
-    capacity: '5-7 Persons',
-    capacityLabel: '5-7 Persons Share',
+    capacity: '4-6 Persons',
+    capacityLabel: '4-6 Persons Share',
     bath: 'Attached Washroom',
     ac: 'AC Support',
     mainPrice: 'Custom Quote',
@@ -99,7 +99,7 @@ export const padmaEventSpaces = [
     features: ['Attached washroom', 'Private balcony', 'Photo friendly', 'Food included'],
     available: true,
     badge: '',
-    buttonLabel: 'Book This Room',
+    buttonLabel: 'Book Padma Day Trip',
   },
   {
     id: 'padma-room-04',
@@ -107,8 +107,8 @@ export const padmaEventSpaces = [
     nameEn: 'Padma View Room 4',
     image: '/images/padma/dining.jpg',
     bedType: '7ft x 6ft Bed',
-    capacity: '5-7 Persons',
-    capacityLabel: '5-7 Persons Share',
+    capacity: '4-6 Persons',
+    capacityLabel: '4-6 Persons Share',
     bath: 'Attached Washroom',
     ac: 'AC Support',
     mainPrice: 'Custom Quote',
@@ -117,7 +117,7 @@ export const padmaEventSpaces = [
     features: ['Attached washroom', 'Private balcony', 'Dining access', 'Group friendly'],
     available: true,
     badge: 'Family',
-    buttonLabel: 'Book This Room',
+    buttonLabel: 'Book Padma Day Trip',
   },
   {
     id: 'padma-room-05',
@@ -125,8 +125,8 @@ export const padmaEventSpaces = [
     nameEn: 'Padma View Room 5',
     image: '/images/padma/sunset.jpg',
     bedType: '7ft x 6ft Bed',
-    capacity: '5-7 Persons',
-    capacityLabel: '5-7 Persons Share',
+    capacity: '4-6 Persons',
+    capacityLabel: '4-6 Persons Share',
     bath: 'Attached Washroom',
     ac: 'AC Support',
     mainPrice: 'Custom Quote',
@@ -135,7 +135,7 @@ export const padmaEventSpaces = [
     features: ['Attached washroom', 'Private balcony', 'Sunset cruise access', 'Food included'],
     available: true,
     badge: '',
-    buttonLabel: 'Book This Room',
+    buttonLabel: 'Book Padma Day Trip',
   },
   {
     id: 'padma-room-06',
@@ -143,8 +143,8 @@ export const padmaEventSpaces = [
     nameEn: 'Padma View Room 6',
     image: '/images/padma/event-deck.jpg',
     bedType: '7ft x 6ft Bed',
-    capacity: '5-7 Persons',
-    capacityLabel: '5-7 Persons Share',
+    capacity: '4-6 Persons',
+    capacityLabel: '4-6 Persons Share',
     bath: 'Attached Washroom',
     ac: 'AC Support',
     mainPrice: 'Custom Quote',
@@ -153,7 +153,7 @@ export const padmaEventSpaces = [
     features: ['Attached washroom', 'Private balcony', 'Event deck access', 'Food included'],
     available: true,
     badge: '',
-    buttonLabel: 'Book This Room',
+    buttonLabel: 'Book Padma Day Trip',
   },
   {
     id: 'padma-room-07',
@@ -161,8 +161,8 @@ export const padmaEventSpaces = [
     nameEn: 'Padma View Room 7',
     image: '/images/padma/corporate-event.jpg',
     bedType: '7ft x 6ft Bed',
-    capacity: '5-7 Persons',
-    capacityLabel: '5-7 Persons Share',
+    capacity: '4-6 Persons',
+    capacityLabel: '4-6 Persons Share',
     bath: 'Attached Washroom',
     ac: 'AC Support',
     mainPrice: 'Custom Quote',
@@ -171,7 +171,7 @@ export const padmaEventSpaces = [
     features: ['Attached washroom', 'Private balcony', 'Corporate group friendly', 'Food included'],
     available: true,
     badge: '',
-    buttonLabel: 'Book This Room',
+    buttonLabel: 'Book Padma Day Trip',
   },
   {
     id: 'padma-room-08',
@@ -179,8 +179,8 @@ export const padmaEventSpaces = [
     nameEn: 'Padma View Room 8',
     image: '/images/padma/birthday-decoration.jpg',
     bedType: '7ft x 6ft Bed',
-    capacity: '5-7 Persons',
-    capacityLabel: '5-7 Persons Share',
+    capacity: '4-6 Persons',
+    capacityLabel: '4-6 Persons Share',
     bath: 'Attached Washroom',
     ac: 'AC Support',
     mainPrice: 'Custom Quote',
@@ -189,7 +189,7 @@ export const padmaEventSpaces = [
     features: ['Attached washroom', 'Private balcony', 'Celebration friendly', 'Food included'],
     available: true,
     badge: '',
-    buttonLabel: 'Book This Room',
+    buttonLabel: 'Book Padma Day Trip',
   },
 ];
 
@@ -224,7 +224,7 @@ const padmaPackages = [
     meals: 'Full day food arrangement and games',
     popular: false,
     color: 'teal',
-    includes: ['Room sharing 5-7 persons', 'Sound system', 'Indoor games', 'Outdoor char games', 'Bathing opportunity', 'Photo session'],
+    includes: ['Room sharing 4-6 persons', 'Sound system', 'Indoor games', 'Outdoor char games', 'Bathing opportunity', 'Photo session'],
     spots: ['Padma River', 'White char', 'River bank walk'],
     badge: 'Group',
   },
@@ -297,7 +297,7 @@ const padmaItinerary = [
 
 const padmaFacilities = [
   { icon: 'BedDouble', name: '8 Attached Rooms', desc: 'Every room has attached washroom and balcony' },
-  { icon: 'Users', name: '5-7 Person Room Share', desc: 'Day Long sharing setup for groups' },
+  { icon: 'Users', name: '4-6 Person Room Share', desc: 'Day Long sharing setup for groups' },
   { icon: 'Map', name: 'Padma Bridge View', desc: 'Bridge view depending on route and river condition' },
   { icon: 'Waves', name: 'White Char Stop', desc: 'Games, walking, bathing and photo session' },
   { icon: 'Camera', name: 'Mustard Field Photo Stop', desc: 'Seasonal premium photo spot if available' },
@@ -311,6 +311,24 @@ const padmaFacilities = [
   { icon: 'Bath', name: 'Clean Washroom', desc: 'Attached washroom facilities' },
   { icon: 'Baby', name: 'Kids Friendly', desc: 'Child safety and play-friendly arrangement' },
   { icon: 'Star', name: 'Corporate & Family Setup', desc: 'Get together, birthday and office trip support' },
+];
+
+export const padmaTripOverview = [
+  {
+    title: 'Food Included',
+    desc: 'Breakfast, lunch, tea-biscuits and live BBQ arrangement.',
+    icon: 'Utensils',
+  },
+  {
+    title: 'Sightseeing',
+    desc: 'Padma cruising, Padma Bridge view, white char and seasonal mustard-field photo stop.',
+    icon: 'Map',
+  },
+  {
+    title: 'Fun Activities',
+    desc: 'Char games, indoor games, music, bathing opportunity and group photo session.',
+    icon: 'Star',
+  },
 ];
 
 const padmaDestinations = {
@@ -425,17 +443,7 @@ const padmaFoodMenu = {
   },
 };
 
-const padmaGallery = [
-  { id: 1, src: '/images/padma/river-view.jpg', alt: 'Kuhelika Padma river cruise view', category: 'Padma River' },
-  { id: 2, src: '/images/padma/padma-bridge.jpg', alt: 'Padma Bridge view route', category: 'Padma Bridge' },
-  { id: 3, src: '/images/padma/event-deck.jpg', alt: 'Day long event deck', category: 'Deck' },
-  { id: 4, src: '/images/padma/dining.jpg', alt: 'Padma day long dining arrangement', category: 'Food' },
-  { id: 5, src: '/images/padma/rooftop.jpg', alt: 'Rooftop group sitting', category: 'Rooftop' },
-  { id: 6, src: '/images/padma/sunset.jpg', alt: 'Padma sunset cruise moment', category: 'Sunset' },
-  { id: 7, src: '/images/padma/birthday-decoration.jpg', alt: 'Birthday and celebration setup', category: 'Celebration' },
-  { id: 8, src: '/images/padma/corporate-event.jpg', alt: 'Corporate day long group arrangement', category: 'Corporate' },
-  { id: 9, src: '/images/padma/moonlight.jpg', alt: 'Evening Padma cruise mood', category: 'Evening' },
-];
+const padmaGallery = galleryImages;
 
 const padmaTestimonials = [
   {
@@ -478,9 +486,9 @@ const padmaTestimonials = [
 
 const padmaFaqs = [
   { question: 'Is Padma season an overnight trip?', answer: 'No. Padma season is planned as a Day Long trip starting from Louhajang ghat beside Mawa around 9:30 AM and ending the same evening.' },
-  { question: 'How many rooms are available in Padma season?', answer: 'Kuhelika has 8 rooms for Padma Day Long trips. Each room has attached washroom and balcony, and 5-7 guests can share a room depending on group setup.' },
+  { question: 'How are rooms used in Padma season?', answer: 'Kuhelika has 8 rooms for Padma Day Long trips. Rooms are shared fresh-up/rest facilities, usually for 4-6 guests. Male and female guests are allocated separate rooms, and mixed male/female sharing in the same room is not allowed.' },
   { question: 'Can we book the full boat for a private group?', answer: 'Yes. Full boat booking can be arranged for corporate trips, family get-togethers, birthdays, photoshoots, and private day-long groups.' },
-  { question: 'Can corporate events be held?', answer: 'Yes, corporate meetings, team outings, office get-togethers, brand activations and dinner cruises can be arranged.' },
+  { question: 'Can corporate day trips be held?', answer: 'Yes, office outings, team refreshment trips, and corporate Day Long sessions can be arranged.' },
   { question: 'Is food included in the package?', answer: 'The Day Long food plan can include welcome drink, breakfast, lunch, tea-biscuits, and live BBQ. Final food details are confirmed based on package and guest count.' },
   { question: 'Where is the boarding point?', answer: 'The usual boarding point is Louhajang ghat beside Mawa. The exact point and reporting instructions will be shared after booking confirmation.' },
   { question: 'Will we get a Padma Bridge view?', answer: 'Yes, the route is planned for Padma Bridge view when river condition, weather, timing, and permission allow it.' },
@@ -621,7 +629,7 @@ export const seasonalData = {
       secondaryTarget: '#availability',
       stats: [
         { value: '8 Rooms', label: 'Attached + Balcony' },
-        { value: '5-7 Persons', label: 'Room Sharing' },
+        { value: '4-6 Persons', label: 'Room Sharing' },
         { value: 'Day Long', label: '9:30 AM to Evening' },
         { value: '60 Persons', label: 'Group Capacity' },
       ],
@@ -629,7 +637,7 @@ export const seasonalData = {
     about: {
       title: 'About Kuhelika Padma Day Long',
       subtitle: 'Padma Day Long Cruise',
-      story: 'Kuhelika Padma Day Long is planned for guests who want a refreshing one-day trip near Dhaka. From Louhajang beside Mawa, the cruise brings together Padma river air, Padma Bridge view, white char games, music, food, live BBQ, and comfortable 5-7 person room sharing across 8 attached rooms.',
+      story: 'Kuhelika Padma Day Long is planned for guests who want a refreshing one-day trip near Dhaka. From Louhajang beside Mawa, the cruise brings together Padma river air, Padma Bridge view, white char games, music, food, live BBQ, and comfortable 4-6 person room sharing across 8 attached rooms.',
       highlights: [
         { icon: 'Users', title: 'Family & Corporate Groups', desc: 'Suitable for family gatherings, friends trips, office outings, birthdays, and day-long picnics.' },
         { icon: 'Star', title: 'Padma Char Activities', desc: 'Cricket, football, volleyball, badminton, fun games, bathing opportunity, and photo sessions.' },
@@ -641,15 +649,15 @@ export const seasonalData = {
     cabinsSection: {
       badge: 'Padma Rooms',
       title: '8 Attached Rooms for Day Long Sharing',
-      subtitle: 'Each Padma room is arranged for 5-7 guests on sharing basis with attached washroom and private balcony.',
+      subtitle: 'Rooms are shared fresh-up and rest facilities for the Day Long trip. Usually 4-6 guests share a room, and male/female room allocation is always separate.',
       bookingCards: [
-        { title: 'Room Sharing', desc: '5-7 guests can share one room' },
-        { title: 'Full Boat Booking', desc: 'Private day-long group arrangement' },
+        { title: 'Shared Rest Rooms', desc: '4-6 guests per room, allocation managed by team' },
+        { title: 'Separate Allocation', desc: 'Male and female guests stay in separate rooms' },
       ],
       itemType: 'cabin',
-      fullBoatTitle: 'Book the Full Boat for Padma Day Long',
-      fullBoatDescription: 'Book Kuhelika privately for a corporate trip, family get-together, birthday program, photoshoot, or one-day picnic with up to 50-60 guests.',
-      fullBoatButton: 'Book Full Boat Day Trip',
+      fullBoatTitle: 'Book Your Padma Day Long Trip',
+      fullBoatDescription: 'Select your trip date and guest count. Kuhelika team will manage room allocation for fresh-up/rest facilities, with separate rooms for male and female guests.',
+      fullBoatButton: 'Book Padma Day Trip',
     },
     cabins: [],
     eventSpaces: padmaEventSpaces,
@@ -657,7 +665,7 @@ export const seasonalData = {
       badge: 'Padma Packages',
       title: 'Padma Day Long Packages',
       subtitle: 'Choose a day-long arrangement for family, friends, corporate groups, birthdays, or photoshoots.',
-      note: '* Final quote depends on guest count, room sharing, food menu, decoration, pick/drop, and custom requirements.',
+      note: '* Final quote depends on guest count, confirmed date, and selected Day Long arrangement.',
     },
     packages: padmaPackages,
     foodMenu: padmaFoodMenu,
@@ -666,7 +674,7 @@ export const seasonalData = {
       title: 'Day Long Trip Dates',
       subtitle: 'Check whether your preferred Padma Day Long date is available.',
       mode: 'slot',
-      slots: ['Day Long Trip', 'Private Full Boat', 'Custom Group Trip'],
+      slots: ['Day Long Trip'],
     },
     itinerary: {
       badge: 'Tour Plan',
@@ -685,14 +693,14 @@ export const seasonalData = {
     },
     facilities: padmaFacilities,
     gallery: {
-      title: 'Padma Day Long Gallery',
-      subtitle: 'Moments from Kuhelika Padma cruising, dining, group activities, and river views.',
-      categories: ['All', 'Padma River', 'Padma Bridge', 'Deck', 'Food', 'Rooftop', 'Sunset', 'Celebration', 'Corporate'],
+      title: 'Gallery',
+      subtitle: 'Moments from Kuhelika gallery, shown for Padma season as well.',
+      categories: ['All', 'Exterior', 'Interior', 'Landscape', 'Food', 'Rooftop', 'Night', 'Group'],
       images: padmaGallery,
     },
     testimonials: {
       title: 'What Our Guests Say',
-      subtitle: 'Words from those who have experienced organizing events on the Padma.',
+      subtitle: 'Words from those who have experienced Day Long trips on the Padma.',
       stats: { rating: '4.9', count: '500+', label: 'Event Guests', happiness: '95%', happinessLabel: 'Happy Clients' },
       items: padmaTestimonials,
     },
@@ -707,7 +715,7 @@ export const seasonalData = {
     },
     faq: {
       title: 'Frequently Asked Questions',
-      subtitle: 'Answers to common questions about Padma Event Cruise.',
+      subtitle: 'Answers to common questions about Padma Day Long trips.',
       items: padmaFaqs,
     },
     contact: {
@@ -723,11 +731,6 @@ export const seasonalData = {
       submit: 'Send Day Long Booking Request',
       success: 'Day Long Booking Request Sent!',
       successDescription: 'Your Padma Day Long booking request has been sent successfully. Our team will contact you quickly.',
-      eventTypes: ['Family Get Together', 'Corporate Day Trip', 'Friends Gathering', 'Birthday Program', 'Pre-Wedding Photoshoot', 'One-Day Picnic', 'Private Full Boat', 'Other'],
-      slots: ['Day Long Trip', 'Private Full Boat', 'Custom Group Trip'],
-      guestRanges: ['10-20', '20-30', '30-40', '40-50', '50-60', 'Custom'],
-      foodPackages: ['Padma Day Long Full Menu', 'Breakfast + Lunch', 'Lunch + BBQ', 'Custom Food Plan'],
-      decorationOptions: ['Yes', 'No', 'Discuss Later'],
     },
   },
 } as const;

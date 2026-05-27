@@ -1,8 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import { BedDouble, Users, Wind, CircleCheck as CheckCircle, Anchor, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BedDouble, Users, Wind, CircleCheck as CheckCircle, Anchor, ChevronLeft, ChevronRight, Utensils, Map, Star } from 'lucide-react';
 import { usePublicData } from '@/components/PublicDataProvider';
+import { padmaTripOverview } from '@/data/seasonalData';
 import useEmblaCarousel from 'embla-carousel-react';
 import { useCallback } from 'react';
 
@@ -272,6 +273,12 @@ function CabinsContent({ onBookNow }: CabinsProps) {
   const { cabins, activeSeason, seasonData } = usePublicData();
   const section = seasonData.cabinsSection;
   const isPadma = activeSeason === 'padma';
+  const padmaRoomInfo = [
+    { icon: BedDouble, title: '8 Attached Rooms', desc: 'Rooms are available as shared fresh-up, changing, and rest facilities during the Day Long trip.' },
+    { icon: Users, title: '4-6 Person Sharing', desc: 'Rooms are allocated on sharing basis according to group size and operational flow.' },
+    { icon: CheckCircle, title: 'Separate Room Allocation', desc: 'Male and female guests are kept in separate rooms. Mixed male/female sharing in the same room is not allowed.' },
+  ];
+  const padmaOverviewIcons = { Utensils, Map, Star };
 
   return (
     <section id="cabins" className="py-10 md:py-16 bg-gradient-to-b from-[hsl(195,100%,97%)] to-white relative overflow-hidden">
@@ -297,6 +304,62 @@ function CabinsContent({ onBookNow }: CabinsProps) {
           <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-5" />
         </div>
 
+        {isPadma ? (
+          <>
+            <div className="grid md:grid-cols-3 gap-4 sm:gap-6 mb-5 sm:mb-6">
+              {padmaRoomInfo.map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.title} className="bg-white/90 border border-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 shadow-inner ${
+                      index === 0 ? 'bg-gradient-to-br from-sky-600 to-cyan-500' : index === 1 ? 'bg-gradient-to-br from-teal-600 to-emerald-500' : 'bg-gradient-to-br from-amber-500 to-orange-500'
+                    }`}>
+                      <Icon className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black text-slate-800 mb-2">{item.title}</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4 sm:gap-6 mb-10 md:mb-12">
+              {padmaTripOverview.map((item) => {
+                const Icon = padmaOverviewIcons[item.icon as keyof typeof padmaOverviewIcons] || Star;
+                return (
+                  <div key={item.title} className="rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white to-slate-50/80 border border-slate-100 p-5 sm:p-6 shadow-lg shadow-slate-200/40">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-2xl bg-[hsl(195,95%,92%)] flex items-center justify-center text-[hsl(197,80%,30%)]">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <h3 className="font-black text-slate-800 text-base sm:text-lg">{item.title}</h3>
+                    </div>
+                    <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="bg-gradient-to-br from-[hsl(197,80%,24%)] via-[hsl(190,80%,34%)] to-[hsl(173,58%,35%)] rounded-[2rem] sm:rounded-[2.5rem] p-7 sm:p-10 md:p-12 text-center text-white relative overflow-hidden shadow-2xl shadow-[hsl(197,80%,30%)]/30">
+              <div className="absolute inset-x-8 top-0 h-px bg-white/25" />
+              <div className="absolute right-6 top-6 rounded-full border border-white/15 px-4 py-1 text-xs font-bold text-white/80">Day Long Cruise</div>
+              <div className="relative z-10 max-w-3xl mx-auto">
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-black mb-3 tracking-tight drop-shadow-md">{section.fullBoatTitle}</h3>
+                <p className="text-white/82 text-sm sm:text-base md:text-lg font-medium mb-7 drop-shadow-sm">
+                  {section.fullBoatDescription}
+                </p>
+                <button
+                  onClick={() => onBookNow(undefined, 'full')}
+                  className="inline-flex items-center gap-3 bg-gradient-to-r from-[hsl(38,90%,55%)] to-[hsl(35,90%,48%)] hover:from-[hsl(38,90%,60%)] hover:to-[hsl(35,90%,50%)] text-white font-bold px-7 sm:px-9 py-3.5 sm:py-4 rounded-full shadow-xl shadow-[hsl(35,90%,48%)]/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 min-h-[52px] text-base sm:text-lg"
+                >
+                  <Anchor className="w-5 h-5 flex-shrink-0" />
+                  {section.fullBoatButton}
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
         {/* Booking Type Info - Glassmorphism */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-12 md:mb-16">
           <div className="glass-panel rounded-2xl sm:rounded-3xl px-5 sm:px-8 py-4 sm:py-5 flex items-center gap-4 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
@@ -351,6 +414,8 @@ function CabinsContent({ onBookNow }: CabinsProps) {
             </button>
           </div>
         </div>
+          </>
+        )}
       </div>
     </section>
   );
