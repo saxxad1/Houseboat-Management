@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePublicData } from '@/components/PublicDataProvider';
 import { Coffee, Utensils, Moon, Sun, Cookie, CupSoda, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,8 +11,10 @@ interface FoodMenuProps {
 
 const mealIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   'Breakfast': Sun,
+  'Morning': Sun,
   'Lunch': Utensils,
   'Dinner': Moon,
+  'Evening BBQ': Moon,
   'Morning Snacks': Cookie,
   'Evening Snacks': CupSoda,
   'All-Time Tea Arrangement': Coffee
@@ -23,13 +25,22 @@ export default function FoodMenu({ onBookNow }: FoodMenuProps) {
   const foodMenu = seasonData.foodMenu;
 
   // Find the first available tab based on data presence
-  const tabs = [];
-  if (foodMenu?.days?.length) foodMenu.days.forEach(d => tabs.push(d.day));
-  if (foodMenu?.snacks?.length) tabs.push('Snacks & Tea');
+  const tabs = useMemo(() => {
+    const nextTabs: string[] = [];
+    if (foodMenu?.days?.length) foodMenu.days.forEach(d => nextTabs.push(d.day));
+    if (foodMenu?.snacks?.length) nextTabs.push('Snacks & Tea');
+    return nextTabs;
+  }, [foodMenu]);
 
   const [activeTab, setActiveTab] = useState(tabs[0] || 'Day 1');
 
-  if (!foodMenu) return null; // Don't show if no data (e.g. Padma season)
+  useEffect(() => {
+    if (tabs.length && !tabs.includes(activeTab)) {
+      setActiveTab(tabs[0]);
+    }
+  }, [activeTab, tabs]);
+
+  if (!foodMenu) return null;
 
   return (
     <section id="food-menu" className="py-20 lg:py-28 relative overflow-hidden bg-gradient-to-b from-slate-50 to-white">

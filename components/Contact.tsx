@@ -7,7 +7,7 @@ export default function Contact() {
   const { siteConfig, activeSeason, seasonData } = usePublicData();
   const whatsappMessage = encodeURIComponent(
     activeSeason === 'padma'
-      ? `Hello, I want to book a Padma River event cruise for ${siteConfig.name}. Please confirm availability and package details.`
+      ? `Hello, I want to book a Padma Day Long cruise for ${siteConfig.name}. Please confirm availability and package details.`
       : `Hello! I would like to know about haor/houseboat booking for ${siteConfig.name}.`
   );
 

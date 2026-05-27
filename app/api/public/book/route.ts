@@ -24,6 +24,9 @@ const eventSlotAliases: Record<string, string> = {
   'Evening Slot': 'evening',
   'Moonlight Slot': 'moonlight',
   'Full Day Event': 'full_day',
+  'Day Long Trip': 'full_day',
+  'Private Full Boat': 'full_day',
+  'Custom Group Trip': 'custom',
   'Custom Slot': 'custom',
 };
 
@@ -127,7 +130,7 @@ export async function POST(req: Request) {
     }
 
     const isPadma = season_type === 'padma';
-    const selectedRooms = normalizeRooms(roomDetails);
+    const selectedRooms = isPadma ? [] : normalizeRooms(roomDetails);
     const normalizedEventSlot = normalizeEventSlot(eventSlot);
     const checkInDate = isPadma ? eventDate : checkin;
     const checkOutDate = isPadma && eventDate ? addDays(eventDate, 1) : checkout;
@@ -256,7 +259,7 @@ export async function POST(req: Request) {
     }
 
     const guestCount = isPadma
-      ? parseGuestRange(guestRange || guests)
+      ? parseGuestCount(guests, parseGuestRange(guestRange))
       : bookingMode === 'cabin_wise'
         ? normalizedRoomDetails.reduce((sum, room) => sum + Number(room.pax || 0), 0)
         : parseGuestCount(guests, 1);

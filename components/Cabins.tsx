@@ -149,7 +149,9 @@ function CabinCard({
       <div className="p-5 sm:p-6 flex flex-col flex-1 bg-white/50">
         {/* Price floating badge */}
         <div className="-mt-10 sm:-mt-12 mb-5 mx-auto w-full max-w-[280px] sm:max-w-none sm:w-fit sm:ml-auto sm:mr-0 bg-white shadow-xl shadow-slate-200/50 rounded-2xl px-4 py-3 border border-slate-100 flex flex-col items-center justify-center transform group-hover:-translate-y-1 transition-transform relative z-10">
-          <div className="text-[10px] font-extrabold text-[hsl(197,80%,38%)] bg-[hsl(195,95%,92%)] px-2 py-0.5 rounded-full mb-1">2 Days 1 Night</div>
+          <div className="text-[10px] font-extrabold text-[hsl(197,80%,38%)] bg-[hsl(195,95%,92%)] px-2 py-0.5 rounded-full mb-1">
+            {isPadma ? 'Day Long Trip' : '2 Days 1 Night'}
+          </div>
           {!isPadma && (
             <div className="mb-1 text-[10px] font-black uppercase tracking-wide text-emerald-600">
               10% off on weekdays

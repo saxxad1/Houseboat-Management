@@ -5,9 +5,9 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 export default function Destinations() {
-  const { seasonData, activeSeason } = usePublicData();
+  const { seasonData } = usePublicData();
 
-  if (activeSeason !== 'haor' || !seasonData.destinations) return null;
+  if (!seasonData.destinations) return null;
 
   const { badge, title, subtitle, places } = seasonData.destinations;
 

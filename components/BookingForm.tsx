@@ -31,10 +31,10 @@ const initialForm = {
   payment: 'bkash',
   transactionId: '',
   eventDate: '',
-  eventType: 'Birthday',
-  eventSlot: 'morning',
+  eventType: 'Family Get Together',
+  eventSlot: 'full_day',
   guestRange: '20-30',
-  foodPackage: 'Snacks Only',
+  foodPackage: 'Padma Day Long Full Menu',
   decorationRequired: 'Discuss Later',
   soundSystemRequired: 'Yes',
   paymentMode: 'advance' as 'advance' | 'full',
@@ -57,6 +57,9 @@ const eventSlotValues: Record<string, string> = {
   'Evening Slot': 'evening',
   'Moonlight Slot': 'moonlight',
   'Full Day Event': 'full_day',
+  'Day Long Trip': 'full_day',
+  'Private Full Boat': 'full_day',
+  'Custom Group Trip': 'custom',
   'Custom Slot': 'custom',
 };
 
@@ -86,7 +89,8 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
         ...prev, 
         bookingType: initialBookingType as 'cabin' | 'full',
         checkin: initialCheckInDate || prev.checkin,
-        checkout: initialCheckOutDate || prev.checkout
+        checkout: initialCheckOutDate || prev.checkout,
+        eventDate: activeSeason === 'padma' ? initialCheckInDate || prev.eventDate : prev.eventDate
       }));
       if (initialCabin) {
         setRoomDetails([{ cabin: initialCabin, pax: 2 }]);
@@ -94,7 +98,32 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
         setRoomDetails([{ cabin: '', pax: 2 }]);
       }
     }
-  }, [isOpen, initialCabin, initialBookingType, initialCheckInDate, initialCheckOutDate]);
+  }, [activeSeason, isOpen, initialCabin, initialBookingType, initialCheckInDate, initialCheckOutDate]);
+
+  useEffect(() => {
+    if (!isOpen || activeSeason !== 'padma' || seasonData.bookingForm.mode !== 'padma' || !('eventTypes' in seasonData.bookingForm)) return;
+
+    const padmaForm = seasonData.bookingForm as typeof seasonData.bookingForm & {
+      eventTypes: readonly string[];
+      slots: readonly string[];
+      guestRanges: readonly string[];
+      foodPackages: readonly string[];
+      decorationOptions: readonly string[];
+    };
+
+    setForm((prev) => ({
+      ...prev,
+      bookingType: 'cabin',
+      eventType: padmaForm.eventTypes[0] || prev.eventType,
+      eventSlot: normalizeEventSlot(padmaForm.slots[0] || prev.eventSlot),
+      guestRange: padmaForm.guestRanges[1] || padmaForm.guestRanges[0] || prev.guestRange,
+      foodPackage: padmaForm.foodPackages[0] || prev.foodPackage,
+      decorationRequired: padmaForm.decorationOptions[2] || prev.decorationRequired,
+    }));
+    setRoomDetails((prev) => (
+      prev.length ? prev.map((room) => ({ ...room, pax: room.pax >= 5 ? room.pax : 5 })) : [{ cabin: '', pax: 5 }]
+    ));
+  }, [activeSeason, isOpen, seasonData]);
 
   useEffect(() => {
     if (isOpen) {
@@ -119,6 +148,8 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
       if (!form.eventDate) newErrors.eventDate = 'Enter event date';
       if (!form.eventType) newErrors.eventType = 'Select event type';
       if (!form.eventSlot) newErrors.eventSlot = 'Select slot';
+      const hasValidRoom = roomDetails.some(r => r.cabin.trim() !== '');
+      if (!hasValidRoom) newErrors.rooms = 'Select at least one Padma room';
     } else {
       if (!form.checkin) newErrors.checkin = 'Enter check-in date';
       if (!form.checkout) newErrors.checkout = 'Enter check-out date';
@@ -250,7 +281,8 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
 
   const buildWhatsappMessage = () => {
     if (activeSeason === 'padma') {
-      const msg = `Hello, I want to book a Padma River event cruise.
+      const selectedRoomDetails = getSelectedRoomDetails();
+      const msg = `Hello, I want to book a Padma Day Long cruise.
 
 Name: ${form.name}
 Phone: ${form.phone}
@@ -258,6 +290,7 @@ Event Date: ${form.eventDate}
 Event Type: ${form.eventType}
 Preferred Slot: ${getEventSlotLabel(form.eventSlot)}
 Guests: ${form.guestRange}
+Rooms: ${selectedRoomDetails.map(r => `${r.roomName} (${r.pax} persons)`).join(', ') || 'Not selected'}
 Package: ${form.package || 'Not selected'}
 Food Package: ${form.foodPackage}
 Decoration Required: ${form.decorationRequired}
@@ -567,6 +600,66 @@ Thank you.`;
               </>
             )}
 
+            {activeSeason === 'padma' && (
+              <div className="space-y-3 sm:space-y-4">
+                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                  <span className="flex items-center gap-1.5"><BedDouble className="w-3.5 h-3.5" />Padma Rooms & Sharing</span>
+                </label>
+                {roomDetails.map((detail, index) => (
+                  <div key={index} className="flex gap-2 sm:gap-3 items-center">
+                    <select
+                      value={detail.cabin}
+                      onChange={(e) => {
+                        const newDetails = [...roomDetails];
+                        newDetails[index].cabin = e.target.value;
+                        setRoomDetails(newDetails);
+                        setErrors({ ...errors, rooms: '' });
+                      }}
+                      className="flex-1 px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
+                    >
+                      <option value="">-- Select Padma Room --</option>
+                      {cabins.filter((c: any) => c.available).map((c: any) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={detail.pax}
+                      onChange={(e) => {
+                        const newDetails = [...roomDetails];
+                        newDetails[index].pax = Number(e.target.value);
+                        setRoomDetails(newDetails);
+                      }}
+                      className="w-24 sm:w-32 px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
+                    >
+                      <option value={5}>5 Persons</option>
+                      <option value={6}>6 Persons</option>
+                      <option value={7}>7 Persons</option>
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={() => setRoomDetails(roomDetails.filter((_, i) => i !== index))}
+                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => setRoomDetails([...roomDetails, { cabin: '', pax: 5 }])}
+                  className="w-full py-2.5 sm:py-3 mt-1 rounded-xl border-2 border-dashed border-[hsl(197,80%,38%)] text-[hsl(197,80%,38%)] text-sm font-bold flex items-center justify-center gap-1 hover:bg-[hsl(195,95%,95%)] transition-colors shadow-sm"
+                >
+                  + Add Another Padma Room
+                </button>
+                {errors.rooms && <p className="text-red-500 text-xs mt-1">{errors.rooms}</p>}
+              </div>
+            )}
+
             {/* Cabin Select & Sharing */}
             {activeSeason === 'haor' && form.bookingType === 'cabin' && (
               <div className="space-y-3 sm:space-y-4">
@@ -847,7 +940,7 @@ Thank you.`;
                 className="w-full flex items-center justify-center gap-2 bg-[hsl(197,80%,30%)] hover:bg-[hsl(197,80%,22%)] disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-bold py-2 sm:py-4 rounded-2xl transition-all shadow-lg hover:shadow-xl min-h-[46px]"
               >
                 <Send className="w-4 h-4" />
-                {isSubmitting ? 'Sending...' : 'Book Now'}
+                {isSubmitting ? 'Sending...' : seasonData.bookingForm.submit}
               </button>
 
             </div>

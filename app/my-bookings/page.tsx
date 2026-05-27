@@ -141,7 +141,7 @@ function MyBookingsContent() {
                   </div>
                   <h3 className="text-xl font-bold text-slate-800 mb-2 font-playfair">No bookings found</h3>
                   <p className="text-slate-500 text-base max-w-sm mx-auto">
-                    We couldn't find any bookings associated with this phone number. Please check the number and try again.
+                    We couldn&apos;t find any bookings associated with this phone number. Please check the number and try again.
                   </p>
                 </div>
               ) : (

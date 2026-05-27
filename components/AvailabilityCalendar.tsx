@@ -151,7 +151,7 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
         .map((block) => block.event_slot || 'custom');
       const hasFullDay = bookedSlotKeys.includes('full_day') || blocks.some((block) => block.event_slot === 'full_day');
       const pending = blocks.some((block) => block.slot_status === 'inquiry_pending' || block.status === 'partially_booked');
-      const status: Status = blocked ? 'blocked' : hasFullDay || bookedSlotKeys.length >= 4 ? 'full' : pending || bookedSlotKeys.length > 0 ? 'partial' : 'available';
+      const status: Status = blocked ? 'blocked' : hasFullDay || bookedSlotKeys.length >= eventSlots.length ? 'full' : pending || bookedSlotKeys.length > 0 ? 'partial' : 'available';
       return {
         status,
         availableCabins: Math.max(eventSlots.length - (hasFullDay ? eventSlots.length : bookedSlotKeys.length), 0),

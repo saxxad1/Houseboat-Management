@@ -12,8 +12,10 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export default function About() {
-  const { seasonData } = usePublicData();
+  const { seasonData, activeSeason } = usePublicData();
   const aboutContent = seasonData.about;
+  const aboutImage = activeSeason === 'padma' ? '/images/padma/river-view.jpg' : '/images/kuhelika/gallery/img-8749.jpg';
+  const aboutAlt = activeSeason === 'padma' ? 'Kuhelika Padma day long cruise' : 'Tanguar Haor houseboat';
 
   return (
     <section id="about" className="py-10 md:py-16 bg-white">
@@ -34,8 +36,8 @@ export default function About() {
           <div className="relative pb-6 lg:pb-0">
             <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl sm:shadow-2xl">
               <Image
-                src="/images/kuhelika/gallery/img-8749.jpg"
-                alt="Tanguar Haor houseboat"
+                src={aboutImage}
+                alt={aboutAlt}
                 width={900}
                 height={600}
                 sizes="(min-width: 1024px) 50vw, 100vw"

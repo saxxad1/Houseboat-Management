@@ -3,14 +3,14 @@
 import Image from 'next/image';
 import {
   Bath, BedDouble, ShieldCheck, Utensils, Wind, Zap,
-  Flame, Music, Droplets, Phone, Baby, Map, Star, Coffee, Camera, Users
+  Flame, Music, Droplets, Phone, Baby, Map, Star, Coffee, Camera, Users, Waves
 } from 'lucide-react';
 import { StaggerReveal } from '@/components/ScrollReveal';
 import { usePublicData } from '@/components/PublicDataProvider';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Bath, BedDouble, ShieldCheck, Utensils, Wind, Zap,
-  Flame, Music, Droplets, Phone, Baby, Map, Star, Coffee, Camera, Users,
+  Flame, Music, Droplets, Phone, Baby, Map, Star, Coffee, Camera, Users, Waves,
 };
 
 export default function Facilities() {

@@ -7,7 +7,7 @@ import {
   packages as fallbackPackages,
   siteConfig as fallbackSiteConfig,
 } from '@/data/houseboatData';
-import { getSeasonalData, normalizeSeason, padmaEventSpaces, type SeasonType, type SeasonalContent } from '@/data/seasonalData';
+import { getSeasonalData, normalizeSeason, type SeasonType, type SeasonalContent } from '@/data/seasonalData';
 import {
   getEffectiveSeasonalData,
   loadPublicHouseboatData,
@@ -175,14 +175,10 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
             facebook: current.siteConfig.facebook || fallbackSiteConfig.facebook,
             logoUrl: current.siteConfig.logoUrl || '/logo-kuhelika-clean.png',
           },
-          galleryImages: current.galleryImages,
+          galleryImages: [...seasonData.gallery.images] as PublicGalleryImage[],
           specialDates: current.specialDates,
-          cabins: current.cabins.length > 0 && (current.cabins as any) !== fallbackCabins && (current.cabins as any) !== padmaEventSpaces
-            ? current.cabins 
-            : (season === 'padma' ? [...seasonData.eventSpaces] as any as PublicCabin[] : [...fallbackCabins] as any as PublicCabin[]),
-          packages: current.packages.length > 0 && current.packages !== fallbackPackages 
-            ? current.packages 
-            : (seasonData.packages.length ? [...seasonData.packages] : [...fallbackPackages]) as PublicPackage[],
+          cabins: (season === 'padma' ? [...seasonData.eventSpaces] : [...fallbackCabins]) as any as PublicCabin[],
+          packages: (seasonData.packages.length ? [...seasonData.packages] : [...fallbackPackages]) as PublicPackage[],
           reviews: current.reviews,
         };
       });
