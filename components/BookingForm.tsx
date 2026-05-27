@@ -84,7 +84,7 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
       bookingType: 'cabin',
       eventType: 'Padma Day Long Trip',
       eventSlot: 'full_day',
-      guests: prev.guests === '16' ? '20' : prev.guests,
+      guests: prev.guests === '16' ? '1' : prev.guests,
       guestRange: '',
       foodPackage: '',
       decorationRequired: 'No',
@@ -475,7 +475,7 @@ Thank you.`;
                       min={1}
                       value={form.guests}
                       onChange={(e) => { setForm({ ...form, guests: e.target.value }); setErrors({ ...errors, guests: '' }); }}
-                      placeholder="20"
+                      placeholder="1"
                       className="w-full px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
                     />
                     {errors.guests && <p className="text-red-500 text-xs mt-1">{errors.guests}</p>}
