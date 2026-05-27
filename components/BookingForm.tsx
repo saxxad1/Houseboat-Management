@@ -58,6 +58,7 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isCheckinOpen, setIsCheckinOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isEventDateOpen, setIsEventDateOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -456,13 +457,27 @@ Thank you.`;
                     <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
                       <span className="flex items-center gap-1.5"><CalendarCheck className="w-3.5 h-3.5" />Trip Date *</span>
                     </label>
-                    <input
-                      name="eventDate"
-                      type="date"
-                      value={form.eventDate}
-                      onChange={(e) => { setForm({ ...form, eventDate: e.target.value }); setErrors({ ...errors, eventDate: '' }); }}
-                      className={`w-full px-3.5 sm:px-4 py-2 rounded-xl border text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px] ${errors.eventDate ? 'border-red-400' : 'border-slate-200'}`}
-                    />
+                    <Popover open={isEventDateOpen} onOpenChange={setIsEventDateOpen}>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className={`w-full text-left px-3.5 sm:px-4 py-2 rounded-xl border text-slate-800 text-sm bg-slate-50 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px] ${!form.eventDate ? 'text-slate-500' : ''} ${errors.eventDate ? 'border-red-400' : 'border-slate-200'}`}
+                        >
+                          {form.eventDate ? new Date(form.eventDate + 'T00:00:00').toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : 'dd/mm/yyyy'}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <AvailabilityCalendar 
+                          inline 
+                          selectedDate={form.eventDate} 
+                          onSelectDate={(newDate) => {
+                            setForm({ ...form, eventDate: newDate }); 
+                            setErrors({ ...errors, eventDate: '' }); 
+                            setIsEventDateOpen(false);
+                          }} 
+                        />
+                      </PopoverContent>
+                    </Popover>
                     {errors.eventDate && <p className="text-red-500 text-xs mt-1">{errors.eventDate}</p>}
                   </div>
                   <div>
