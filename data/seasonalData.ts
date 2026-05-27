@@ -30,7 +30,7 @@ export const seasonMeta: Record<SeasonType, {
   padma: {
     name: 'Padma Day Long Season',
     adminName: 'Padma Season',
-    location: 'Padma River, Mawa / Louhajang',
+    location: 'Padma River, Mawa Louhajang',
     bookingMode: 'Day Long Group Booking',
   },
 };
@@ -610,19 +610,19 @@ export const seasonalData = {
     destinations: padmaDestinations,
     site: {
       ...siteConfig,
-      tagline: 'Padma Day Long Cruise from Mawa / Louhajang',
+      tagline: 'Padma Day Long Cruise from Mawa Louhajang',
       description: 'Kuhelika is ready for Padma Day Long trips with Padma river cruising, Padma Bridge view, white char activities, room sharing, music, fresh food, live BBQ, and family or corporate group arrangements.',
-      location: 'Padma River, Mawa / Louhajang Area',
-      locationEn: 'Padma River, Mawa / Louhajang',
+      location: 'Padma River, Mawa Louhajang Area',
+      locationEn: 'Padma River, Mawa Louhajang',
       totalCabins: 8,
       totalCapacity: 60,
       startingPrice: 'Custom Quote',
       mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d46717.785235!2d90.187!3d23.459!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755a2f9b9f8b5b1%3A0x0!2sMawa%2C%20Munshiganj!5e0!3m2!1sen!2sbd!4v1700000000001',
     },
     hero: {
-      locationBadge: 'Padma River, Mawa / Louhajang',
+      locationBadge: 'Padma River, Mawa Louhajang',
       title: 'Kuhelika',
-      subtitle: 'Padma Day Long Cruise from Mawa / Louhajang',
+      subtitle: 'Padma Day Long Cruise from Mawa Louhajang',
       description: 'A refreshing one-day Padma cruise with Padma Bridge view, white char games, mustard field photo moments, room sharing, music, fresh food, unlimited tea-biscuits, and live BBQ.',
       primaryCta: 'Book Day Trip',
       secondaryCta: 'View Availability',
@@ -720,7 +720,7 @@ export const seasonalData = {
     },
     contact: {
       subtitle: 'Contact us regarding your Padma Day Long booking.',
-      location: 'Padma River, Mawa / Louhajang Area',
+      location: 'Padma River, Mawa Louhajang Area',
       pickup: 'Boarding: Louhajang ghat beside Mawa',
       mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d46717.785235!2d90.187!3d23.459!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755a2f9b9f8b5b1%3A0x0!2sMawa%2C%20Munshiganj!5e0!3m2!1sen!2sbd!4v1700000000001',
     },
