@@ -36,7 +36,7 @@ export const seasonMeta: Record<SeasonType, {
 };
 
 const padmaNavLinks = [
-  { label: 'Room Setup', href: '#cabins' },
+  { label: 'Book Trip', href: '#cabins' },
   { label: 'Day Long Package', href: '#packages' },
   { label: 'Tour Plan', href: '#itinerary' },
   { label: 'Food Menu', href: '#food-menu' },
