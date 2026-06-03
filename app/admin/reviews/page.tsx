@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, Star, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit2, Trash2, Star, Eye, EyeOff, RefreshCw, ExternalLink } from 'lucide-react';
 import { deleteRow, listRows, saveRow } from '@/lib/admin/data';
 import type { Review, WebsiteContent } from '@/types/database';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -26,6 +27,7 @@ export default function ReviewsAdminPage() {
   const [loading, setLoading] = useState(true);
   const [isSectionVisible, setIsSectionVisible] = useState(true);
   const [isToggleLoading, setIsToggleLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
 
@@ -70,6 +72,39 @@ export default function ReviewsAdminPage() {
     setIsFormOpen(true);
   };
 
+  const handleFacebookSync = async () => {
+    try {
+      setIsSyncing(true);
+      const supabase = getSupabaseBrowserClient();
+      const { data } = await supabase?.auth.getSession() || { data: null };
+      const token = data?.session?.access_token;
+
+      if (!token) {
+        throw new Error('Admin session expired. Please login again.');
+      }
+
+      const response = await fetch('/api/admin/reviews/sync-facebook', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Facebook sync failed');
+      }
+
+      toast.success(`Facebook sync complete. Imported ${result.imported || 0}, updated ${result.updated || 0}.`);
+      window.dispatchEvent(new Event('kuhelika-public-data-change'));
+      fetchReviews();
+    } catch (error: any) {
+      toast.error(error.message || 'Facebook sync failed');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleToggleSection = async (checked: boolean) => {
     try {
       setIsToggleLoading(true);
@@ -97,7 +132,7 @@ export default function ReviewsAdminPage() {
           <h1 className="text-3xl font-bold tracking-tight text-slate-800">Reviews</h1>
           <p className="text-slate-500 mt-1">Manage guest testimonials and reviews displayed on the website.</p>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
             <Switch
               id="section-visibility"
@@ -109,6 +144,16 @@ export default function ReviewsAdminPage() {
               {isSectionVisible ? 'Section ON' : 'Section OFF'}
             </Label>
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleFacebookSync}
+            disabled={isSyncing}
+            className="gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+            Sync Facebook
+          </Button>
           <Button onClick={handleAddNew} className="bg-[hsl(197,80%,30%)] hover:bg-[hsl(197,80%,25%)]">
             <Plus className="w-4 h-4 mr-2" />
             Add Review
@@ -122,6 +167,7 @@ export default function ReviewsAdminPage() {
             <TableRow>
               <TableHead>Customer</TableHead>
               <TableHead>Rating</TableHead>
+              <TableHead>Source</TableHead>
               <TableHead className="w-1/3">Review</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -130,13 +176,13 @@ export default function ReviewsAdminPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10 text-slate-500">
+                <TableCell colSpan={6} className="text-center py-10 text-slate-500">
                   Loading reviews...
                 </TableCell>
               </TableRow>
             ) : reviews.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10 text-slate-500">
+                <TableCell colSpan={6} className="text-center py-10 text-slate-500">
                   {'No reviews found. Click "Add Review" to create one.'}
                 </TableCell>
               </TableRow>
@@ -161,9 +207,32 @@ export default function ReviewsAdminPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <p className="text-sm text-slate-600 line-clamp-2" title={review.review}>
-                      {review.review}
-                    </p>
+                    {review.source === 'facebook' ? (
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        Facebook
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
+                        Manual
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <p className="text-sm text-slate-600 line-clamp-2" title={review.review}>
+                        {review.review}
+                      </p>
+                      {review.source_url && (
+                        <a
+                          href={review.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+                        >
+                          View source <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     {review.is_published ? (

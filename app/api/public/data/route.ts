@@ -26,7 +26,7 @@ export async function GET() {
       .select('id, date, title, date_type, is_discount_excluded, is_active, note, created_at, updated_at')
       .eq('is_active', true)
       .order('date'),
-    supabase.from('reviews').select('id, name, location, rating, review, avatar, is_published, created_at, updated_at').eq('is_published', true).order('created_at', { ascending: false }),
+    supabase.from('reviews').select('id, name, location, rating, review, avatar, is_published, source, source_url, external_created_at, is_featured, created_at, updated_at').eq('is_published', true).order('created_at', { ascending: false }),
   ]);
 
   const error = settings.error || rooms.error || packages.error || gallery.error || content.error || availability.error || trip_slots.error || reviews.error;

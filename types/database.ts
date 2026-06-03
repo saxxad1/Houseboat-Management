@@ -204,6 +204,11 @@ export interface Review extends BaseRow {
   review: string;
   avatar: string;
   is_published: boolean;
+  source?: 'manual' | 'facebook' | string;
+  external_id?: string | null;
+  source_url?: string | null;
+  external_created_at?: string | null;
+  is_featured?: boolean;
 }
 
 export interface SpecialDate extends BaseRow {

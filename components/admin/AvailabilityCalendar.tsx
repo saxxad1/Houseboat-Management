@@ -392,46 +392,10 @@ export default function AvailabilityCalendar() {
             <Badge className={statusColors[activeSeason]}>{seasonMeta[activeSeason].adminName}</Badge>
           </CardTitle>
           <p className="text-sm text-slate-500">
-            {activeSeason === 'padma' ? 'Event slot availability and manual controls.' : 'Room-wise availability and manual block controls.'}
+            Manage availability and manual blocks for the selected date(s).
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {activeSeason === 'padma' ? (
-            <div className="space-y-2">
-              {eventSlots.map((slot) => {
-                const booking = selectedBookings.find((item) => item.event_slot === slot.value || item.event_slot === 'full_day');
-                const block = blocks.find((item) =>
-                  item.date === selectedDate && item.event_slot === slot.value && (item.season_type || 'haor') === 'padma'
-                );
-                const status = booking ? 'booked' : (block?.slot_status || 'available');
-                return (
-                  <div key={slot.value} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3">
-                    <div className="min-w-0">
-                      <div className="truncate font-semibold">{slot.label}</div>
-                      <div className="text-xs text-slate-500">Padma Event Season · slot based</div>
-                    </div>
-                    <Badge className={`shrink-0 ${statusColors[status]}`}>{status.replace('_', ' ')}</Badge>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-          <div className="space-y-2">
-            {visibleRooms.map((room) => {
-              const status = roomStatus(room);
-              return (
-                <div key={room.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3">
-                  <div className="min-w-0">
-                    <div className="truncate font-semibold">{room.name}</div>
-                    <div className="text-xs text-slate-500">{room.capacity} guest · ৳{room.price_per_night.toLocaleString()}</div>
-                  </div>
-                  <Badge className={`shrink-0 ${statusColors[status]}`}>{statusLabels[status]?.short || status.replace('_', ' ')}</Badge>
-                </div>
-              );
-            })}
-          </div>
-          )}
-
+        <CardContent className="space-y-6 pt-4">
           <div className="space-y-2">
             {activeSeason === 'padma' && (
               <div className="grid gap-2 sm:grid-cols-2">
