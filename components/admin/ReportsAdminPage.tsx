@@ -5,7 +5,7 @@ import ReportTable from '@/components/admin/ReportTable';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { fetchAdminDataset } from '@/lib/admin/data';
-import type { Booking, Expense, Income, Room, TourPackage } from '@/types/database';
+import type { Booking, Expense, Income, Room, TourPackage, TripSlot } from '@/types/database';
 
 import ReportsCharts from '@/components/admin/ReportsCharts';
 
@@ -21,6 +21,7 @@ export default function ReportsAdminPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [packages, setPackages] = useState<TourPackage[]>([]);
+  const [tripSlots, setTripSlots] = useState<TripSlot[]>([]);
 
   useEffect(() => {
     fetchAdminDataset().then((data) => {
@@ -29,6 +30,7 @@ export default function ReportsAdminPage() {
       setExpenses(data.expenses);
       setRooms(data.rooms);
       setPackages(data.packages);
+      setTripSlots(data.trip_slots || []);
     });
   }, []);
 
@@ -64,11 +66,21 @@ export default function ReportsAdminPage() {
     return { roomCounts, packageCounts };
   }, [packages, rangeBookings, rooms]);
 
-  const dailyRows = Array.from(new Set([...rangeIncome.map((item) => item.income_date), ...rangeExpenses.map((item) => item.expense_date)])).sort().map((date) => {
-    const dayIncome = rangeIncome.filter((item) => item.income_date === date).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-    const dayExpense = rangeExpenses.filter((item) => item.expense_date === date).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-    return { date, income: dayIncome, expense: dayExpense, profit: dayIncome - dayExpense };
-  });
+  const tripRows = useMemo(() => {
+    return tripSlots
+      .filter((trip) => (!fromDate || trip.start_date >= fromDate) && (!toDate || trip.start_date <= toDate))
+      .sort((a, b) => b.start_date.localeCompare(a.start_date)) // descending
+      .map((trip) => {
+        const tIncome = income.filter((i) => i.trip_slot_id === trip.id).reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+        const tExpense = expenses.filter((e) => e.trip_slot_id === trip.id).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+        return {
+          trip: `${trip.start_date} (${trip.duration_label})`,
+          income: tIncome,
+          expense: tExpense,
+          profit: tIncome - tExpense
+        };
+      });
+  }, [tripSlots, fromDate, toDate, income, expenses]);
 
   const incomeByCategory = useMemo(() => {
     const grouped = rangeIncome.reduce((acc, item) => {
@@ -150,7 +162,7 @@ export default function ReportsAdminPage() {
 
       {/* Visual Analytics */}
       <ReportsCharts 
-        trendData={dailyRows} 
+        trendData={tripRows.slice(0, 10).map(t => ({ date: t.trip.split(' ')[0], income: t.income, expense: t.expense, profit: t.profit })).reverse()} 
         roomData={mostBooked.roomCounts} 
         packageData={mostBooked.packageCounts} 
         incomeByCategory={incomeByCategory}
@@ -160,7 +172,7 @@ export default function ReportsAdminPage() {
         seasonData={seasonData}
       />
 
-      <ReportTable title="Daily income expense profit" rows={dailyRows} />
+      <ReportTable title="Trip income expense profit" rows={tripRows} />
       <ReportTable title="Booking report" rows={rangeBookings.map((booking) => ({
         code: booking.booking_code,
         date: getReportBookingDate(booking),
