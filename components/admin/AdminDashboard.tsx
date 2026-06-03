@@ -2,45 +2,31 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import DashboardCards, { money } from '@/components/admin/DashboardCards';
-import IncomeExpenseChart from '@/components/admin/IncomeExpenseChart';
-import BookingTable from '@/components/admin/BookingTable';
+import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar } from 'lucide-react';
 import { normalizeSeason, seasonMeta } from '@/data/seasonalData';
 import { fetchAdminDataset } from '@/lib/admin/data';
-import type { Booking, Customer, Expense, HouseboatSettings, Income, Room, TourPackage } from '@/types/database';
-
-function monthKey(date: string) {
-  return date.slice(0, 7);
-}
-
-function thisMonth() {
-  return new Date().toISOString().slice(0, 7);
-}
-
-function today() {
-  return new Date().toISOString().slice(0, 10);
-}
+import type { Booking, Expense, HouseboatSettings, TripSlot } from '@/types/database';
 
 export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [packages, setPackages] = useState<TourPackage[]>([]);
-  const [income, setIncome] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [tripSlots, setTripSlots] = useState<TripSlot[]>([]);
   const [settings, setSettings] = useState<HouseboatSettings[]>([]);
+  
+  const [dateFilter, setDateFilter] = useState('this_month');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
 
   const load = async () => {
     const data = await fetchAdminDataset();
-    setBookings(data.bookings);
-    setCustomers(data.customers);
-    setRooms(data.rooms);
-    setPackages(data.packages);
-    setIncome(data.income);
-    setExpenses(data.expenses);
-    setSettings(data.settings);
+    setBookings(data.bookings || []);
+    setExpenses(data.expenses || []);
+    setTripSlots(data.trip_slots || []);
+    setSettings(data.settings || []);
   };
 
   useEffect(() => {
@@ -50,119 +36,109 @@ export default function AdminDashboard() {
   const activeSeason = normalizeSeason(settings[0]?.active_season);
   const meta = seasonMeta[activeSeason];
 
+  const { startDate, endDate } = useMemo(() => {
+    const today = new Date();
+    // Use local time formatting to avoid timezone shifts
+    const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+    
+    if (dateFilter === 'today') return { startDate: todayStr, endDate: todayStr };
+    if (dateFilter === 'yesterday') {
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yStr = new Date(yesterday.getTime() - (yesterday.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      return { startDate: yStr, endDate: yStr };
+    }
+    if (dateFilter === 'last_7_days') {
+      const last7 = new Date(today);
+      last7.setDate(last7.getDate() - 6);
+      const l7Str = new Date(last7.getTime() - (last7.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      return { startDate: l7Str, endDate: todayStr };
+    }
+    if (dateFilter === 'this_month') {
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const mStr = new Date(startOfMonth.getTime() - (startOfMonth.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      return { startDate: mStr, endDate: todayStr };
+    }
+    if (dateFilter === 'custom') {
+      return { startDate: customFrom || '1970-01-01', endDate: customTo || '2100-01-01' };
+    }
+    return { startDate: '1970-01-01', endDate: '2100-01-01' };
+  }, [dateFilter, customFrom, customTo]);
+
   const metrics = useMemo(() => {
-    const currentMonth = thisMonth();
-    const currentDate = today();
-    const monthlyIncome = income.filter((item) => monthKey(item.income_date) === currentMonth).reduce((sum, item) => sum + Number(item.amount), 0);
-    const monthlyExpense = expenses.filter((item) => monthKey(item.expense_date) === currentMonth).reduce((sum, item) => sum + Number(item.amount), 0);
-    const due = bookings.reduce((sum, booking) => sum + Number(booking.due_amount || 0), 0);
-    const bookedTodayRoomIds = new Set(
-      bookings
-        .filter((booking) => booking.booking_status !== 'cancelled' && booking.check_in_date <= currentDate && booking.check_out_date > currentDate)
-        .flatMap((booking) => booking.booking_type === 'full_boat' ? rooms.map((room) => room.id) : booking.room_id ? [booking.room_id] : [])
+    // 1. Total Trips
+    const validTrips = tripSlots.filter(t => t.start_date >= startDate && t.start_date <= endDate);
+    const totalTrips = validTrips.length;
+    
+    // 2. Total Guests
+    const validBookings = bookings.filter(b => 
+      b.booking_status !== 'cancelled' && 
+      ((b.event_date || b.check_in_date) >= startDate) && 
+      ((b.event_date || b.check_in_date) <= endDate)
     );
+    const totalGuests = validBookings.reduce((sum, b) => sum + (Number(b.number_of_guests) || 0), 0);
+    
+    // 3. Total Booking Amount
+    const totalBookingAmount = validBookings.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0);
+    
+    // 4. Total Expense
+    const validExpenses = expenses.filter(e => e.expense_date >= startDate && e.expense_date <= endDate);
+    const totalExpense = validExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    
+    // 5. Total Profit
+    const totalProfit = totalBookingAmount - totalExpense;
 
     return [
-      { label: 'Total Bookings', value: bookings.length, helper: 'All time', tone: 'blue' as const },
-      { label: 'Pending Bookings', value: bookings.filter((booking) => booking.booking_status === 'pending').length, tone: 'amber' as const },
-      { label: 'Confirmed Bookings', value: bookings.filter((booking) => booking.booking_status === 'confirmed').length, tone: 'green' as const },
-      { label: activeSeason === 'padma' ? "Today's Events" : "Today's Bookings", value: bookings.filter((booking) => (booking.event_date || booking.check_in_date) === currentDate).length, tone: 'blue' as const },
-      { label: 'Upcoming Bookings', value: bookings.filter((booking) => booking.check_in_date > currentDate && booking.booking_status !== 'cancelled').length, tone: 'blue' as const },
-      { label: 'Upcoming Padma Events', value: bookings.filter((booking) => (booking.season_type || 'haor') === 'padma' && (booking.event_date || booking.check_in_date) >= currentDate && booking.booking_status !== 'cancelled').length, tone: 'blue' as const },
-      { label: 'Upcoming Haor Bookings', value: bookings.filter((booking) => (booking.season_type || 'haor') === 'haor' && booking.check_in_date >= currentDate && booking.booking_status !== 'cancelled').length, tone: 'green' as const },
-      { label: 'Monthly Income', value: money(monthlyIncome), tone: 'green' as const },
-      { label: 'Monthly Expense', value: money(monthlyExpense), tone: 'red' as const },
-      { label: 'Monthly Profit', value: money(monthlyIncome - monthlyExpense), tone: monthlyIncome - monthlyExpense >= 0 ? 'green' as const : 'red' as const },
-      { label: 'Due Payments', value: money(due), tone: due > 0 ? 'amber' as const : 'green' as const },
-      { label: 'Available Rooms Today', value: Math.max(rooms.length - bookedTodayRoomIds.size, 0), helper: `${rooms.length} total rooms`, tone: 'slate' as const },
+      { label: 'Total Trips', value: totalTrips, tone: 'blue' as const },
+      { label: 'Total Guests', value: totalGuests, tone: 'amber' as const },
+      { label: 'Total Booking Amount', value: money(totalBookingAmount), tone: 'green' as const },
+      { label: 'Total Expense', value: money(totalExpense), tone: 'red' as const },
+      { label: 'Total Profit', value: money(totalProfit), tone: totalProfit >= 0 ? 'green' as const : 'slate' as const },
     ];
-  }, [activeSeason, bookings, expenses, income, rooms]);
-
-  const chartData = useMemo(() => {
-    const months = Array.from({ length: 6 }, (_, index) => {
-      const date = new Date();
-      date.setMonth(date.getMonth() - (5 - index));
-      return date.toISOString().slice(0, 7);
-    });
-    return months.map((month) => ({
-      month,
-      income: income.filter((item) => monthKey(item.income_date) === month).reduce((sum, item) => sum + Number(item.amount), 0),
-      expense: expenses.filter((item) => monthKey(item.expense_date) === month).reduce((sum, item) => sum + Number(item.amount), 0),
-    }));
-  }, [expenses, income]);
-
-  const statusData = useMemo(() => {
-    const statuses = [
-      { name: 'Pending', key: 'pending', color: '#f59e0b' },
-      { name: 'Confirmed', key: 'confirmed', color: '#0284c7' },
-      { name: 'Completed', key: 'completed', color: '#059669' },
-      { name: 'Cancelled', key: 'cancelled', color: '#dc2626' },
-    ];
-    return statuses.map((status) => ({
-      name: status.name,
-      value: bookings.filter((booking) => booking.booking_status === status.key).length,
-      color: status.color,
-    }));
-  }, [bookings]);
-
-  const upcoming = bookings
-    .filter((booking) => booking.check_in_date >= today() && booking.booking_status !== 'cancelled')
-    .slice(0, 6);
-  const recent = bookings.slice(0, 5);
+  }, [bookings, expenses, tripSlots, startDate, endDate]);
 
   return (
     <div className="space-y-5">
-      <Card>
-        <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-700">Active Season</span>
-              <Badge className="bg-[hsl(197,80%,30%)] text-white">{meta.adminName}</Badge>
-            </div>
-            <p className="mt-1 text-sm text-slate-500">{meta.location} · {meta.bookingMode}</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/70 backdrop-blur-md p-4 rounded-2xl border border-slate-200/60 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="bg-sky-100 p-2 rounded-xl text-sky-600">
+            <Calendar className="h-5 w-5" />
           </div>
-          <Button asChild variant="outline">
-            <a href="/admin/season-settings">Quick Season Switch</a>
-          </Button>
-        </CardContent>
-      </Card>
-      <DashboardCards cards={metrics} />
-      <IncomeExpenseChart data={chartData} statusData={statusData} />
-
-      <div className="grid gap-4 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
-          <CardHeader><CardTitle className="text-lg">Recent bookings</CardTitle></CardHeader>
-          <CardContent>
-            <BookingTable
-              bookings={recent}
-              customers={customers}
-              rooms={rooms}
-              packages={packages}
-              onEdit={() => undefined}
-              onCancel={() => undefined}
-              onDelete={() => undefined}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle className="text-lg">Upcoming bookings</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            {upcoming.length ? upcoming.map((booking) => {
-              const customer = customers.find((item) => item.id === booking.customer_id);
-              return (
-                <div key={booking.id} className="rounded-lg border border-slate-200 p-3">
-                  <div className="font-semibold text-slate-900">{booking.booking_code}</div>
-                  <div className="mt-1 text-sm text-slate-500">{customer?.full_name || 'Customer'} · {booking.number_of_guests} guest</div>
-                  <div className="mt-2 text-xs font-medium text-[hsl(197,80%,30%)]">{booking.check_in_date} to {booking.check_out_date}</div>
-                </div>
-              );
-            }) : (
-              <p className="text-sm text-slate-500">No upcoming booking.</p>
-            )}
-          </CardContent>
-        </Card>
+          <div>
+            <div className="font-semibold text-slate-800">Dashboard Overview</div>
+            <div className="text-xs font-medium text-slate-500 mt-0.5 flex items-center gap-1.5">
+              <span>{meta.adminName}</span>
+              <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+              <span>{startDate === endDate ? startDate : `${startDate} to ${endDate}`}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-3">
+          <Select value={dateFilter} onValueChange={setDateFilter}>
+            <SelectTrigger className="w-[160px] bg-white border-slate-200">
+              <SelectValue placeholder="Select period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="yesterday">Yesterday</SelectItem>
+              <SelectItem value="last_7_days">Last 7 days</SelectItem>
+              <SelectItem value="this_month">This month</SelectItem>
+              <SelectItem value="custom">Custom range</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          {dateFilter === 'custom' && (
+            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
+              <Input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} className="w-[140px] bg-white border-slate-200" />
+              <span className="text-slate-400 text-sm">to</span>
+              <Input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} className="w-[140px] bg-white border-slate-200" />
+            </div>
+          )}
+        </div>
       </div>
+      
+      <DashboardCards cards={metrics} />
     </div>
   );
 }
