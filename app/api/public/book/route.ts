@@ -18,6 +18,7 @@ type DbRoomPrice = {
 };
 
 const activeBookingStatuses = ['pending', 'confirmed', 'checked_in'];
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const eventSlotAliases: Record<string, string> = {
   'Morning Slot': 'morning',
   'Afternoon Slot': 'afternoon',
@@ -64,7 +65,7 @@ function normalizeRooms(value: unknown): SubmittedRoomDetail[] {
         subtotal: Number(detail.subtotal || 0),
       };
     })
-    .filter((room) => room.roomId);
+    .filter((room) => room.roomId || room.roomName);
 }
 
 function getCabinPrice(room: { price_per_night?: number | null; price_2_pax?: number | null; price_3_pax?: number | null }, pax: number) {
@@ -85,6 +86,62 @@ function getFullBoatPrice(guests: number, acPreference: unknown) {
   const matched = prices[guests];
   if (!matched) return null;
   return isAC ? matched.ac : matched.nonAc;
+}
+
+function normalizeRoomName(value: unknown) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isMissingColumnError(error: unknown) {
+  const message = String((error as { message?: string })?.message || '').toLowerCase();
+  return message.includes('schema cache') || message.includes('column') || message.includes('could not find');
+}
+
+async function insertBookingWithFallback(supabase: any, bookingData: Record<string, unknown>) {
+  const optionalSchemaKeys = [
+    'trip_slot_id',
+    'room_details',
+    'subtotal_amount',
+    'discount_amount',
+    'discount_reason',
+    'transaction_id',
+    'season_type',
+    'event_type',
+    'event_slot',
+    'event_date',
+    'food_package',
+    'decoration_required',
+    'sound_system_required',
+    'payment_method',
+  ];
+  const fallbackData = { ...bookingData };
+  const removedKeys = new Set<string>();
+  let lastResult = null as any;
+
+  for (let attempt = 0; attempt <= optionalSchemaKeys.length; attempt += 1) {
+    lastResult = await supabase.from('bookings').insert([fallbackData]);
+    if (!lastResult.error) return lastResult;
+
+    if (!isMissingColumnError(lastResult.error)) {
+      return lastResult;
+    }
+
+    const message = String(lastResult.error.message || '').toLowerCase();
+    const missingKey = optionalSchemaKeys.find((key) => !removedKeys.has(key) && message.includes(key));
+
+    if (missingKey) {
+      delete fallbackData[missingKey];
+      removedKeys.add(missingKey);
+      continue;
+    }
+
+    const nextKey = optionalSchemaKeys.find((key) => !removedKeys.has(key));
+    if (!nextKey) return lastResult;
+    delete fallbackData[nextKey];
+    removedKeys.add(nextKey);
+  }
+
+  return lastResult;
 }
 
 export async function POST(req: Request) {
@@ -150,27 +207,46 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Select at least one valid cabin' }, { status: 400 });
     }
 
-    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!isPadma && bookingType !== 'full' && selectedRooms.some((r) => !UUID_REGEX.test(r.roomId))) {
-      return NextResponse.json({ error: 'Invalid room selected (network issue). Please refresh the page and try again.' }, { status: 400 });
-    }
-
+    const validRoomIds = selectedRooms
+      .map((room) => String(room.roomId || '').trim())
+      .filter((roomId) => UUID_REGEX.test(roomId));
     const dbRooms = selectedRooms.length
-      ? await supabase
-          .from('rooms')
-          .select('id, name, price_per_night, price_2_pax, price_3_pax')
-          .in('id', selectedRooms.map((room) => room.roomId))
-          .eq('status', 'active')
+      ? validRoomIds.length === selectedRooms.length
+        ? await supabase
+            .from('rooms')
+            .select('id, name, price_per_night, price_2_pax, price_3_pax')
+            .in('id', validRoomIds)
+            .eq('status', 'active')
+        : await supabase
+            .from('rooms')
+            .select('id, name, price_per_night, price_2_pax, price_3_pax')
+            .eq('status', 'active')
       : { data: [], error: null };
 
     if (dbRooms.error) throw dbRooms.error;
 
-    if (!isPadma && bookingType !== 'full' && (dbRooms.data || []).length !== selectedRooms.length) {
+    const roomRows = (dbRooms.data || []) as DbRoomPrice[];
+    const roomsById = new Map<string, DbRoomPrice>(roomRows.map((room: DbRoomPrice) => [room.id, room]));
+    const roomsByName = new Map<string, DbRoomPrice>(roomRows.map((room: DbRoomPrice) => [normalizeRoomName(room.name), room]));
+    const resolvedRoomDetails = selectedRooms.map((room) => {
+      const roomId = String(room.roomId || '').trim();
+      return UUID_REGEX.test(roomId) && roomsById.has(roomId)
+        ? { ...room, roomId }
+        : {
+            ...room,
+            roomId: roomsByName.get(normalizeRoomName(room.roomName))?.id || roomId,
+          };
+    });
+
+    if (!isPadma && bookingType !== 'full' && resolvedRoomDetails.some((room) => !UUID_REGEX.test(String(room.roomId || '')))) {
       return NextResponse.json({ error: 'One or more selected cabins are unavailable' }, { status: 400 });
     }
 
-    const roomsById = new Map<string, DbRoomPrice>((dbRooms.data || []).map((room: DbRoomPrice) => [room.id, room]));
-    const normalizedRoomDetails = selectedRooms.map((room) => {
+    if (!isPadma && bookingType !== 'full' && resolvedRoomDetails.length !== selectedRooms.length) {
+      return NextResponse.json({ error: 'One or more selected cabins are unavailable' }, { status: 400 });
+    }
+
+    const normalizedRoomDetails = resolvedRoomDetails.map((room) => {
       const roomId = String(room.roomId || '');
       const pax = Number(room.pax || 1);
       return {
@@ -357,7 +433,7 @@ export async function POST(req: Request) {
       trip_slot_id: tripSlotId,
     };
 
-    const { error: bErr } = await supabase.from('bookings').insert([bookingData]);
+    const { error: bErr } = await insertBookingWithFallback(supabase, bookingData);
 
     if (bErr) throw bErr;
 

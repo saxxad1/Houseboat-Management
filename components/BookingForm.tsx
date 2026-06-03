@@ -37,7 +37,7 @@ const initialForm = {
   foodPackage: '',
   decorationRequired: 'No',
   soundSystemRequired: 'No',
-  paymentMode: 'advance' as 'advance' | 'full',
+  paymentMode: 'full' as 'advance' | 'full',
 };
 
 type SelectedRoomDetail = {
@@ -46,6 +46,13 @@ type SelectedRoomDetail = {
   pax: number;
   subtotal: number;
 };
+
+function parsePriceNumbers(value: unknown) {
+  const matches = String(value || '').match(/\d[\d,]*/g) || [];
+  return matches
+    .map((item) => Number(item.replace(/,/g, '')))
+    .filter((item) => Number.isFinite(item) && item > 0);
+}
 
 export default function BookingForm({ isOpen, onClose, initialCabin, initialBookingType = 'cabin', initialCheckInDate, initialCheckOutDate }: BookingFormProps) {
   const { siteConfig, cabins, packages, activeSeason, seasonData, tripSlots, specialDates } = usePublicData();
@@ -136,6 +143,14 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
     let pricePerPerson = selectedCabin.rawPricePerNight || 0;
     if (pax === 2 && selectedCabin.rawPrice2Pax) pricePerPerson = selectedCabin.rawPrice2Pax;
     if (pax === 3 && selectedCabin.rawPrice3Pax) pricePerPerson = selectedCabin.rawPrice3Pax;
+    if (!pricePerPerson) {
+      const parsedPrices = parsePriceNumbers(selectedCabin.mainPrice);
+      if (parsedPrices.length > 1) {
+        pricePerPerson = pax === 2 ? Math.max(...parsedPrices) : Math.min(...parsedPrices);
+      } else {
+        pricePerPerson = parsedPrices[0] || 0;
+      }
+    }
     return Number(pricePerPerson || 0);
   };
 
@@ -270,7 +285,8 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
     : calculateBookingDiscount(estimatedSubtotal || 0, bookingDate, specialDates);
   const payableAmount = form.paymentMode === 'advance' ? Math.ceil(priceSummary.totalAmount / 2) : priceSummary.totalAmount;
   const padmaPricePerPerson = Number(siteConfig.padmaPricePerPerson || 0);
-  const showPricingSection = activeSeason === 'padma' || priceSummary.subtotalAmount > 0;
+  const hasSelectedRoom = roomDetails.some((room) => room.cabin.trim() !== '');
+  const showPricingSection = activeSeason === 'padma' || form.bookingType === 'full' || hasSelectedRoom || priceSummary.subtotalAmount > 0;
 
   const buildWhatsappMessage = () => {
     if (activeSeason === 'padma') {
@@ -698,9 +714,16 @@ Thank you.`;
                       Padma per-person price is not set yet. Add it from Admin &gt; Padma Trip to show the correct payable amount.
                     </div>
                   )}
+                  {activeSeason === 'haor' && priceSummary.subtotalAmount <= 0 && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+                      Room price is loading or not configured. Kuhelika team will confirm the final amount.
+                    </div>
+                  )}
                   <div className="flex items-center justify-between gap-4 text-slate-600">
                     <span>Subtotal</span>
-                    <span className="font-semibold">৳{priceSummary.subtotalAmount.toLocaleString()}</span>
+                    <span className="font-semibold">
+                      {priceSummary.subtotalAmount > 0 ? `৳${priceSummary.subtotalAmount.toLocaleString()}` : 'TBD'}
+                    </span>
                   </div>
                   {priceSummary.discountAmount > 0 ? (
                     <div className="flex items-center justify-between gap-4 text-emerald-700">
@@ -747,7 +770,7 @@ Thank you.`;
                       </span>
                     </span>
                     <span className="text-2xl sm:text-3xl font-black text-[hsl(197,80%,30%)]">
-                      ৳{payableAmount.toLocaleString()}
+                      {payableAmount > 0 ? `৳${payableAmount.toLocaleString()}` : 'TBD'}
                     </span>
                   </div>
                 </div>
