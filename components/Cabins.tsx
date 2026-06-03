@@ -92,6 +92,7 @@ function CabinCard({
                     alt={`${display.name} image ${idx + 1}`}
                     fill
                     sizes="(min-width: 768px) 50vw, 100vw"
+                    unoptimized={img?.includes('supabase.co') || typeof img === 'string' && img.startsWith('http')}
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </div>
@@ -104,6 +105,7 @@ function CabinCard({
             alt={display.name}
             fill
             sizes="(min-width: 768px) 50vw, 100vw"
+            unoptimized={(images[0] || display.image)?.includes('supabase.co') || typeof (images[0] || display.image) === 'string' && (images[0] || display.image).startsWith('http')}
             className="object-cover transition-transform duration-700 group-hover:scale-110"
           />
         )}
