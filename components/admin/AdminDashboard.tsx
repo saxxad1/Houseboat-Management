@@ -3,14 +3,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Calendar, ArrowUpRight, ArrowDownRight, Users, Ship, Wallet } from 'lucide-react';
+import { Calendar, ArrowUpRight, ArrowDownRight, Users, Ship, Wallet, Clock } from 'lucide-react';
 import { currencyFormatter } from '@/lib/admin/constants';
 import { normalizeSeason, seasonMeta } from '@/data/seasonalData';
 import { fetchAdminDataset } from '@/lib/admin/data';
-import type { Booking, Expense, HouseboatSettings, TripSlot } from '@/types/database';
+import type { Booking, Customer, Expense, HouseboatSettings, TripSlot } from '@/types/database';
 
 export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [tripSlots, setTripSlots] = useState<TripSlot[]>([]);
   const [settings, setSettings] = useState<HouseboatSettings[]>([]);
@@ -22,6 +23,7 @@ export default function AdminDashboard() {
   const load = async () => {
     const data = await fetchAdminDataset();
     setBookings(data.bookings || []);
+    setCustomers(data.customers || []);
     setExpenses(data.expenses || []);
     setTripSlots(data.trip_slots || []);
     setSettings(data.settings || []);
@@ -97,6 +99,14 @@ export default function AdminDashboard() {
       m
     };
   }, [bookings, expenses, tripSlots, startDate, endDate]);
+
+  const recentBookings = useMemo(() => {
+    return [...bookings].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);
+  }, [bookings]);
+  
+  const recentExpenses = useMemo(() => {
+    return [...expenses].sort((a, b) => new Date(b.expense_date).getTime() - new Date(a.expense_date).getTime()).slice(0, 5);
+  }, [expenses]);
 
   return (
     <div className="space-y-6">
@@ -206,6 +216,57 @@ export default function AdminDashboard() {
           <div className="flex flex-wrap gap-2 mt-3">
             <p className="text-xs font-bold text-teal-800 bg-white/60 px-2.5 py-1.5 rounded-lg">{metrics.profitMargin}% Profit Margin</p>
             <p className="text-xs font-bold text-slate-600 bg-white/60 px-2.5 py-1.5 rounded-lg">{metrics.m(metrics.avgProfit)} Avg Profit / Trip</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-slate-200/60 p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-5">
+            <Clock className="w-5 h-5 text-slate-400" />
+            <h3 className="font-bold text-slate-800 text-lg">Recent Bookings</h3>
+          </div>
+          <div className="space-y-3">
+            {recentBookings.map(b => {
+              const customer = customers.find(c => c.id === b.customer_id);
+              return (
+                <div key={b.id} className="flex justify-between items-center p-3.5 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-colors">
+                  <div>
+                    <div className="font-bold text-slate-800 text-sm">{customer?.full_name || 'Unknown Guest'}</div>
+                    <div className="text-xs font-semibold text-slate-500 mt-1">{b.booking_code} · {b.check_in_date}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-teal-700 text-sm">{currencyFormatter.format(Number(b.total_amount)).replace('BDT', '৳')}</div>
+                    <div className={`text-[10px] font-bold uppercase tracking-wider mt-1 px-1.5 py-0.5 inline-block rounded-md ${b.payment_status === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                      {b.payment_status.replace('_', ' ')}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            {recentBookings.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No bookings found</p>}
+          </div>
+        </div>
+
+        <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-slate-200/60 p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-5">
+            <ArrowDownRight className="w-5 h-5 text-slate-400" />
+            <h3 className="font-bold text-slate-800 text-lg">Recent Expenses</h3>
+          </div>
+          <div className="space-y-3">
+            {recentExpenses.map(e => (
+              <div key={e.id} className="flex justify-between items-center p-3.5 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-colors">
+                <div>
+                  <div className="font-bold text-slate-800 text-sm">{e.title}</div>
+                  <div className="text-xs font-semibold text-slate-500 mt-1">{e.category} · {e.expense_date}</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold text-rose-600 text-sm">{currencyFormatter.format(Number(e.amount)).replace('BDT', '৳')}</div>
+                </div>
+              </div>
+            ))}
+            {recentExpenses.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No expenses found</p>}
           </div>
         </div>
       </div>
