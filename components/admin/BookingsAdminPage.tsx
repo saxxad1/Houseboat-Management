@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Filter } from 'lucide-react';
 import BookingForm from '@/components/admin/BookingForm';
 import BookingTable from '@/components/admin/BookingTable';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ export default function BookingsAdminPage() {
   const [paymentStatus, setPaymentStatus] = useState('all');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
   const [message, setMessage] = useState('');
 
   const load = async () => {
@@ -97,42 +98,53 @@ export default function BookingsAdminPage() {
           </Button>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 min-w-0">
-          <div className="mb-4 grid gap-3 md:grid-cols-7">
-            <div className="relative md:col-span-2">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Customer, phone, booking code" className="pl-9" />
+          <div className="mb-4 flex flex-col gap-3">
+            <div className="flex gap-2 w-full">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Customer, phone, booking code" className="pl-9" />
+              </div>
+              <Button variant={showFilters ? "secondary" : "outline"} className="gap-2 shrink-0" onClick={() => setShowFilters(!showFilters)}>
+                <Filter className="h-4 w-4" />
+                Filters
+              </Button>
             </div>
-            <Select value={seasonFilter} onValueChange={setSeasonFilter}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All seasons</SelectItem>
-                <SelectItem value="haor">Haor</SelectItem>
-                <SelectItem value="padma">Padma</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={bookingStatus} onValueChange={setBookingStatus}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All booking status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="checked_in">Checked-in</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={paymentStatus} onValueChange={setPaymentStatus}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All payment status</SelectItem>
-                <SelectItem value="unpaid">Unpaid</SelectItem>
-                <SelectItem value="partially_paid">Partial</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-                <SelectItem value="refunded">Refunded</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
-            <Input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
+            
+            {showFilters && (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 bg-slate-50/50 p-3 rounded-lg border border-slate-100 animate-in fade-in slide-in-from-top-2">
+                <Select value={seasonFilter} onValueChange={setSeasonFilter}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All seasons</SelectItem>
+                    <SelectItem value="haor">Haor</SelectItem>
+                    <SelectItem value="padma">Padma</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={bookingStatus} onValueChange={setBookingStatus}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All booking status</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="checked_in">Checked-in</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={paymentStatus} onValueChange={setPaymentStatus}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All payment status</SelectItem>
+                    <SelectItem value="unpaid">Unpaid</SelectItem>
+                    <SelectItem value="partially_paid">Partial</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
+                <Input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
+              </div>
+            )}
           </div>
 
           {message && <div className="mb-4 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">{message}</div>}

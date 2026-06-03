@@ -10,6 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { format, parseISO } from 'date-fns';
+import { Edit2, XCircle, Trash2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { bookingStatusLabels, paymentStatusLabels, statusColors } from '@/lib/admin/constants';
 import type { Booking, Customer, Room, TourPackage } from '@/types/database';
 
@@ -43,11 +46,9 @@ export default function BookingTable({
           <TableHeader className="bg-slate-50/50">
             <TableRow className="border-b border-slate-100/50 hover:bg-transparent">
               <TableHead className="font-bold text-slate-500 whitespace-nowrap py-4">Code</TableHead>
-              <TableHead className="font-bold text-slate-500 whitespace-nowrap">Season</TableHead>
               <TableHead className="font-bold text-slate-500 whitespace-nowrap">Customer</TableHead>
               <TableHead className="font-bold text-slate-500 whitespace-nowrap">Date</TableHead>
               <TableHead className="font-bold text-slate-500 whitespace-nowrap">Type / Slot</TableHead>
-              <TableHead className="font-bold text-slate-500 whitespace-nowrap">Package</TableHead>
               <TableHead className="font-bold text-slate-500 whitespace-nowrap">Amount</TableHead>
               <TableHead className="font-bold text-slate-500 whitespace-nowrap">Payment</TableHead>
               <TableHead className="font-bold text-slate-500 whitespace-nowrap">Status</TableHead>
@@ -62,9 +63,9 @@ export default function BookingTable({
                 const pkg = booking.package_id ? packageMap.get(booking.package_id) : null;
                 return (
                   <TableRow key={booking.id} className="border-b border-slate-100/50 hover:bg-slate-50/50 transition-colors">
-                    <TableCell className="font-black text-slate-700">{booking.booking_code}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={(booking.season_type || 'haor') === 'padma' ? 'border-indigo-100 bg-indigo-50/80 text-indigo-700 shadow-sm shadow-indigo-100/50' : 'border-emerald-100 bg-emerald-50/80 text-emerald-700 shadow-sm shadow-emerald-100/50'}>
+                      <div className="font-black text-slate-700">{booking.booking_code}</div>
+                      <Badge variant="outline" className={`mt-1 text-[10px] h-4 px-1.5 ${(booking.season_type || 'haor') === 'padma' ? 'border-indigo-100 bg-indigo-50/80 text-indigo-700' : 'border-emerald-100 bg-emerald-50/80 text-emerald-700'}`}>
                         {(booking.season_type || 'haor') === 'padma' ? 'Padma' : 'Haor'}
                       </Badge>
                     </TableCell>
@@ -73,26 +74,22 @@ export default function BookingTable({
                       <div className="text-[11px] font-semibold text-slate-400 mt-0.5">{customer?.phone}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="font-semibold text-slate-700">{booking.event_date || booking.check_in_date}</div>
+                      <div className="font-semibold text-slate-700">
+                        {booking.event_date ? format(parseISO(booking.event_date), 'dd MMM yyyy') : booking.check_in_date ? format(parseISO(booking.check_in_date), 'dd MMM yyyy') : '-'}
+                      </div>
                       <div className="text-[11px] font-semibold text-slate-400 mt-0.5">
-                        {(booking.season_type || 'haor') === 'padma' ? booking.event_slot || 'event slot' : `to ${booking.check_out_date}`}
+                        {(booking.season_type || 'haor') === 'padma' ? booking.event_slot || 'event slot' : (booking.check_out_date ? `to ${format(parseISO(booking.check_out_date), 'dd MMM yyyy')}` : '')}
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium text-slate-600">{(booking.season_type || 'haor') === 'padma' ? booking.event_type || 'Event' : booking.booking_type === 'full_boat' ? 'Full boat' : room?.name || '-'}</TableCell>
-                    <TableCell className="font-medium text-slate-600">{pkg?.title || '-'}</TableCell>
                     <TableCell>
-                      {Number(booking.discount_amount || 0) > 0 && (
-                        <div className="text-[11px] font-semibold text-slate-400 line-through">
-                          ৳{Number(booking.subtotal_amount || booking.total_amount).toLocaleString()}
-                        </div>
-                      )}
+                      <div className="font-medium text-slate-600">{(booking.season_type || 'haor') === 'padma' ? booking.event_type || 'Event' : booking.booking_type === 'full_boat' ? 'Full boat' : room?.name || '-'}</div>
+                      {pkg && <div className="text-[11px] font-semibold text-slate-400 mt-0.5">{pkg.title}</div>}
+                    </TableCell>
+                    <TableCell>
                       <div className="font-bold text-slate-700">৳{Number(booking.total_amount).toLocaleString()}</div>
-                      {Number(booking.discount_amount || 0) > 0 && (
-                        <div className="text-[11px] font-bold text-emerald-600 mt-0.5">
-                          Discount ৳{Number(booking.discount_amount).toLocaleString()}
-                        </div>
+                      {Number(booking.due_amount) > 0 && (
+                        <div className="text-[11px] font-bold text-rose-500 mt-0.5">Due ৳{Number(booking.due_amount).toLocaleString()}</div>
                       )}
-                      <div className="text-[11px] font-bold text-rose-500 mt-0.5">Due ৳{Number(booking.due_amount).toLocaleString()}</div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={`${statusColors[booking.payment_status]} bg-opacity-80 shadow-sm border-opacity-50`}>
@@ -110,13 +107,36 @@ export default function BookingTable({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="inline-flex gap-1 bg-slate-100/50 rounded-lg p-1 backdrop-blur-sm">
-                        <Button variant="ghost" size="sm" className="h-8 hover:bg-white hover:shadow-sm" onClick={() => onEdit(booking)}>Edit</Button>
-                        {booking.booking_status !== 'cancelled' && (
-                          <Button variant="ghost" size="sm" className="h-8 hover:bg-white hover:shadow-sm" onClick={() => onCancel(booking)}>Cancel</Button>
-                        )}
-                        <Button variant="ghost" size="sm" className="h-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50 hover:shadow-sm" onClick={() => onDelete(booking)}>Delete</Button>
-                      </div>
+                      <TooltipProvider delayDuration={200}>
+                        <div className="inline-flex gap-1 bg-slate-100/50 rounded-lg p-1 backdrop-blur-sm">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white hover:shadow-sm" onClick={() => onEdit(booking)}>
+                                <Edit2 className="h-4 w-4 text-slate-500" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit</TooltipContent>
+                          </Tooltip>
+                          {booking.booking_status !== 'cancelled' && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white hover:shadow-sm" onClick={() => onCancel(booking)}>
+                                  <XCircle className="h-4 w-4 text-slate-500" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Cancel</TooltipContent>
+                            </Tooltip>
+                          )}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-rose-50 hover:shadow-sm" onClick={() => onDelete(booking)}>
+                                <Trash2 className="h-4 w-4 text-rose-500" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Delete</TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
                     </TableCell>
                   </TableRow>
                 );
