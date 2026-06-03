@@ -185,8 +185,6 @@ export default function ReportsAdminPage() {
         packageData={mostBooked.packageCounts} 
         incomeByCategory={incomeByCategory}
         expenseByCategory={expenseByCategory}
-        bookingStatusData={bookingStatusData}
-        paymentStatusData={paymentStatusData}
         seasonData={seasonData}
       />
 

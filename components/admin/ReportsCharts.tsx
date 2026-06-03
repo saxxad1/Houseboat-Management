@@ -30,8 +30,6 @@ interface ReportsChartsProps {
   packageData: TopPackageDatum[];
   incomeByCategory: CategoryDatum[];
   expenseByCategory: CategoryDatum[];
-  bookingStatusData?: CountDatum[];
-  paymentStatusData?: CountDatum[];
   seasonData?: CountDatum[];
 }
 
@@ -248,8 +246,6 @@ export default function ReportsCharts({
   packageData,
   incomeByCategory,
   expenseByCategory,
-  bookingStatusData = [],
-  paymentStatusData = [],
   seasonData = [],
 }: ReportsChartsProps) {
   const roomChartData = roomData.map((item) => ({ name: item.room, value: item.bookings }));
@@ -273,26 +269,6 @@ export default function ReportsCharts({
           subtitle="Cost distribution"
           data={expenseByCategory.map((item) => ({ name: item.category, value: item.amount }))}
           emptyLabel="No expenses recorded"
-        />
-      </div>
-
-      <div className="md:col-span-1 lg:col-span-2">
-        <DonutChartCard
-          title="Booking Status"
-          subtitle="Confirmed, pending and cancelled"
-          data={bookingStatusData}
-          valueFormatter={formatNumber}
-          emptyLabel="No booking status data"
-        />
-      </div>
-
-      <div className="md:col-span-1 lg:col-span-2">
-        <DonutChartCard
-          title="Payment Status"
-          subtitle="Paid and due overview"
-          data={paymentStatusData}
-          valueFormatter={formatNumber}
-          emptyLabel="No payment status data"
         />
       </div>
 
