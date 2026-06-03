@@ -150,6 +150,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Select at least one valid cabin' }, { status: 400 });
     }
 
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!isPadma && bookingType !== 'full' && selectedRooms.some((r) => !UUID_REGEX.test(r.roomId))) {
+      return NextResponse.json({ error: 'Invalid room selected (network issue). Please refresh the page and try again.' }, { status: 400 });
+    }
+
     const dbRooms = selectedRooms.length
       ? await supabase
           .from('rooms')
