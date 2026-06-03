@@ -6,8 +6,27 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { fetchAdminDataset } from '@/lib/admin/data';
 import type { Booking, Expense, Income, Room, TourPackage, TripSlot } from '@/types/database';
+import { parseISO, format } from 'date-fns';
 
 import ReportsCharts from '@/components/admin/ReportsCharts';
+
+function formatTripDate(start: string, end: string) {
+  if (!start || !end) return '';
+  try {
+    const startDate = parseISO(start);
+    const endDate = parseISO(end);
+    
+    if (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear()) {
+      return `(${format(startDate, 'dd')}-${format(endDate, 'dd')}) ${format(startDate, 'MMMM yyyy')}`;
+    } else if (startDate.getFullYear() === endDate.getFullYear()) {
+      return `(${format(startDate, 'dd MMM')}-${format(endDate, 'dd MMM')}) ${format(startDate, 'yyyy')}`;
+    } else {
+      return `${format(startDate, 'dd MMM yyyy')} - ${format(endDate, 'dd MMM yyyy')}`;
+    }
+  } catch (e) {
+    return `${start} to ${end}`;
+  }
+}
 
 function getReportBookingDate(booking: Booking) {
   return booking.season_type === 'padma' && booking.event_date ? booking.event_date : booking.check_in_date;
@@ -74,7 +93,7 @@ export default function ReportsAdminPage() {
         const tIncome = income.filter((i) => i.trip_slot_id === trip.id).reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
         const tExpense = expenses.filter((e) => e.trip_slot_id === trip.id).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
         return {
-          trip: `${trip.start_date} (${trip.duration_label})`,
+          trip: formatTripDate(trip.start_date, trip.end_date),
           income: tIncome,
           expense: tExpense,
           profit: tIncome - tExpense
