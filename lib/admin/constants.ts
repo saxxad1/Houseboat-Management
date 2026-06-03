@@ -29,7 +29,7 @@ export const adminNavItems = [
   { href: '/admin/padma-trip', label: 'Padma Trip', labelBn: 'Padma Trip', icon: Ship },
   { href: '/admin/discount', label: 'Discount', labelBn: 'Discount', icon: Percent },
   { href: '/admin/customers', label: 'Customers', labelBn: 'Customers', icon: Users },
-  { href: '/admin/payments', label: 'Payments', labelBn: 'Payments', icon: CreditCard },
+
   { href: '/admin/income', label: 'Income', labelBn: 'Income', icon: Wallet },
   { href: '/admin/expenses', label: 'Expenses', labelBn: 'Expenses', icon: ReceiptText },
   { href: '/admin/reports', label: 'Reports', labelBn: 'Reports', icon: FileBarChart },
