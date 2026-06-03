@@ -360,6 +360,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error('Booking submission error:', error);
-    return NextResponse.json({ error: 'Failed to save booking' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to save booking' }, { status: 500 });
   }
 }

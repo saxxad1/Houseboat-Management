@@ -208,12 +208,17 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
       });
 
       if (!res.ok) {
-        throw new Error('Failed to save booking in DB');
+        let errMsg = 'Failed to save booking in DB';
+        try {
+          const errData = await res.json();
+          if (errData.error) errMsg = errData.error;
+        } catch (e) {}
+        throw new Error(errMsg);
       }
 
       setSubmitted(true);
-    } catch {
-      setSubmitError('Failed to send booking request. Please try again or contact via WhatsApp.');
+    } catch (err: any) {
+      setSubmitError(err.message || 'Failed to send booking request. Please try again or contact via WhatsApp.');
     } finally {
       setIsSubmitting(false);
     }
