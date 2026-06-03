@@ -229,6 +229,7 @@ export default function AdminResourcePage({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [open, setOpen] = useState(false);
@@ -254,11 +255,46 @@ export default function AdminResourcePage({
   const filtered = useMemo(() => {
     let result = rows;
     
-    if (dateFilterColumn && (fromDate || toDate)) {
+    let effFrom = fromDate;
+    let effTo = toDate;
+
+    if (dateFilter === 'today') {
+      const today = new Date();
+      const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      effFrom = todayStr;
+      effTo = todayStr;
+    } else if (dateFilter === 'yesterday') {
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yStr = new Date(yesterday.getTime() - (yesterday.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      effFrom = yStr;
+      effTo = yStr;
+    } else if (dateFilter === 'last_7_days') {
+      const today = new Date();
+      const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      const last7 = new Date(today);
+      last7.setDate(last7.getDate() - 6);
+      const l7Str = new Date(last7.getTime() - (last7.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      effFrom = l7Str;
+      effTo = todayStr;
+    } else if (dateFilter === 'this_month') {
+      const today = new Date();
+      const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const mStr = new Date(startOfMonth.getTime() - (startOfMonth.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      effFrom = mStr;
+      effTo = todayStr;
+    } else if (dateFilter === 'all') {
+      effFrom = '';
+      effTo = '';
+    }
+
+    if (dateFilterColumn && (effFrom || effTo)) {
       result = result.filter(row => {
         const val = valueToString((row as Record<string, unknown>)[dateFilterColumn]);
-        if (fromDate && val < fromDate) return false;
-        if (toDate && val > toDate) return false;
+        if (effFrom && val < effFrom) return false;
+        if (effTo && val > effTo) return false;
         return true;
       });
     }
@@ -270,7 +306,7 @@ export default function AdminResourcePage({
         valueToString((row as Record<string, unknown>)[key]).toLowerCase().includes(lower)
       )
     );
-  }, [columns, query, rows, searchKeys, dateFilterColumn, fromDate, toDate]);
+  }, [columns, query, rows, searchKeys, dateFilterColumn, fromDate, toDate, dateFilter]);
 
   const edit = (row?: AdminRow) => {
     setMessage('');
@@ -395,10 +431,27 @@ export default function AdminResourcePage({
               <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search..." className="pl-9" />
             </div>
             {dateFilterColumn && (
-              <div className="flex items-center gap-2">
-                <Input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="w-[140px]" />
-                <span className="text-sm text-slate-400">to</span>
-                <Input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="w-[140px]" />
+              <div className="flex items-center gap-3">
+                <Select value={dateFilter} onValueChange={setDateFilter}>
+                  <SelectTrigger className="w-[160px] bg-white border-slate-200">
+                    <SelectValue placeholder="Select period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All time</SelectItem>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="yesterday">Yesterday</SelectItem>
+                    <SelectItem value="last_7_days">Last 7 days</SelectItem>
+                    <SelectItem value="this_month">This month</SelectItem>
+                    <SelectItem value="custom">Custom range</SelectItem>
+                  </SelectContent>
+                </Select>
+                {dateFilter === 'custom' && (
+                  <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
+                    <Input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="w-[140px]" />
+                    <span className="text-sm text-slate-400">to</span>
+                    <Input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="w-[140px]" />
+                  </div>
+                )}
               </div>
             )}
             {message && <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 w-full sm:w-auto">{message}</div>}
