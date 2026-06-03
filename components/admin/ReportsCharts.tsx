@@ -26,7 +26,6 @@ type TopRoomDatum = { room: string; bookings: number };
 type TopPackageDatum = { package: string; bookings: number };
 
 interface ReportsChartsProps {
-  trendData: TrendDatum[];
   roomData: TopRoomDatum[];
   packageData: TopPackageDatum[];
   incomeByCategory: CategoryDatum[];
@@ -245,7 +244,6 @@ function HorizontalBarChartCard({
 }
 
 export default function ReportsCharts({
-  trendData,
   roomData,
   packageData,
   incomeByCategory,
@@ -254,67 +252,11 @@ export default function ReportsCharts({
   paymentStatusData = [],
   seasonData = [],
 }: ReportsChartsProps) {
-  const hasTrendData = trendData.some((item) => item.income || item.expense || item.profit);
   const roomChartData = roomData.map((item) => ({ name: item.room, value: item.bookings }));
   const packageChartData = packageData.map((item) => ({ name: item.package, value: item.bookings }));
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
-      <Card className="md:col-span-2 lg:col-span-4 border-0 bg-white/70 backdrop-blur-xl shadow-lg shadow-slate-200/50 rounded-3xl overflow-hidden">
-        <CardHeader className="bg-white/50 border-b border-slate-100/50 pb-4">
-          <CardTitle className="text-xl font-black text-slate-800 tracking-tight">Financial Trends</CardTitle>
-          <p className="text-sm text-slate-500 font-medium">Daily income, expense and profit overview</p>
-        </CardHeader>
-        <CardContent className="pt-6 pb-6">
-          {!hasTrendData ? (
-            <EmptyChart label="No trend data available" className="h-[340px]" />
-          ) : (
-            <div className="w-full overflow-x-auto overflow-y-hidden">
-              <div className="h-[360px] min-w-[760px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={trendData} margin={{ top: 12, right: 26, bottom: 12, left: 4 }}>
-                    <defs>
-                      <linearGradient id="incomeFill" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="5%" stopColor={chartColors.income} stopOpacity={0.26} />
-                        <stop offset="95%" stopColor={chartColors.income} stopOpacity={0.03} />
-                      </linearGradient>
-                      <linearGradient id="expenseFill" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="5%" stopColor={chartColors.expense} stopOpacity={0.18} />
-                        <stop offset="95%" stopColor={chartColors.expense} stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 8" vertical={false} />
-                    <XAxis
-                      dataKey="date"
-                      minTickGap={30}
-                      tickLine={false}
-                      axisLine={false}
-                      tick={{ fill: '#64748b', fontSize: 12, fontWeight: 700 }}
-                      tickFormatter={formatDateTick}
-                    />
-                    <YAxis
-                      width={70}
-                      tickLine={false}
-                      axisLine={false}
-                      tick={{ fill: '#64748b', fontSize: 12, fontWeight: 700 }}
-                      tickFormatter={(value) => formatAxisMoney(Number(value))}
-                    />
-                    <Tooltip
-                      formatter={(value, name) => [formatMoney(Number(value)), prettyLabel(String(name))]}
-                      labelFormatter={(label) => formatDateTick(String(label))}
-                      contentStyle={{ borderRadius: 16, border: '1px solid #e2e8f0', boxShadow: '0 18px 45px rgba(15, 23, 42, 0.12)' }}
-                    />
-                    <Legend iconType="circle" wrapperStyle={{ paddingTop: 16, fontWeight: 700 }} />
-                    <Area type="monotone" dataKey="income" name="Income" stroke={chartColors.income} strokeWidth={3} fill="url(#incomeFill)" dot={false} activeDot={{ r: 6 }} />
-                    <Area type="monotone" dataKey="expense" name="Expense" stroke={chartColors.expense} strokeWidth={3} fill="url(#expenseFill)" dot={false} activeDot={{ r: 6 }} />
-                    <Line type="monotone" dataKey="profit" name="Profit" stroke="#0ea5e9" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       <div className="md:col-span-1 lg:col-span-2">
         <DonutChartCard

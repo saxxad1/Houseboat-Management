@@ -181,7 +181,6 @@ export default function ReportsAdminPage() {
 
       {/* Visual Analytics */}
       <ReportsCharts 
-        trendData={tripRows.slice(0, 10).map(t => ({ date: t.trip.split(' ')[0], income: t.income, expense: t.expense, profit: t.profit })).reverse()} 
         roomData={mostBooked.roomCounts} 
         packageData={mostBooked.packageCounts} 
         incomeByCategory={incomeByCategory}
