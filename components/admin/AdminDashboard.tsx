@@ -1,12 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import DashboardCards, { money } from '@/components/admin/DashboardCards';
-import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Calendar } from 'lucide-react';
+import { Calendar, ArrowUpRight, ArrowDownRight, Users, Ship, Wallet } from 'lucide-react';
+import { currencyFormatter } from '@/lib/admin/constants';
 import { normalizeSeason, seasonMeta } from '@/data/seasonalData';
 import { fetchAdminDataset } from '@/lib/admin/data';
 import type { Booking, Expense, HouseboatSettings, TripSlot } from '@/types/database';
@@ -66,11 +64,9 @@ export default function AdminDashboard() {
   }, [dateFilter, customFrom, customTo]);
 
   const metrics = useMemo(() => {
-    // 1. Total Trips
     const validTrips = tripSlots.filter(t => t.start_date >= startDate && t.start_date <= endDate);
     const totalTrips = validTrips.length;
     
-    // 2. Total Guests
     const validBookings = bookings.filter(b => 
       b.booking_status !== 'cancelled' && 
       ((b.event_date || b.check_in_date) >= startDate) && 
@@ -78,37 +74,42 @@ export default function AdminDashboard() {
     );
     const totalGuests = validBookings.reduce((sum, b) => sum + (Number(b.number_of_guests) || 0), 0);
     
-    // 3. Total Booking Amount
     const totalBookingAmount = validBookings.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0);
-    
-    // 4. Total Expense
     const validExpenses = expenses.filter(e => e.expense_date >= startDate && e.expense_date <= endDate);
     const totalExpense = validExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-    
-    // 5. Total Profit
     const totalProfit = totalBookingAmount - totalExpense;
+    
+    const avgGuests = totalTrips ? Math.round(totalGuests / totalTrips) : 0;
+    const avgProfit = totalTrips ? (totalProfit / totalTrips) : 0;
+    const profitMargin = totalBookingAmount ? Math.round((totalProfit / totalBookingAmount) * 100) : 0;
 
-    return [
-      { label: 'Total Trips', value: totalTrips, tone: 'blue' as const },
-      { label: 'Total Guests', value: totalGuests, tone: 'amber' as const },
-      { label: 'Total Booking Amount', value: money(totalBookingAmount), tone: 'green' as const },
-      { label: 'Total Expense', value: money(totalExpense), tone: 'red' as const },
-      { label: 'Total Profit', value: money(totalProfit), tone: totalProfit >= 0 ? 'green' as const : 'slate' as const },
-    ];
+    const m = (val: number) => currencyFormatter.format(val).replace('BDT', '৳');
+
+    return {
+      trips: totalTrips,
+      guests: totalGuests,
+      revenue: totalBookingAmount,
+      expense: totalExpense,
+      profit: totalProfit,
+      avgGuests,
+      avgProfit,
+      profitMargin,
+      m
+    };
   }, [bookings, expenses, tripSlots, startDate, endDate]);
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/70 backdrop-blur-md p-4 rounded-2xl border border-slate-200/60 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="bg-sky-100 p-2 rounded-xl text-sky-600">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-md p-5 rounded-3xl border border-slate-200/50 shadow-sm">
+        <div className="flex items-center gap-3.5">
+          <div className="bg-sky-500/10 p-2.5 rounded-xl text-sky-600">
             <Calendar className="h-5 w-5" />
           </div>
           <div>
-            <div className="font-semibold text-slate-800">Dashboard Overview</div>
-            <div className="text-xs font-medium text-slate-500 mt-0.5 flex items-center gap-1.5">
+            <div className="font-bold text-slate-800 text-lg">Dashboard Overview</div>
+            <div className="text-sm font-medium text-slate-500 flex items-center gap-2">
               <span>{meta.adminName}</span>
-              <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
               <span>{startDate === endDate ? startDate : `${startDate} to ${endDate}`}</span>
             </div>
           </div>
@@ -116,10 +117,10 @@ export default function AdminDashboard() {
         
         <div className="flex flex-wrap items-center gap-3">
           <Select value={dateFilter} onValueChange={setDateFilter}>
-            <SelectTrigger className="w-[160px] bg-white border-slate-200">
+            <SelectTrigger className="w-[160px] h-10 bg-white border-slate-200 rounded-xl font-medium">
               <SelectValue placeholder="Select period" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-xl">
               <SelectItem value="today">Today</SelectItem>
               <SelectItem value="yesterday">Yesterday</SelectItem>
               <SelectItem value="last_7_days">Last 7 days</SelectItem>
@@ -130,15 +131,84 @@ export default function AdminDashboard() {
           
           {dateFilter === 'custom' && (
             <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
-              <Input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} className="w-[140px] bg-white border-slate-200" />
-              <span className="text-slate-400 text-sm">to</span>
-              <Input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} className="w-[140px] bg-white border-slate-200" />
+              <Input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} className="w-[140px] h-10 bg-white border-slate-200 rounded-xl" />
+              <span className="text-slate-400 font-medium">to</span>
+              <Input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} className="w-[140px] h-10 bg-white border-slate-200 rounded-xl" />
             </div>
           )}
         </div>
       </div>
       
-      <DashboardCards cards={metrics} />
+      {/* Top Row: Trips, Guests, Revenue */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="bg-gradient-to-br from-blue-500/5 to-indigo-500/5 border border-indigo-100/50 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl" />
+          <div className="flex justify-between items-start mb-4">
+            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Trips</p>
+            <div className="bg-indigo-100 text-indigo-600 p-2 rounded-xl">
+              <Ship className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="text-4xl font-black text-slate-800 tracking-tight">{metrics.trips}</div>
+          <p className="text-xs font-semibold text-slate-500 mt-2 bg-white/60 inline-block px-2 py-1 rounded-lg">Based on schedule</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-amber-500/5 to-orange-500/5 border border-orange-100/50 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl" />
+          <div className="flex justify-between items-start mb-4">
+            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Guests</p>
+            <div className="bg-orange-100 text-orange-600 p-2 rounded-xl">
+              <Users className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="text-4xl font-black text-slate-800 tracking-tight">{metrics.guests}</div>
+          <p className="text-xs font-semibold text-slate-500 mt-2 bg-white/60 inline-block px-2 py-1 rounded-lg">{metrics.avgGuests} guests per trip avg</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-teal-100/50 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl" />
+          <div className="flex justify-between items-start mb-4">
+            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Revenue</p>
+            <div className="bg-teal-100 text-teal-600 p-2 rounded-xl">
+              <Wallet className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="text-4xl font-black text-slate-800 tracking-tight">{metrics.m(metrics.revenue)}</div>
+          <p className="text-xs font-semibold text-slate-500 mt-2 bg-white/60 inline-block px-2 py-1 rounded-lg">From bookings</p>
+        </div>
+      </div>
+
+      {/* Bottom Row: Expense and Profit */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="bg-gradient-to-br from-rose-500/5 to-red-500/5 border border-red-100/50 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-red-500/10 rounded-full blur-2xl" />
+          <div className="flex justify-between items-start mb-4">
+            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Expense</p>
+            <div className="bg-red-100 text-red-600 p-2.5 rounded-xl">
+              <ArrowDownRight className="w-6 h-6" />
+            </div>
+          </div>
+          <div className="text-5xl font-black text-slate-800 tracking-tight">{metrics.m(metrics.expense)}</div>
+          <div className="flex gap-2 mt-3">
+            <p className="text-xs font-semibold text-slate-500 bg-white/60 px-2.5 py-1.5 rounded-lg">Operational costs</p>
+          </div>
+        </div>
+
+        <div className={`bg-gradient-to-br border rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden ${metrics.profit >= 0 ? 'from-emerald-500/10 to-teal-500/10 border-teal-200/50' : 'from-slate-500/10 to-gray-500/10 border-slate-200/50'}`}>
+          <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl ${metrics.profit >= 0 ? 'bg-teal-500/20' : 'bg-slate-500/20'}`} />
+          <div className="flex justify-between items-start mb-4">
+            <p className={`text-sm font-bold uppercase tracking-wider ${metrics.profit >= 0 ? 'text-teal-700' : 'text-slate-600'}`}>Net Profit</p>
+            <div className={`${metrics.profit >= 0 ? 'bg-teal-500 text-white' : 'bg-slate-500 text-white'} p-2.5 rounded-xl shadow-inner`}>
+              <ArrowUpRight className="w-6 h-6" />
+            </div>
+          </div>
+          <div className={`text-5xl font-black tracking-tight ${metrics.profit >= 0 ? 'text-teal-900' : 'text-slate-800'}`}>{metrics.m(metrics.profit)}</div>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <p className="text-xs font-bold text-teal-800 bg-white/60 px-2.5 py-1.5 rounded-lg">{metrics.profitMargin}% Profit Margin</p>
+            <p className="text-xs font-bold text-slate-600 bg-white/60 px-2.5 py-1.5 rounded-lg">{metrics.m(metrics.avgProfit)} Avg Profit / Trip</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
