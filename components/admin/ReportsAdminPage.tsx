@@ -71,7 +71,6 @@ export default function ReportsAdminPage() {
 
   const totalIncome = rangeIncome.reduce((sum, item) => sum + Number(item.amount), 0);
   const totalExpense = rangeExpenses.reduce((sum, item) => sum + Number(item.amount), 0);
-  const due = rangeBookings.reduce((sum, item) => sum + Number(item.due_amount), 0);
 
   const mostBooked = useMemo(() => {
     const roomCounts = rooms.map((room) => ({
@@ -198,17 +197,6 @@ export default function ReportsAdminPage() {
         due: booking.due_amount,
         status: booking.booking_status,
       }))} />
-      <ReportTable title="Due payment report" rows={rangeBookings.filter((booking) => Number(booking.due_amount) > 0).map((booking) => ({
-        code: booking.booking_code,
-        due: booking.due_amount,
-        payment_status: booking.payment_status,
-        booking_status: booking.booking_status,
-      }))} />
-      
-      <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-5 text-sm text-indigo-800 shadow-sm print:block backdrop-blur-sm">
-        <strong className="font-bold">Print/export layout:</strong> Print from browser to create PDF. CSV export is available from each table.
-        <div className="mt-2 font-black text-lg">Total due in range: ৳{due.toLocaleString()}</div>
-      </div>
     </div>
   );
 }
