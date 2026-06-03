@@ -67,6 +67,7 @@ interface AdminResourcePageProps {
   searchKeys?: string[];
   addLabel?: string;
   storageFolder?: string;
+  dateFilterColumn?: string;
 }
 
 const emptyRow = {};
@@ -221,12 +222,15 @@ export default function AdminResourcePage({
   searchKeys = [],
   addLabel = 'Add new',
   storageFolder,
+  dateFilterColumn,
   renderTop,
 }: AdminResourcePageProps & { renderTop?: (rows: AdminRow[]) => React.ReactNode }) {
   const [rows, setRows] = useState<AdminRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [form, setForm] = useState<Record<string, unknown>>(emptyRow);
@@ -248,14 +252,25 @@ export default function AdminResourcePage({
   }, [table]);
 
   const filtered = useMemo(() => {
-    if (!query.trim()) return rows;
+    let result = rows;
+    
+    if (dateFilterColumn && (fromDate || toDate)) {
+      result = result.filter(row => {
+        const val = valueToString((row as Record<string, unknown>)[dateFilterColumn]);
+        if (fromDate && val < fromDate) return false;
+        if (toDate && val > toDate) return false;
+        return true;
+      });
+    }
+
+    if (!query.trim()) return result;
     const lower = query.toLowerCase();
-    return rows.filter((row) =>
+    return result.filter((row) =>
       (searchKeys.length ? searchKeys : columns.map((column) => column.key)).some((key) =>
         valueToString((row as Record<string, unknown>)[key]).toLowerCase().includes(lower)
       )
     );
-  }, [columns, query, rows, searchKeys]);
+  }, [columns, query, rows, searchKeys, dateFilterColumn, fromDate, toDate]);
 
   const edit = (row?: AdminRow) => {
     setMessage('');
@@ -374,12 +389,19 @@ export default function AdminResourcePage({
           </Button>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative flex-1">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center flex-wrap">
+            <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search..." className="pl-9" />
             </div>
-            {message && <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">{message}</div>}
+            {dateFilterColumn && (
+              <div className="flex items-center gap-2">
+                <Input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="w-[140px]" />
+                <span className="text-sm text-slate-400">to</span>
+                <Input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="w-[140px]" />
+              </div>
+            )}
+            {message && <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 w-full sm:w-auto">{message}</div>}
           </div>
 
           <div className="rounded-lg border border-slate-200">

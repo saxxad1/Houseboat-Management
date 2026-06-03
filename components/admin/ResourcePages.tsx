@@ -131,6 +131,7 @@ export function IncomeAdminPage() {
       description="Add income from booking, food, BBQ, transport, or others."
       addLabel="New Income"
       searchKeys={['title', 'category', 'income_date']}
+      dateFilterColumn="income_date"
       columns={[
         { key: 'title', label: 'Title' },
         { key: 'category', label: 'Category', type: 'status' },
@@ -167,6 +168,7 @@ export function ExpensesAdminPage() {
       description="Keep track of all expenses including food, staff salary, fuel, maintenance."
       addLabel="New Expense"
       searchKeys={['title', 'category', 'vendor_name', 'expense_date']}
+      dateFilterColumn="expense_date"
       renderTop={(rows) => <ExpensesChart expenses={rows as Expense[]} />}
       columns={[
         { key: 'title', label: 'Title' },
