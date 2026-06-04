@@ -69,8 +69,33 @@ export default function ReportsAdminPage() {
     [bookings, fromDate, toDate]
   );
 
-  const totalIncome = rangeIncome.reduce((sum, item) => sum + Number(item.amount), 0);
-  const totalExpense = rangeExpenses.reduce((sum, item) => sum + Number(item.amount), 0);
+  const { virtualIncome, virtualExpenses } = useMemo(() => {
+    const vIncomes: { category: string; amount: number; trip_id: string }[] = [];
+    const vExpenses: { category: string; amount: number; trip_id: string }[] = [];
+    tripSlots.forEach(trip => {
+      if (!trip.note) return;
+      try {
+        const parsed = JSON.parse(trip.note);
+        if (parsed.manualBookings) {
+          parsed.manualBookings.forEach((mb: any) => vIncomes.push({ category: 'booking', amount: Number(mb.total_amount) || 0, trip_id: trip.id }));
+        }
+        if (parsed.manualExpenses) {
+          parsed.manualExpenses.forEach((me: any) => vExpenses.push({ category: me.category || 'other', amount: Number(me.amount) || 0, trip_id: trip.id }));
+        }
+      } catch (e) {}
+    });
+    return { virtualIncome: vIncomes, virtualExpenses: vExpenses };
+  }, [tripSlots]);
+
+  const rangeTripSlots = useMemo(() => {
+    return tripSlots.filter((trip) => (!fromDate || trip.start_date >= fromDate) && (!toDate || trip.start_date <= toDate));
+  }, [tripSlots, fromDate, toDate]);
+
+  const rangeVirtualIncome = useMemo(() => virtualIncome.filter(vi => rangeTripSlots.some(t => t.id === vi.trip_id)), [virtualIncome, rangeTripSlots]);
+  const rangeVirtualExpenses = useMemo(() => virtualExpenses.filter(ve => rangeTripSlots.some(t => t.id === ve.trip_id)), [virtualExpenses, rangeTripSlots]);
+
+  const totalIncome = rangeIncome.reduce((sum, item) => sum + Number(item.amount), 0) + rangeVirtualIncome.reduce((sum, i) => sum + i.amount, 0);
+  const totalExpense = rangeExpenses.reduce((sum, item) => sum + Number(item.amount), 0) + rangeVirtualExpenses.reduce((sum, e) => sum + e.amount, 0);
 
   const mostBooked = useMemo(() => {
     const roomCounts = rooms.map((room) => ({
@@ -85,12 +110,17 @@ export default function ReportsAdminPage() {
   }, [packages, rangeBookings, rooms]);
 
   const tripRows = useMemo(() => {
-    return tripSlots
-      .filter((trip) => (!fromDate || trip.start_date >= fromDate) && (!toDate || trip.start_date <= toDate))
+    return [...rangeTripSlots]
       .sort((a, b) => b.start_date.localeCompare(a.start_date)) // descending
       .map((trip) => {
-        const tIncome = income.filter((i) => i.trip_slot_id === trip.id).reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
-        const tExpense = expenses.filter((e) => e.trip_slot_id === trip.id).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+        const dbIncome = income.filter((i) => i.trip_slot_id === trip.id).reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+        const manualIncome = virtualIncome.filter(vi => vi.trip_id === trip.id).reduce((sum, vi) => sum + vi.amount, 0);
+        const tIncome = dbIncome + manualIncome;
+
+        const dbExpense = expenses.filter((e) => e.trip_slot_id === trip.id).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+        const manualExpense = virtualExpenses.filter(ve => ve.trip_id === trip.id).reduce((sum, ve) => sum + ve.amount, 0);
+        const tExpense = dbExpense + manualExpense;
+
         return {
           trip: formatTripDate(trip.start_date, trip.end_date),
           income: tIncome,
@@ -98,7 +128,7 @@ export default function ReportsAdminPage() {
           profit: tIncome - tExpense
         };
       });
-  }, [tripSlots, fromDate, toDate, income, expenses]);
+  }, [rangeTripSlots, income, expenses, virtualIncome, virtualExpenses]);
 
   const incomeByCategory = useMemo(() => {
     const grouped = rangeIncome.reduce((acc, item) => {
@@ -106,8 +136,9 @@ export default function ReportsAdminPage() {
       acc[cat] = (acc[cat] || 0) + (Number(item.amount) || 0);
       return acc;
     }, {} as Record<string, number>);
+    rangeVirtualIncome.forEach(vi => grouped[vi.category] = (grouped[vi.category] || 0) + vi.amount);
     return Object.entries(grouped).filter((entry) => entry[1] > 0).map(([category, amount]) => ({ category, amount })).sort((a, b) => b.amount - a.amount);
-  }, [rangeIncome]);
+  }, [rangeIncome, rangeVirtualIncome]);
 
   const expenseByCategory = useMemo(() => {
     const grouped = rangeExpenses.reduce((acc, item) => {
@@ -115,8 +146,9 @@ export default function ReportsAdminPage() {
       acc[cat] = (acc[cat] || 0) + (Number(item.amount) || 0);
       return acc;
     }, {} as Record<string, number>);
+    rangeVirtualExpenses.forEach(ve => grouped[ve.category] = (grouped[ve.category] || 0) + ve.amount);
     return Object.entries(grouped).filter((entry) => entry[1] > 0).map(([category, amount]) => ({ category, amount })).sort((a, b) => b.amount - a.amount);
-  }, [rangeExpenses]);
+  }, [rangeExpenses, rangeVirtualExpenses]);
 
   const bookingStatusData = useMemo(() => {
     const grouped = rangeBookings.reduce((acc, booking) => {
@@ -146,7 +178,7 @@ export default function ReportsAdminPage() {
   }, [rangeBookings]);
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       {/* Filter and Summary Card */}
       <Card className="border-0 bg-white/70 backdrop-blur-xl shadow-lg shadow-slate-200/50 rounded-3xl overflow-hidden">
         <CardContent className="p-6">
