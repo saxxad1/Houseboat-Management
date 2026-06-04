@@ -7,12 +7,13 @@ import { Calendar, ArrowUpRight, ArrowDownRight, Users, Ship, Wallet, Clock } fr
 import { currencyFormatter } from '@/lib/admin/constants';
 import { normalizeSeason, seasonMeta } from '@/data/seasonalData';
 import { fetchAdminDataset } from '@/lib/admin/data';
-import type { Booking, Customer, Expense, HouseboatSettings, TripSlot } from '@/types/database';
+import type { Booking, Customer, Expense, HouseboatSettings, TripSlot, Income } from '@/types/database';
 
 export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [income, setIncome] = useState<Income[]>([]);
   const [tripSlots, setTripSlots] = useState<TripSlot[]>([]);
   const [settings, setSettings] = useState<HouseboatSettings[]>([]);
   
@@ -25,6 +26,7 @@ export default function AdminDashboard() {
     setBookings(data.bookings || []);
     setCustomers(data.customers || []);
     setExpenses(data.expenses || []);
+    setIncome(data.income || []);
     setTripSlots(data.trip_slots || []);
     setSettings(data.settings || []);
   };
@@ -93,7 +95,10 @@ export default function AdminDashboard() {
     );
     const totalGuests = validBookings.reduce((sum, b) => sum + (Number(b.number_of_guests) || 0), 0) + manualGuests;
     
-    const totalBookingAmount = validBookings.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0) + manualRevenue;
+    const validIncome = income.filter(i => i.income_date >= startDate && i.income_date <= endDate);
+    const totalAdditionalIncome = validIncome.filter(i => i.category !== 'booking').reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+    
+    const totalBookingAmount = validBookings.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0) + manualRevenue + totalAdditionalIncome;
     const validExpenses = expenses.filter(e => e.expense_date >= startDate && e.expense_date <= endDate);
     const totalExpense = validExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0) + manualExpensesTotal;
     const totalProfit = totalBookingAmount - totalExpense;
