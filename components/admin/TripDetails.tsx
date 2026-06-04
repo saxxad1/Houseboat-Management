@@ -440,15 +440,9 @@ export function TripDetails({ id }: { id: string }) {
                 <Input type="number" min="0" value={expenseForm.amount} onChange={e => setExpenseForm({...expenseForm, amount: e.target.value})} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Date</Label>
-                <Input type="date" value={expenseForm.expense_date} onChange={e => setExpenseForm({...expenseForm, expense_date: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label>Vendor (Optional)</Label>
-                <Input value={expenseForm.vendor_name} onChange={e => setExpenseForm({...expenseForm, vendor_name: e.target.value})} />
-              </div>
+            <div className="space-y-2">
+              <Label>Vendor (Optional)</Label>
+              <Input value={expenseForm.vendor_name} onChange={e => setExpenseForm({...expenseForm, vendor_name: e.target.value})} />
             </div>
             <div className="space-y-2">
               <Label>Note (Optional)</Label>
