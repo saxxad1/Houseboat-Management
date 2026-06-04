@@ -69,16 +69,33 @@ export default function AdminDashboard() {
     const validTrips = tripSlots.filter(t => t.start_date >= startDate && t.start_date <= endDate);
     const totalTrips = validTrips.length;
     
+    let manualGuests = 0;
+    let manualRevenue = 0;
+    let manualExpensesTotal = 0;
+
+    validTrips.forEach(trip => {
+      if (trip.note) {
+        try {
+          const parsed = JSON.parse(trip.note);
+          const mb = parsed.manualBookings || [];
+          const me = parsed.manualExpenses || [];
+          manualGuests += mb.reduce((sum: number, b: any) => sum + (Number(b.number_of_guests) || 0), 0);
+          manualRevenue += mb.reduce((sum: number, b: any) => sum + (Number(b.total_amount) || 0), 0);
+          manualExpensesTotal += me.reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0);
+        } catch (e) {}
+      }
+    });
+    
     const validBookings = bookings.filter(b => 
       b.booking_status !== 'cancelled' && 
       ((b.event_date || b.check_in_date) >= startDate) && 
       ((b.event_date || b.check_in_date) <= endDate)
     );
-    const totalGuests = validBookings.reduce((sum, b) => sum + (Number(b.number_of_guests) || 0), 0);
+    const totalGuests = validBookings.reduce((sum, b) => sum + (Number(b.number_of_guests) || 0), 0) + manualGuests;
     
-    const totalBookingAmount = validBookings.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0);
+    const totalBookingAmount = validBookings.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0) + manualRevenue;
     const validExpenses = expenses.filter(e => e.expense_date >= startDate && e.expense_date <= endDate);
-    const totalExpense = validExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    const totalExpense = validExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0) + manualExpensesTotal;
     const totalProfit = totalBookingAmount - totalExpense;
     
     const avgGuests = totalTrips ? Math.round(totalGuests / totalTrips) : 0;
