@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { fetchAdminDataset } from '@/lib/admin/data';
+import { fetchAdminDataset, deleteRow } from '@/lib/admin/data';
+import { toast } from 'sonner';
 import type { Booking, Expense, Income, TripSlot } from '@/types/database';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, Users, Wallet, ReceiptText, ArrowRight } from 'lucide-react';
+import { Package, Users, Wallet, ReceiptText, ArrowRight, Trash2 } from 'lucide-react';
 import { currencyFormatter } from '@/lib/admin/constants';
 
 interface TripStat {
@@ -78,6 +79,19 @@ export function TripsDashboard() {
     load();
   }, []);
 
+  const handleDelete = async (tripId: string) => {
+    if (!window.confirm('Are you sure you want to delete this trip? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      await deleteRow('trip_slots', tripId);
+      setStats(current => current.filter(s => s.trip.id !== tripId));
+      toast.success('Trip deleted successfully');
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to delete trip');
+    }
+  };
+
   if (loading) {
     return <div className="p-8 text-center text-slate-500">Loading trips data...</div>;
   }
@@ -141,11 +155,16 @@ export function TripsDashboard() {
                   </div>
                 </div>
 
-                <Button asChild className="w-full mt-2" variant="outline">
-                  <Link href={`/admin/trips/${trip.id}`}>
-                    View Details <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+                <div className="flex gap-2 mt-2">
+                  <Button asChild className="flex-1" variant="outline">
+                    <Link href={`/admin/trips/${trip.id}`}>
+                      View Details <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="text-red-500 hover:text-red-600 hover:bg-red-50 px-3" onClick={() => handleDelete(trip.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           );
