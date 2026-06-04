@@ -29,9 +29,21 @@ export function isReadOnlyAdminRole(role?: string | null) {
   return role === 'viewer';
 }
 
-export function requireWritableAdmin(role?: string | null) {
-  if (isReadOnlyAdminRole(role)) {
-    return NextResponse.json({ error: 'This account is read-only and cannot make changes.' }, { status: 403 });
+export const managerWritableTables: AdminTableName[] = [
+  'income',
+  'expenses',
+  'trip_slots',
+];
+
+export function canWriteAdminTable(role?: string | null, table?: AdminTableName) {
+  if (role === 'admin') return true;
+  if (role === 'manager') return Boolean(table && managerWritableTables.includes(table));
+  return false;
+}
+
+export function requireWritableAdmin(role?: string | null, table?: AdminTableName) {
+  if (!canWriteAdminTable(role, table)) {
+    return NextResponse.json({ error: 'This account is read-only for this section and cannot make changes.' }, { status: 403 });
   }
 
   return null;

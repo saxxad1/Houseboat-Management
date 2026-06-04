@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSeasonalData, normalizeSeason, seasonMeta, type SeasonType } from '@/data/seasonalData';
 import { listRows, saveRow } from '@/lib/admin/data';
+import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
 import { cn } from '@/lib/utils';
 import type { HouseboatSettings } from '@/types/database';
 
@@ -30,8 +31,10 @@ export default function SeasonSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [readOnly, setReadOnly] = useState(false);
 
   useEffect(() => {
+    setReadOnly(isReadOnlyAdminForTable('houseboat_settings'));
     async function load() {
       const rows = await listRows<HouseboatSettings>('houseboat_settings');
       const row = rows[0] || null;
@@ -56,6 +59,7 @@ export default function SeasonSettingsPage() {
   const dirty = activeSeason !== savedSeason;
 
   const save = async () => {
+    if (readOnly) return;
     setSaving(true);
     setMessage('');
     const timestamp = new Date().toISOString();
@@ -119,12 +123,15 @@ export default function SeasonSettingsPage() {
               <button
                 key={option.value}
                 type="button"
-                onClick={() => setActiveSeason(option.value)}
+                onClick={() => {
+                  if (!readOnly) setActiveSeason(option.value);
+                }}
                 className={cn(
                   'rounded-xl border p-4 text-left transition-all',
                   selected
                     ? 'border-[hsl(197,80%,30%)] bg-[hsl(195,95%,92%)] shadow-sm'
-                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
+                  readOnly && 'cursor-default hover:border-slate-200 hover:bg-white'
                 )}
               >
                 <div className="flex items-center justify-between gap-3">
@@ -216,10 +223,12 @@ export default function SeasonSettingsPage() {
           </div>
           {message && <div className="mt-1 text-sm text-slate-500">{message}</div>}
         </div>
-        <Button onClick={save} disabled={saving || !dirty} className="gap-2 bg-[hsl(197,80%,30%)] hover:bg-[hsl(197,80%,24%)]">
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Save Season
-        </Button>
+        {!readOnly && (
+          <Button onClick={save} disabled={saving || !dirty} className="gap-2 bg-[hsl(197,80%,30%)] hover:bg-[hsl(197,80%,24%)]">
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            Save Season
+          </Button>
+        )}
       </div>
     </div>
   );

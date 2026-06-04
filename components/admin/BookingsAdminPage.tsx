@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { deleteRow, fetchAdminDataset, saveRow } from '@/lib/admin/data';
+import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
 import type { Booking, Customer, Room, TourPackage } from '@/types/database';
 
 export default function BookingsAdminPage() {
@@ -33,6 +34,7 @@ export default function BookingsAdminPage() {
   const [toDate, setToDate] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [message, setMessage] = useState('');
+  const [readOnly, setReadOnly] = useState(false);
 
   const load = async () => {
     setIsLoading(true);
@@ -45,6 +47,7 @@ export default function BookingsAdminPage() {
   };
 
   useEffect(() => {
+    setReadOnly(isReadOnlyAdminForTable('bookings'));
     load();
   }, []);
 
@@ -66,11 +69,13 @@ export default function BookingsAdminPage() {
   }, [bookingStatus, bookings, customerMap, fromDate, paymentStatus, search, seasonFilter, toDate]);
 
   const add = () => {
+    if (readOnly) return;
     setSelected(null);
     setOpen(true);
   };
 
   const cancel = async (booking: Booking) => {
+    if (readOnly) return;
     if (!window.confirm('Cancel this booking?')) return;
     await saveRow<Booking>('bookings', { ...booking, booking_status: 'cancelled' });
     setMessage('Booking cancelled');
@@ -78,6 +83,7 @@ export default function BookingsAdminPage() {
   };
 
   const remove = async (booking: Booking) => {
+    if (readOnly) return;
     if (!window.confirm('Delete this booking permanently?')) return;
     await deleteRow('bookings', booking.id);
     setMessage('Booking deleted');
@@ -85,22 +91,24 @@ export default function BookingsAdminPage() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="min-w-0 space-y-5">
       <Card>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-xl">All Bookings</CardTitle>
             <p className="mt-1 text-sm text-slate-500">Search, filter, add, edit, cancel and payment status update.</p>
           </div>
-          <Button onClick={add} className="w-full gap-2 sm:w-auto">
-            <Plus className="h-4 w-4" />
-            New Booking
-          </Button>
+          {!readOnly && (
+            <Button onClick={add} className="w-full gap-2 sm:w-auto">
+              <Plus className="h-4 w-4" />
+              New Booking
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="p-4 sm:p-6 min-w-0">
           <div className="mb-4 flex flex-col gap-3">
-            <div className="flex gap-2 w-full">
-              <div className="relative flex-1">
+            <div className="flex w-full gap-2">
+              <div className="relative min-w-0 flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Customer, phone, booking code" className="pl-9" />
               </div>
@@ -163,11 +171,13 @@ export default function BookingsAdminPage() {
               rooms={rooms}
               packages={packages}
               onEdit={(booking) => {
+                if (readOnly) return;
                 setSelected(booking);
                 setOpen(true);
               }}
               onCancel={cancel}
               onDelete={remove}
+              readOnly={readOnly}
             />
           )}
         </CardContent>

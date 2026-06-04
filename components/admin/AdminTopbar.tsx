@@ -52,6 +52,11 @@ export default function AdminTopbar({ email, onOpenMenu }: AdminTopbarProps) {
               Read only
             </span>
           )}
+          {role === 'manager' && (
+            <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-sky-700">
+              Manager
+            </span>
+          )}
         </div>
 
         <Button variant="outline" onClick={logout} className="gap-2 rounded-xl bg-white/80 border-white shadow-sm hover:shadow-md transition-all duration-300 font-bold text-slate-600 hover:text-red-600 hover:bg-red-50">

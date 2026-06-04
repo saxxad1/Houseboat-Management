@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { listRows, saveRow } from '@/lib/admin/data';
+import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
 import type { HouseboatSettings } from '@/types/database';
 
 const padmaDetails = [
@@ -48,8 +49,10 @@ export default function PadmaTripAdminPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [readOnly, setReadOnly] = useState(false);
 
   useEffect(() => {
+    setReadOnly(isReadOnlyAdminForTable('houseboat_settings'));
     async function load() {
       const rows = await listRows<HouseboatSettings>('houseboat_settings');
       const row = rows[0] || null;
@@ -65,6 +68,7 @@ export default function PadmaTripAdminPage() {
   }, []);
 
   const save = async () => {
+    if (readOnly) return;
     setSaving(true);
     setMessage('');
     try {
@@ -112,16 +116,19 @@ export default function PadmaTripAdminPage() {
               value={price}
               onChange={(event) => setPrice(Number(event.target.value || 0))}
               placeholder="2000"
+              disabled={readOnly}
               className="max-w-md"
             />
             <p className="text-sm text-slate-500">
               Booking form total will be calculated as price per person x number of guests.
             </p>
           </div>
-          <Button onClick={save} disabled={saving} className="gap-2 bg-[hsl(197,80%,30%)] hover:bg-[hsl(197,80%,24%)]">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Save Padma Price
-          </Button>
+          {!readOnly && (
+            <Button onClick={save} disabled={saving} className="gap-2 bg-[hsl(197,80%,30%)] hover:bg-[hsl(197,80%,24%)]">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Save Padma Price
+            </Button>
+          )}
         </CardContent>
       </Card>
 

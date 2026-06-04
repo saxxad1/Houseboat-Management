@@ -487,7 +487,7 @@ Thank you.`;
                           {form.eventDate ? new Date(form.eventDate + 'T00:00:00').toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : 'dd/mm/yyyy'}
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-[calc(100vw-1rem)] max-w-sm p-0" align="start">
                         <AvailabilityCalendar 
                           inline 
                           selectedDate={form.eventDate} 
@@ -539,7 +539,7 @@ Thank you.`;
                           {form.checkin ? new Date(form.checkin + 'T00:00:00').toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : 'dd/mm/yyyy'}
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-[calc(100vw-1rem)] max-w-sm p-0" align="start">
                         <AvailabilityCalendar 
                           inline 
                           selectedDate={form.checkin} 
@@ -575,7 +575,7 @@ Thank you.`;
                           {form.checkout ? new Date(form.checkout + 'T00:00:00').toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : 'dd/mm/yyyy'}
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-[calc(100vw-1rem)] max-w-sm p-0" align="start">
                         <AvailabilityCalendar 
                           inline 
                           selectedDate={form.checkout} 

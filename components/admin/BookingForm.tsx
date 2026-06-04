@@ -149,13 +149,24 @@ export default function BookingForm({
     setSaving(true);
     setError('');
     try {
+      const selectedRoomDetails = form.season_type === 'haor' && form.booking_type === 'cabin_wise'
+        ? roomDetails
+            .filter((detail) => detail.roomId && detail.roomId !== 'none')
+            .map((detail) => ({
+              roomId: detail.roomId,
+              pax: Number(detail.pax || 1),
+            }))
+        : [];
+      const primaryRoomId = selectedRoomDetails[0]?.roomId || '';
+      const selectedGuestCount = selectedRoomDetails.reduce((sum, detail) => sum + detail.pax, 0);
       const padmaCheckoutDate = form.event_date
         ? new Date(new Date(form.event_date).getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
         : '';
       const payload = {
         ...form,
-        room_id: form.season_type === 'padma' || form.room_id === 'none' ? '' : form.room_id,
-        room_details: form.season_type === 'padma' ? null : roomDetails,
+        room_id: form.season_type === 'padma' || form.booking_type === 'full_boat' ? '' : primaryRoomId,
+        room_details: form.season_type === 'padma' || form.booking_type === 'full_boat' ? null : selectedRoomDetails,
+        number_of_guests: selectedGuestCount ? String(selectedGuestCount) : form.number_of_guests,
         package_id: form.package_id === 'none' ? '' : form.package_id,
         check_in_date: form.season_type === 'padma' ? form.event_date : form.check_in_date,
         check_out_date: form.season_type === 'padma' ? padmaCheckoutDate : form.check_out_date,
@@ -167,6 +178,7 @@ export default function BookingForm({
         id: booking?.id,
         booking_type: parsed.booking_type,
         room_id: parsed.room_id || null,
+        room_details: parsed.room_details || null,
         check_in_date: parsed.check_in_date,
         check_out_date: parsed.check_out_date,
         booking_status: parsed.booking_status,

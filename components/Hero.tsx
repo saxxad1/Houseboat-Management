@@ -84,12 +84,12 @@ export default function Hero({ onBookNow }: HeroProps) {
       </motion.div>
 
       {/* Content */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center px-4 sm:px-6 pt-32 pb-16 max-w-7xl mx-auto w-full">
+      <div className="relative z-10 flex-1 flex w-full max-w-7xl flex-col justify-center overflow-x-hidden px-4 pb-16 pt-32 sm:mx-auto sm:px-6">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="w-full"
+          className="w-full min-w-0"
         >
           {/* Badge */}
           <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full px-4 py-2 mb-6 border border-white/50 text-white bg-transparent">
@@ -98,21 +98,21 @@ export default function Hero({ onBookNow }: HeroProps) {
           </motion.div>
 
           {/* Title */}
-          <motion.h1 variants={itemVariants} className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-4 text-shadow-strong">
-            <span className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black font-serif italic text-white leading-[1.1] tracking-tight">{seasonData.hero.title}</span>
-            <span className="text-2xl sm:text-3xl md:text-4xl text-white/90 italic font-serif font-medium tracking-wide">- An Aesthetic Water Villa</span>
+          <motion.h1 variants={itemVariants} className="flex w-[calc(100vw-2rem)] max-w-full min-w-0 flex-col gap-2 text-shadow-strong sm:w-full sm:flex-row sm:items-baseline sm:gap-4 mb-4">
+            <span className="min-w-0 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black font-serif italic text-white leading-[1.1] tracking-tight break-words">{seasonData.hero.title}</span>
+            <span className="min-w-0 text-2xl sm:text-3xl md:text-4xl text-white/90 italic font-serif font-medium tracking-wide break-words">- An Aesthetic Water Villa</span>
           </motion.h1>
           
-          <motion.p variants={itemVariants} className="text-xl sm:text-3xl md:text-4xl text-[hsl(38,95%,65%)] font-bold mb-6 max-w-3xl leading-snug text-shadow-strong drop-shadow-lg">
+          <motion.p variants={itemVariants} className="w-[calc(100vw-2rem)] max-w-full text-xl sm:text-3xl md:text-4xl text-[hsl(38,95%,65%)] font-bold mb-6 leading-snug text-shadow-strong drop-shadow-lg break-words [overflow-wrap:anywhere] sm:w-full sm:max-w-3xl">
             {seasonData.hero.subtitle}
           </motion.p>
           
-          <motion.p variants={itemVariants} className="text-white/90 text-base sm:text-lg md:text-xl font-medium max-w-2xl leading-relaxed mb-10 text-shadow-soft">
+          <motion.p variants={itemVariants} className="w-[calc(100vw-2rem)] max-w-full text-white/90 text-base sm:text-lg md:text-xl font-medium leading-relaxed mb-10 text-shadow-soft break-words sm:w-full sm:max-w-2xl">
             {seasonData.hero.description}
           </motion.p>
 
           {/* CTA Buttons */}
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 mb-16 max-w-md sm:max-w-none">
+          <motion.div variants={itemVariants} className="flex w-[calc(100vw-2rem)] max-w-md flex-col gap-4 mb-16 sm:w-full sm:max-w-none sm:flex-row">
             <button
               onClick={onBookNow}
               className="flex-1 sm:flex-none px-8 py-4 bg-gradient-to-r from-[hsl(38,90%,55%)] to-[hsl(35,90%,45%)] hover:from-[hsl(38,90%,60%)] hover:to-[hsl(35,90%,50%)] text-white font-bold text-lg rounded-full shadow-xl shadow-[hsl(35,90%,48%)]/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2"
@@ -130,7 +130,7 @@ export default function Hero({ onBookNow }: HeroProps) {
           </motion.div>
 
           {/* Stats Glassmorphism Grid */}
-          <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 max-w-4xl">
+          <motion.div variants={itemVariants} className="grid w-[calc(100vw-2rem)] max-w-4xl grid-cols-2 gap-3 sm:w-full sm:gap-5 md:grid-cols-4">
             {stats.map((stat, i) => {
               const Icon = stat.icon;
               return (

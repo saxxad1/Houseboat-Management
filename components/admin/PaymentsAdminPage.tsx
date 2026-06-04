@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/table';
 import { deleteRow, fetchAdminDataset } from '@/lib/admin/data';
 import { paymentMethods, statusColors } from '@/lib/admin/constants';
+import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
 import type { Booking, Payment } from '@/types/database';
 
 export default function PaymentsAdminPage() {
@@ -35,6 +36,7 @@ export default function PaymentsAdminPage() {
   const [toDate, setToDate] = useState('');
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Payment | null>(null);
+  const [readOnly, setReadOnly] = useState(false);
 
   const load = async () => {
     const data = await fetchAdminDataset();
@@ -43,6 +45,7 @@ export default function PaymentsAdminPage() {
   };
 
   useEffect(() => {
+    setReadOnly(isReadOnlyAdminForTable('payments'));
     load();
   }, []);
 
@@ -61,13 +64,14 @@ export default function PaymentsAdminPage() {
   const totalDue = bookings.reduce((sum, booking) => sum + Number(booking.due_amount || 0), 0);
 
   const remove = async (payment: Payment) => {
+    if (readOnly) return;
     if (!window.confirm('Delete this payment?')) return;
     await deleteRow('payments', payment.id);
     await load();
   };
 
   return (
-    <div className="space-y-5">
+    <div className="min-w-0 space-y-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <Card><CardContent className="p-5"><div className="text-sm text-slate-500">Total paid</div><div className="mt-2 text-2xl font-black">৳{totalPaid.toLocaleString()}</div></CardContent></Card>
         <Card><CardContent className="p-5"><div className="text-sm text-slate-500">Total due</div><div className="mt-2 text-2xl font-black text-amber-600">৳{totalDue.toLocaleString()}</div></CardContent></Card>
@@ -76,11 +80,13 @@ export default function PaymentsAdminPage() {
       <Card>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="text-xl">Payment records</CardTitle>
-          <Button onClick={() => { setSelected(null); setOpen(true); }} className="w-full gap-2 sm:w-auto"><Plus className="h-4 w-4" />New Payment</Button>
+          {!readOnly && (
+            <Button onClick={() => { setSelected(null); setOpen(true); }} className="w-full gap-2 sm:w-auto"><Plus className="h-4 w-4" />New Payment</Button>
+          )}
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
-          <div className="mb-4 grid gap-3 md:grid-cols-5">
-            <div className="relative md:col-span-2">
+          <div className="mb-4 grid min-w-0 gap-3 md:grid-cols-5">
+            <div className="relative min-w-0 md:col-span-2">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Booking code or transaction" className="pl-9" />
             </div>
@@ -104,7 +110,7 @@ export default function PaymentsAdminPage() {
                   <TableHead>Transaction</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Note</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  {!readOnly && <TableHead className="text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -116,19 +122,23 @@ export default function PaymentsAdminPage() {
                     <TableCell>{payment.transaction_id || '-'}</TableCell>
                     <TableCell>{payment.payment_date}</TableCell>
                     <TableCell>{payment.note || '-'}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => { setSelected(payment); setOpen(true); }}>Edit</Button>
-                      <Button variant="ghost" size="sm" className="text-red-600" onClick={() => remove(payment)}>Delete</Button>
-                    </TableCell>
+                    {!readOnly && (
+                      <TableCell className="text-right">
+                        <div className="inline-flex flex-wrap justify-end gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => { setSelected(payment); setOpen(true); }}>Edit</Button>
+                          <Button variant="ghost" size="sm" className="text-red-600" onClick={() => remove(payment)}>Delete</Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
-                )) : <TableRow><TableCell colSpan={7} className="py-10 text-center text-slate-500">No payments found</TableCell></TableRow>}
+                )) : <TableRow><TableCell colSpan={readOnly ? 6 : 7} className="py-10 text-center text-slate-500">No payments found</TableCell></TableRow>}
               </TableBody>
             </Table>
           </div>
         </CardContent>
       </Card>
 
-      <PaymentForm open={open} onOpenChange={setOpen} payment={selected} bookings={bookings} onSaved={load} />
+      {!readOnly && <PaymentForm open={open} onOpenChange={setOpen} payment={selected} bookings={bookings} onSaved={load} />}
     </div>
   );
 }

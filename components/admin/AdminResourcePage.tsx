@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { deleteRow, listRows, saveRow, type AdminRow } from '@/lib/admin/data';
-import { isReadOnlyAdmin } from '@/lib/admin/permissions';
+import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
 import { statusColors } from '@/lib/admin/constants';
 import { uploadHouseboatFile } from '@/lib/supabase/storage';
 import { isVideoUrl } from '@/lib/videoUtils';
@@ -250,7 +250,7 @@ export default function AdminResourcePage({
   };
 
   useEffect(() => {
-    setReadOnly(isReadOnlyAdmin());
+    setReadOnly(isReadOnlyAdminForTable(table));
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table]);
@@ -414,7 +414,7 @@ export default function AdminResourcePage({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="min-w-0 space-y-5">
       {renderTop?.(rows)}
       <Card>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -430,7 +430,7 @@ export default function AdminResourcePage({
           )}
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center flex-wrap">
+          <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search..." className="pl-9" />
@@ -451,10 +451,10 @@ export default function AdminResourcePage({
                   </SelectContent>
                 </Select>
                 {dateFilter === 'custom' && (
-                  <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
-                    <Input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="w-[140px]" />
+                  <div className="flex w-full flex-col gap-2 animate-in fade-in slide-in-from-right-4 sm:w-auto sm:flex-row sm:items-center">
+                    <Input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="w-full sm:w-[140px]" />
                     <span className="text-sm text-slate-400">to</span>
-                    <Input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="w-[140px]" />
+                    <Input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="w-full sm:w-[140px]" />
                   </div>
                 )}
               </div>

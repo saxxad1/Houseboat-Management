@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { normalizeSeason, seasonMeta, type SeasonType } from '@/data/seasonalData';
 import { deleteRow, fetchAdminDataset, saveRow, rangesOverlap } from '@/lib/admin/data';
 import { statusColors } from '@/lib/admin/constants';
+import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
 import type { AvailabilityBlock, AvailabilityStatus, Booking, Customer, EventSlot, EventSlotStatus, Room, TripSlot } from '@/types/database';
 
 const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -68,6 +69,8 @@ export default function AvailabilityCalendar() {
   const [eventSlotStatus, setEventSlotStatus] = useState<EventSlotStatus>('available');
   const [reason, setReason] = useState('');
   const [note, setNote] = useState('');
+  const [canWriteTripSlots, setCanWriteTripSlots] = useState(false);
+  const [canWriteAvailabilityBlocks, setCanWriteAvailabilityBlocks] = useState(false);
 
   const load = async () => {
     const data = await fetchAdminDataset();
@@ -81,6 +84,8 @@ export default function AvailabilityCalendar() {
   };
 
   useEffect(() => {
+    setCanWriteTripSlots(!isReadOnlyAdminForTable('trip_slots'));
+    setCanWriteAvailabilityBlocks(!isReadOnlyAdminForTable('availability_blocks'));
     load();
   }, []);
 
@@ -162,6 +167,8 @@ export default function AvailabilityCalendar() {
   };
 
   const blockDate = async (status: 'blocked' | 'maintenance' | 'fully_booked' | 'available') => {
+    if (activeSeason === 'haor' && !canWriteTripSlots) return;
+    if (activeSeason !== 'haor' && !canWriteAvailabilityBlocks) return;
     if (activeSeason === 'haor') {
       const startDate = selectedDates[0];
       const endDate = selectedDates[selectedDates.length - 1];
@@ -196,6 +203,7 @@ export default function AvailabilityCalendar() {
   };
 
   const saveSlot = async () => {
+    if (!canWriteAvailabilityBlocks) return;
     const availabilityStatus: AvailabilityStatus =
       eventSlotStatus === 'booked'
         ? 'fully_booked'
@@ -223,6 +231,7 @@ export default function AvailabilityCalendar() {
   };
 
   const releaseSlot = async () => {
+    if (!canWriteAvailabilityBlocks) return;
     for (const date of selectedDates) {
       const existing = blocks.find((block) =>
         block.date === date && block.event_slot === eventSlot && (block.season_type || 'haor') === 'padma'
@@ -235,6 +244,7 @@ export default function AvailabilityCalendar() {
   };
 
   const createPadmaTrip = async () => {
+    if (!canWriteTripSlots) return;
     const startDate = selectedDates[0];
     const existing = tripSlots.find(slot => slot.start_date === startDate && slot.duration_label === 'Padma Day Trip');
     await saveRow<TripSlot>('trip_slots', {
@@ -250,6 +260,7 @@ export default function AvailabilityCalendar() {
   };
 
   const releasePadmaTrip = async () => {
+    if (!canWriteTripSlots) return;
     const startDate = selectedDates[0];
     const existing = tripSlots.find(slot => slot.start_date === startDate && slot.duration_label === 'Padma Day Trip');
     if (existing) {
@@ -259,6 +270,8 @@ export default function AvailabilityCalendar() {
   };
 
   const releaseDate = async () => {
+    if (activeSeason === 'haor' && !canWriteTripSlots) return;
+    if (activeSeason !== 'haor' && !canWriteAvailabilityBlocks) return;
     if (activeSeason === 'haor') {
       const startDate = selectedDates[0];
       const existing = tripSlots.find(slot => slot.start_date === startDate || (startDate >= slot.start_date && startDate <= slot.end_date));
@@ -317,8 +330,8 @@ export default function AvailabilityCalendar() {
   };
 
   return (
-    <div className="grid gap-5 xl:grid-cols-3">
-      <Card className="xl:col-span-2">
+    <div className="grid min-w-0 gap-5 xl:grid-cols-3">
+      <Card className="min-w-0 xl:col-span-2">
         <CardHeader className="flex flex-row items-center justify-between gap-3 p-4 sm:p-6">
           <CardTitle className="text-base sm:text-xl">{months[month]} {year}</CardTitle>
           <div className="flex gap-2">
@@ -326,8 +339,8 @@ export default function AvailabilityCalendar() {
             <Button variant="outline" size="icon" onClick={() => setCurrentDate(new Date(year, month + 1, 1))}><ChevronRight className="h-4 w-4" /></Button>
           </div>
         </CardHeader>
-        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+        <CardContent className="min-w-0 p-2 pt-0 xs:p-3 sm:p-6 sm:pt-0">
+          <div className="grid min-w-0 grid-cols-7 gap-1 sm:gap-2">
             {weekdays.map((day) => <div key={day} className="text-center text-xs font-semibold text-slate-500">{day}</div>)}
             {Array.from({ length: firstDay }).map((_, index) => <div key={`blank-${index}`} />)}
             {Array.from({ length: daysInMonth }).map((_, index) => {
@@ -360,7 +373,7 @@ export default function AvailabilityCalendar() {
                   key={key}
                   type="button"
                   onClick={() => toggleDate(key)}
-                  className={`relative min-w-0 overflow-hidden min-h-[58px] rounded-lg border p-1 text-left transition-all hover:shadow-sm sm:min-h-[86px] sm:p-2 
+                  className={`relative min-w-0 overflow-hidden min-h-[52px] rounded-lg border p-1 text-left transition-all hover:shadow-sm sm:min-h-[86px] sm:p-2
                     ${selectedDates.includes(key) ? 'border-[hsl(197,80%,30%)] ring-2 ring-[hsl(197,80%,30%)]/20 z-10' : tripSlot ? 'border-indigo-300' : 'border-slate-200'} 
                     ${isJoinedWithPrev ? '!rounded-tl-none !rounded-bl-none border-l-0' : ''} 
                     ${isJoinedWithNext ? '!rounded-tr-none !rounded-br-none border-r-0' : ''}
@@ -397,7 +410,7 @@ export default function AvailabilityCalendar() {
         </CardHeader>
         <CardContent className="space-y-6 pt-4">
           <div className="space-y-2">
-            {activeSeason === 'padma' && (
+            {activeSeason === 'padma' && canWriteAvailabilityBlocks && (
               <div className="grid gap-2 sm:grid-cols-2">
                 <Select value={eventSlot} onValueChange={(value) => setEventSlot(value as EventSlot)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -413,31 +426,44 @@ export default function AvailabilityCalendar() {
                 </Select>
               </div>
             )}
-            <Input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Reason" />
-            <Textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Note" />
-            {activeSeason === 'padma' && (
+            {(canWriteTripSlots || canWriteAvailabilityBlocks) && (
+              <>
+                <Input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Reason" />
+                <Textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Note" />
+              </>
+            )}
+            {activeSeason === 'padma' && canWriteAvailabilityBlocks && (
               <div className="grid gap-2 sm:grid-cols-2">
                 <Button variant="outline" onClick={saveSlot}>Save slot status</Button>
                 <Button variant="secondary" disabled={!selectedSlotBlock} onClick={releaseSlot}>Release slot</Button>
               </div>
             )}
-            {activeSeason === 'padma' && (
+            {activeSeason === 'padma' && canWriteTripSlots && (
               <div className="grid gap-2 sm:grid-cols-2 mt-2">
                 <Button variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={createPadmaTrip}>Create Padma Trip</Button>
                 <Button variant="secondary" onClick={releasePadmaTrip}>Release Padma Trip</Button>
               </div>
             )}
-            <div className={`grid gap-2 ${activeSeason === 'haor' ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>
-              {activeSeason === 'haor' && (
-                <Button variant="default" onClick={() => blockDate('available')} className="bg-[hsl(197,80%,35%)] hover:bg-[hsl(197,80%,30%)]">Create Trip</Button>
-              )}
-              <Button variant="outline" onClick={() => blockDate('blocked')}>Block date</Button>
-              <Button variant="outline" onClick={() => blockDate('maintenance')}>Maintenance</Button>
-              <Button variant="outline" onClick={() => blockDate('fully_booked')}>Fully Booked</Button>
-            </div>
-            <Button variant="secondary" className="w-full" disabled={activeSeason === 'haor' ? !tripSlots.some(t => t.start_date === selectedDates[0] || (selectedDates[0] >= t.start_date && selectedDates[0] <= t.end_date)) : !selectedBlock} onClick={releaseDate}>
-              {activeSeason === 'haor' ? 'Delete Trip Slot' : 'Release blocked date'}
-            </Button>
+            {((activeSeason === 'haor' && canWriteTripSlots) || (activeSeason !== 'haor' && canWriteAvailabilityBlocks)) && (
+              <div className={`grid gap-2 ${activeSeason === 'haor' ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>
+                {activeSeason === 'haor' && (
+                  <Button variant="default" onClick={() => blockDate('available')} className="bg-[hsl(197,80%,35%)] hover:bg-[hsl(197,80%,30%)]">Create Trip</Button>
+                )}
+                <Button variant="outline" onClick={() => blockDate('blocked')}>Block date</Button>
+                <Button variant="outline" onClick={() => blockDate('maintenance')}>Maintenance</Button>
+                <Button variant="outline" onClick={() => blockDate('fully_booked')}>Fully Booked</Button>
+              </div>
+            )}
+            {((activeSeason === 'haor' && canWriteTripSlots) || (activeSeason !== 'haor' && canWriteAvailabilityBlocks)) && (
+              <Button variant="secondary" className="w-full" disabled={activeSeason === 'haor' ? !tripSlots.some(t => t.start_date === selectedDates[0] || (selectedDates[0] >= t.start_date && selectedDates[0] <= t.end_date)) : !selectedBlock} onClick={releaseDate}>
+                {activeSeason === 'haor' ? 'Delete Trip Slot' : 'Release blocked date'}
+              </Button>
+            )}
+            {!canWriteTripSlots && !canWriteAvailabilityBlocks && (
+              <p className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500">
+                Read-only access for this calendar.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

@@ -24,6 +24,7 @@ interface BookingTableProps {
   onEdit: (booking: Booking) => void;
   onCancel: (booking: Booking) => void;
   onDelete: (booking: Booking) => void;
+  readOnly?: boolean;
 }
 
 export default function BookingTable({
@@ -34,6 +35,7 @@ export default function BookingTable({
   onEdit,
   onCancel,
   onDelete,
+  readOnly = false,
 }: BookingTableProps) {
   const customerMap = new Map(customers.map((customer) => [customer.id, customer]));
   const roomMap = new Map(rooms.map((room) => [room.id, room]));
@@ -52,7 +54,7 @@ export default function BookingTable({
               <TableHead className="font-bold text-slate-500 whitespace-nowrap">Amount</TableHead>
               <TableHead className="font-bold text-slate-500 whitespace-nowrap">Payment</TableHead>
               <TableHead className="font-bold text-slate-500 whitespace-nowrap">Status</TableHead>
-              <TableHead className="font-bold text-slate-500 whitespace-nowrap text-right">Actions</TableHead>
+              {!readOnly && <TableHead className="font-bold text-slate-500 whitespace-nowrap text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -106,44 +108,46 @@ export default function BookingTable({
                         {bookingStatusLabels[booking.booking_status]}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <TooltipProvider delayDuration={200}>
-                        <div className="inline-flex gap-1 bg-slate-100/50 rounded-lg p-1 backdrop-blur-sm">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white hover:shadow-sm" onClick={() => onEdit(booking)}>
-                                <Edit2 className="h-4 w-4 text-slate-500" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit</TooltipContent>
-                          </Tooltip>
-                          {booking.booking_status !== 'cancelled' && (
+                    {!readOnly && (
+                      <TableCell className="text-right">
+                        <TooltipProvider delayDuration={200}>
+                          <div className="inline-flex gap-1 bg-slate-100/50 rounded-lg p-1 backdrop-blur-sm">
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white hover:shadow-sm" onClick={() => onCancel(booking)}>
-                                  <XCircle className="h-4 w-4 text-slate-500" />
+                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white hover:shadow-sm" onClick={() => onEdit(booking)}>
+                                  <Edit2 className="h-4 w-4 text-slate-500" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Cancel</TooltipContent>
+                              <TooltipContent>Edit</TooltipContent>
                             </Tooltip>
-                          )}
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-rose-50 hover:shadow-sm" onClick={() => onDelete(booking)}>
-                                <Trash2 className="h-4 w-4 text-rose-500" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Delete</TooltipContent>
-                          </Tooltip>
-                        </div>
-                      </TooltipProvider>
-                    </TableCell>
+                            {booking.booking_status !== 'cancelled' && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white hover:shadow-sm" onClick={() => onCancel(booking)}>
+                                    <XCircle className="h-4 w-4 text-slate-500" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Cancel</TooltipContent>
+                              </Tooltip>
+                            )}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-rose-50 hover:shadow-sm" onClick={() => onDelete(booking)}>
+                                  <Trash2 className="h-4 w-4 text-rose-500" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Delete</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TooltipProvider>
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={10} className="py-16 text-center">
+                <TableCell colSpan={readOnly ? 7 : 8} className="py-16 text-center">
                   <div className="text-slate-400 font-medium">No bookings found</div>
                 </TableCell>
               </TableRow>

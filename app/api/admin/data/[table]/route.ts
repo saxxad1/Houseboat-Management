@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getVerifiedAdminContext, isAdminTableName, requireWritableAdmin } from '@/lib/admin/serverAuth';
 import type { AdminRow } from '@/lib/admin/data';
+import type { AdminTableName } from '@/types/database';
 
 type RouteContext = {
   params: Promise<{ table: string }>;
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   if (!isAdminTableName(table)) {
     return NextResponse.json({ error: 'Invalid admin table' }, { status: 400 });
   }
-  const writeError = requireWritableAdmin(admin.profile?.role);
+  const writeError = requireWritableAdmin(admin.profile?.role, table as AdminTableName);
   if (writeError) return writeError;
   const roleError = requireOwnerAdmin(table, admin.profile?.role);
   if (roleError) return roleError;
@@ -118,7 +119,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   if (!isAdminTableName(table)) {
     return NextResponse.json({ error: 'Invalid admin table' }, { status: 400 });
   }
-  const writeError = requireWritableAdmin(admin.profile?.role);
+  const writeError = requireWritableAdmin(admin.profile?.role, table as AdminTableName);
   if (writeError) return writeError;
   const roleError = requireOwnerAdmin(table, admin.profile?.role);
   if (roleError) return roleError;

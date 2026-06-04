@@ -131,7 +131,7 @@ export async function listRows<T extends AdminRow>(table: AdminTableName) {
 }
 
 export async function saveRow<T extends AdminRow>(table: AdminTableName, row: Partial<T> & { id?: string }) {
-  assertWritableAdmin();
+  assertWritableAdmin(table);
   const timestamp = now();
   const payload = {
     ...row,
@@ -161,7 +161,7 @@ export async function saveRow<T extends AdminRow>(table: AdminTableName, row: Pa
 }
 
 export async function deleteRow(table: AdminTableName, id: string) {
-  assertWritableAdmin();
+  assertWritableAdmin(table);
   const supabase = getSupabaseBrowserClient();
 
   if (!supabase) {
@@ -184,6 +184,23 @@ export function generateBookingCode() {
 
 export function rangesOverlap(startA: string, endA: string, startB: string, endB: string) {
   return startA < endB && startB < endA;
+}
+
+function getBookingRoomIds(booking: Partial<Booking>) {
+  const roomIds = new Set<string>();
+  if (booking.room_id) {
+    roomIds.add(booking.room_id);
+  }
+
+  if (Array.isArray(booking.room_details)) {
+    booking.room_details.forEach((detail) => {
+      if (detail?.roomId) {
+        roomIds.add(detail.roomId);
+      }
+    });
+  }
+
+  return roomIds;
 }
 
 export function hasBookingConflict(candidate: Partial<Booking>, bookings: Booking[]) {
@@ -213,7 +230,9 @@ export function hasBookingConflict(candidate: Partial<Booking>, bookings: Bookin
       return true;
     }
 
-    return Boolean(candidate.room_id && booking.room_id && candidate.room_id === booking.room_id);
+    const candidateRoomIds = getBookingRoomIds(candidate);
+    const bookedRoomIds = getBookingRoomIds(booking);
+    return Array.from(candidateRoomIds).some((roomId) => bookedRoomIds.has(roomId));
   });
 }
 

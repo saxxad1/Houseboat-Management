@@ -46,6 +46,10 @@ export const bookingSchema = z
     trip_slot_id: z.string().optional().nullable(),
   })
   .superRefine((value, ctx) => {
+    const selectedRoomDetails = Array.isArray(value.room_details)
+      ? value.room_details.filter((detail) => detail?.roomId && detail.roomId !== 'none')
+      : [];
+
     if (value.check_out_date <= value.check_in_date) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -62,7 +66,12 @@ export const bookingSchema = z
       });
     }
 
-    if (value.season_type === 'haor' && value.booking_type === 'cabin_wise' && !value.room_id) {
+    if (
+      value.season_type === 'haor' &&
+      value.booking_type === 'cabin_wise' &&
+      !value.room_id &&
+      selectedRoomDetails.length === 0
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['room_id'],

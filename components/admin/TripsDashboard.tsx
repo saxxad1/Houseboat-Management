@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Package, Users, Wallet, ReceiptText, ArrowRight, Trash2 } from 'lucide-react';
 import { currencyFormatter } from '@/lib/admin/constants';
+import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
 
 interface TripStat {
   trip: TripSlot;
@@ -23,8 +24,10 @@ interface TripStat {
 export function TripsDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<TripStat[]>([]);
+  const [readOnly, setReadOnly] = useState(false);
 
   useEffect(() => {
+    setReadOnly(isReadOnlyAdminForTable('trip_slots'));
     const load = async () => {
       const data = await fetchAdminDataset();
       const { trip_slots, bookings, income, expenses } = data;
@@ -80,6 +83,7 @@ export function TripsDashboard() {
   }, []);
 
   const handleDelete = async (tripId: string) => {
+    if (readOnly) return;
     if (!window.confirm('Are you sure you want to delete this trip? This action cannot be undone.')) {
       return;
     }
@@ -161,9 +165,11 @@ export function TripsDashboard() {
                       View Details <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
-                  <Button variant="outline" className="text-red-500 hover:text-red-600 hover:bg-red-50 px-3" onClick={() => handleDelete(trip.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {!readOnly && (
+                    <Button variant="outline" className="text-red-500 hover:text-red-600 hover:bg-red-50 px-3" onClick={() => handleDelete(trip.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

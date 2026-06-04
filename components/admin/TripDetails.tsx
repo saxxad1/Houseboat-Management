@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
 
 interface ManualBooking {
   id: string;
@@ -57,8 +58,10 @@ export function TripDetails({ id }: { id: string }) {
   const [expenseForm, setExpenseForm] = useState({ title: '', category: 'food', amount: '', expense_date: new Date().toISOString().slice(0,10), vendor_name: '', note: '' });
   
   const [saving, setSaving] = useState(false);
+  const [readOnly, setReadOnly] = useState(false);
   
   const handleSaveQuickBooking = async () => {
+    if (readOnly) return;
     if (!trip) return;
     setSaving(true);
     try {
@@ -91,6 +94,7 @@ export function TripDetails({ id }: { id: string }) {
   };
 
   const handleSaveExpense = async () => {
+    if (readOnly) return;
     if (!trip) return;
     setSaving(true);
     try {
@@ -152,6 +156,7 @@ export function TripDetails({ id }: { id: string }) {
     }, [id, router]);
 
   useEffect(() => {
+    setReadOnly(isReadOnlyAdminForTable('trip_slots'));
     loadData();
   }, [loadData]);
 
@@ -261,7 +266,7 @@ export function TripDetails({ id }: { id: string }) {
                     <TableHead>Guests</TableHead>
                     <TableHead>Total</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
+                    {!readOnly && <TableHead className="text-right">Action</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -282,24 +287,26 @@ export function TripDetails({ id }: { id: string }) {
                             Pending
                           </span>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={async () => {
-                            if (!trip) return;
-                            const newBookings = manualBookings.filter(b => b.id !== booking.id);
-                            const payload = { manualBookings: newBookings, manualExpenses };
-                            await saveRow('trip_slots', { id: trip.id, note: JSON.stringify(payload) });
-                            setManualBookings(newBookings);
-                            toast.success('Removed');
-                          }}>
-                            Remove
-                          </Button>
-                        </TableCell>
+                        {!readOnly && (
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="sm" onClick={async () => {
+                              if (!trip) return;
+                              const newBookings = manualBookings.filter(b => b.id !== booking.id);
+                              const payload = { manualBookings: newBookings, manualExpenses };
+                              await saveRow('trip_slots', { id: trip.id, note: JSON.stringify(payload) });
+                              setManualBookings(newBookings);
+                              toast.success('Removed');
+                            }}>
+                              Remove
+                            </Button>
+                          </TableCell>
+                        )}
                       </TableRow>
                     );
                   })}
                   {manualBookings.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center text-slate-500">
+                      <TableCell colSpan={readOnly ? 5 : 6} className="h-24 text-center text-slate-500">
                         No manual bookings found.
                       </TableCell>
                     </TableRow>
@@ -307,11 +314,13 @@ export function TripDetails({ id }: { id: string }) {
                 </TableBody>
               </Table>
             </div>
-            <div className="p-4 border-t border-slate-100 flex justify-end">
-              <Button size="sm" variant="outline" onClick={() => setIsBookingModalOpen(true)}>
-                Add Booking
-              </Button>
-            </div>
+            {!readOnly && (
+              <div className="p-4 border-t border-slate-100 flex justify-end">
+                <Button size="sm" variant="outline" onClick={() => setIsBookingModalOpen(true)}>
+                  Add Booking
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
 
@@ -326,7 +335,7 @@ export function TripDetails({ id }: { id: string }) {
                     <TableHead>Category</TableHead>
                     <TableHead>Vendor</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
+                    {!readOnly && <TableHead className="text-right">Action</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -339,23 +348,25 @@ export function TripDetails({ id }: { id: string }) {
                       <TableCell className="text-right font-semibold text-red-600">
                         -{currencyFormatter.format(Number(exp.amount || 0))}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={async () => {
-                          if (!trip) return;
-                          const newExpenses = manualExpenses.filter(e => e.id !== exp.id);
-                          const payload = { manualBookings, manualExpenses: newExpenses };
-                          await saveRow('trip_slots', { id: trip.id, note: JSON.stringify(payload) });
-                          setManualExpenses(newExpenses);
-                          toast.success('Removed');
-                        }}>
-                          Remove
-                        </Button>
-                      </TableCell>
+                      {!readOnly && (
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" onClick={async () => {
+                            if (!trip) return;
+                            const newExpenses = manualExpenses.filter(e => e.id !== exp.id);
+                            const payload = { manualBookings, manualExpenses: newExpenses };
+                            await saveRow('trip_slots', { id: trip.id, note: JSON.stringify(payload) });
+                            setManualExpenses(newExpenses);
+                            toast.success('Removed');
+                          }}>
+                            Remove
+                          </Button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                   {manualExpenses.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center text-slate-500">
+                      <TableCell colSpan={readOnly ? 5 : 6} className="h-24 text-center text-slate-500">
                         No expenses recorded for this trip.
                       </TableCell>
                     </TableRow>
@@ -363,11 +374,13 @@ export function TripDetails({ id }: { id: string }) {
                 </TableBody>
               </Table>
             </div>
-            <div className="p-4 border-t border-slate-100 flex justify-end">
-              <Button size="sm" variant="outline" onClick={() => setIsExpenseModalOpen(true)}>
-                Add Expense
-              </Button>
-            </div>
+            {!readOnly && (
+              <div className="p-4 border-t border-slate-100 flex justify-end">
+                <Button size="sm" variant="outline" onClick={() => setIsExpenseModalOpen(true)}>
+                  Add Expense
+                </Button>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </Card>

@@ -5,13 +5,16 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { listRows, saveRow } from '@/lib/admin/data';
+import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
 import type { WebsiteContent } from '@/types/database';
 
 export default function PackagesSectionToggle() {
   const [isVisible, setIsVisible] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [readOnly, setReadOnly] = useState(false);
 
   useEffect(() => {
+    setReadOnly(isReadOnlyAdminForTable('website_content'));
     const fetchStatus = async () => {
       try {
         const content = await listRows<WebsiteContent>('website_content');
@@ -26,6 +29,7 @@ export default function PackagesSectionToggle() {
   }, []);
 
   const handleToggle = async (checked: boolean) => {
+    if (readOnly) return;
     try {
       setIsLoading(true);
       const content = await listRows<WebsiteContent>('website_content');
@@ -58,7 +62,7 @@ export default function PackagesSectionToggle() {
           id="packages-section-visibility"
           checked={isVisible}
           onCheckedChange={handleToggle}
-          disabled={isLoading}
+          disabled={isLoading || readOnly}
         />
         <Label htmlFor="packages-section-visibility" className="cursor-pointer font-medium">
           {isVisible ? 'Section ON' : 'Section OFF'}

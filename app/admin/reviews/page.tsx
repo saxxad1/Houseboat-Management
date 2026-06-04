@@ -19,6 +19,7 @@ import ReviewForm from './components/ReviewForm';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
 
 const reviewsHiddenSectionKey = 'reviews_section_hidden';
 
@@ -30,6 +31,8 @@ export default function ReviewsAdminPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const [reviewsReadOnly, setReviewsReadOnly] = useState(false);
+  const [contentReadOnly, setContentReadOnly] = useState(false);
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -48,10 +51,13 @@ export default function ReviewsAdminPage() {
   }, []);
 
   useEffect(() => {
+    setReviewsReadOnly(isReadOnlyAdminForTable('reviews'));
+    setContentReadOnly(isReadOnlyAdminForTable('website_content'));
     fetchReviews();
   }, [fetchReviews]);
 
   const handleDelete = async (id: string) => {
+    if (reviewsReadOnly) return;
     if (!confirm('Are you sure you want to delete this review?')) return;
     try {
       await deleteRow('reviews', id);
@@ -63,16 +69,19 @@ export default function ReviewsAdminPage() {
   };
 
   const handleEdit = (review: Review) => {
+    if (reviewsReadOnly) return;
     setEditingReview(review);
     setIsFormOpen(true);
   };
 
   const handleAddNew = () => {
+    if (reviewsReadOnly) return;
     setEditingReview(null);
     setIsFormOpen(true);
   };
 
   const handleFacebookSync = async () => {
+    if (reviewsReadOnly) return;
     try {
       setIsSyncing(true);
       const supabase = getSupabaseBrowserClient();
@@ -106,6 +115,7 @@ export default function ReviewsAdminPage() {
   };
 
   const handleToggleSection = async (checked: boolean) => {
+    if (contentReadOnly) return;
     try {
       setIsToggleLoading(true);
       const content = await listRows<WebsiteContent>('website_content');
@@ -138,26 +148,30 @@ export default function ReviewsAdminPage() {
               id="section-visibility"
               checked={isSectionVisible}
               onCheckedChange={handleToggleSection}
-              disabled={isToggleLoading}
+              disabled={isToggleLoading || contentReadOnly}
             />
             <Label htmlFor="section-visibility" className="cursor-pointer font-medium">
               {isSectionVisible ? 'Section ON' : 'Section OFF'}
             </Label>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleFacebookSync}
-            disabled={isSyncing}
-            className="gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-            Sync Facebook
-          </Button>
-          <Button onClick={handleAddNew} className="bg-[hsl(197,80%,30%)] hover:bg-[hsl(197,80%,25%)]">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Review
-          </Button>
+          {!reviewsReadOnly && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleFacebookSync}
+                disabled={isSyncing}
+                className="gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                Sync Facebook
+              </Button>
+              <Button onClick={handleAddNew} className="bg-[hsl(197,80%,30%)] hover:bg-[hsl(197,80%,25%)]">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Review
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -170,19 +184,19 @@ export default function ReviewsAdminPage() {
               <TableHead>Source</TableHead>
               <TableHead className="w-1/3">Review</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              {!reviewsReadOnly && <TableHead className="text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10 text-slate-500">
+                <TableCell colSpan={reviewsReadOnly ? 5 : 6} className="text-center py-10 text-slate-500">
                   Loading reviews...
                 </TableCell>
               </TableRow>
             ) : reviews.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10 text-slate-500">
+                <TableCell colSpan={reviewsReadOnly ? 5 : 6} className="text-center py-10 text-slate-500">
                   {'No reviews found. Click "Add Review" to create one.'}
                 </TableCell>
               </TableRow>
@@ -245,16 +259,18 @@ export default function ReviewsAdminPage() {
                       </Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(review)}>
-                        <Edit2 className="w-4 h-4 text-slate-600" />
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDelete(review.id)}>
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </TableCell>
+                  {!reviewsReadOnly && (
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(review)}>
+                          <Edit2 className="w-4 h-4 text-slate-600" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleDelete(review.id)}>
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}
@@ -262,7 +278,7 @@ export default function ReviewsAdminPage() {
         </Table>
       </div>
 
-      {isFormOpen && (
+      {isFormOpen && !reviewsReadOnly && (
         <ReviewForm
           open={isFormOpen}
           onOpenChange={setIsFormOpen}
