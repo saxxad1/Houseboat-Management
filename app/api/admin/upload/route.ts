@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getVerifiedAdminContext } from '@/lib/admin/serverAuth';
+import { getVerifiedAdminContext, requireWritableAdmin } from '@/lib/admin/serverAuth';
 
 const bucketName = 'houseboat-media';
 const maxFileSize = 8 * 1024 * 1024;
@@ -18,6 +18,8 @@ function safeFolder(value: FormDataEntryValue | null) {
 export async function POST(request: NextRequest) {
   const admin = await getVerifiedAdminContext(request);
   if ('error' in admin) return admin.error;
+  const writeError = requireWritableAdmin(admin.profile?.role);
+  if (writeError) return writeError;
 
   const formData = await request.formData();
   const file = formData.get('file');

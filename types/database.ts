@@ -1,6 +1,6 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
-export type AdminRole = 'admin' | 'manager';
+export type AdminRole = 'admin' | 'manager' | 'viewer';
 export type RoomStatus = 'active' | 'inactive' | 'maintenance';
 export type PackageStatus = 'active' | 'inactive';
 export type BookingType = 'full_boat' | 'cabin_wise';

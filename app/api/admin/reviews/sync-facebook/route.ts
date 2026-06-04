@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getVerifiedAdminContext } from '@/lib/admin/serverAuth';
+import { getVerifiedAdminContext, requireWritableAdmin } from '@/lib/admin/serverAuth';
 import { syncFacebookReviews } from '@/lib/facebookReviews';
 
 export async function POST(request: NextRequest) {
   const admin = await getVerifiedAdminContext(request);
   if ('error' in admin) return admin.error;
+  const writeError = requireWritableAdmin(admin.profile?.role);
+  if (writeError) return writeError;
 
   try {
     const result = await syncFacebookReviews(admin.supabase as any);

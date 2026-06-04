@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getVerifiedAdminContext, isAdminTableName } from '@/lib/admin/serverAuth';
+import { getVerifiedAdminContext, isAdminTableName, requireWritableAdmin } from '@/lib/admin/serverAuth';
 import type { AdminRow } from '@/lib/admin/data';
 
 type RouteContext = {
@@ -36,8 +36,6 @@ export async function GET(request: NextRequest, context: RouteContext) {
   if (!isAdminTableName(table)) {
     return NextResponse.json({ error: 'Invalid admin table' }, { status: 400 });
   }
-  const roleError = requireOwnerAdmin(table, admin.profile?.role);
-  if (roleError) return roleError;
 
   const db = admin.supabase as any;
   const { data, error } = await db.from(table).select('*');
@@ -56,6 +54,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
   if (!isAdminTableName(table)) {
     return NextResponse.json({ error: 'Invalid admin table' }, { status: 400 });
   }
+  const writeError = requireWritableAdmin(admin.profile?.role);
+  if (writeError) return writeError;
   const roleError = requireOwnerAdmin(table, admin.profile?.role);
   if (roleError) return roleError;
 
@@ -118,6 +118,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   if (!isAdminTableName(table)) {
     return NextResponse.json({ error: 'Invalid admin table' }, { status: 400 });
   }
+  const writeError = requireWritableAdmin(admin.profile?.role);
+  if (writeError) return writeError;
   const roleError = requireOwnerAdmin(table, admin.profile?.role);
   if (roleError) return roleError;
 

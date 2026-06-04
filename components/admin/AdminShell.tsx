@@ -6,6 +6,7 @@ import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminTopbar from '@/components/admin/AdminTopbar';
 import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { verifyAdminAccess } from '@/lib/admin/verifyAdmin';
+import { setCachedAdminRole } from '@/lib/admin/permissions';
 
 interface AdminShellProps {
   children: React.ReactNode;
@@ -30,6 +31,7 @@ export default function AdminShell({ children }: AdminShellProps) {
         if (!mounted) return;
         setAuthed(Boolean(demoEmail));
         setEmail(demoEmail);
+        setCachedAdminRole(demoEmail ? 'admin' : null);
         setReady(true);
         if (!demoEmail && !isLoginPage) router.replace('/admin/login');
         if (demoEmail && isLoginPage) router.replace('/admin/dashboard');
@@ -38,11 +40,12 @@ export default function AdminShell({ children }: AdminShellProps) {
 
       const { data } = await supabase!.auth.getSession();
       const sessionEmail = data.session?.user.email || '';
-      const adminCheck = data.session ? await verifyAdminAccess(data.session.access_token) : { isAdmin: false };
+      const adminCheck = data.session ? await verifyAdminAccess(data.session.access_token) : { isAdmin: false, profile: null };
       const isAdmin = Boolean(data.session && adminCheck.isAdmin);
       if (!mounted) return;
       setAuthed(isAdmin);
       setEmail(sessionEmail);
+      setCachedAdminRole(isAdmin ? adminCheck.profile?.role || null : null);
       setReady(true);
       if (!isAdmin && !isLoginPage) router.replace('/admin/login');
       if (isAdmin && isLoginPage) router.replace('/admin/dashboard');
@@ -51,10 +54,11 @@ export default function AdminShell({ children }: AdminShellProps) {
     check();
     const subscription = supabase?.auth.onAuthStateChange(async (_event, session) => {
       const sessionEmail = session?.user.email || '';
-      const adminCheck = session ? await verifyAdminAccess(session.access_token) : { isAdmin: false };
+      const adminCheck = session ? await verifyAdminAccess(session.access_token) : { isAdmin: false, profile: null };
       const isAdmin = Boolean(session && adminCheck.isAdmin);
       setAuthed(isAdmin);
       setEmail(sessionEmail);
+      setCachedAdminRole(isAdmin ? adminCheck.profile?.role || null : null);
       if (!isAdmin && !isLoginPage) router.replace('/admin/login');
     });
 

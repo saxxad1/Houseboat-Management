@@ -25,6 +25,18 @@ export function isAdminTableName(table: string): table is AdminTableName {
   return adminTables.includes(table as AdminTableName);
 }
 
+export function isReadOnlyAdminRole(role?: string | null) {
+  return role === 'viewer';
+}
+
+export function requireWritableAdmin(role?: string | null) {
+  if (isReadOnlyAdminRole(role)) {
+    return NextResponse.json({ error: 'This account is read-only and cannot make changes.' }, { status: 403 });
+  }
+
+  return null;
+}
+
 type VerifiedAdminContext = {
   supabase: SupabaseClient<Database>;
   user: User;
@@ -62,7 +74,7 @@ export async function getVerifiedAdminContext(request: NextRequest): Promise<Adm
     .from('admin_profiles')
     .select('id, full_name, role')
     .eq('user_id', user.id)
-    .in('role', ['admin', 'manager'])
+    .in('role', ['admin', 'manager', 'viewer'])
     .maybeSingle();
 
   if (profileError) {

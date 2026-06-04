@@ -5,6 +5,7 @@ import { LogOut, Menu, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { pageTitles } from '@/lib/admin/constants';
+import { getCachedAdminRole, setCachedAdminRole } from '@/lib/admin/permissions';
 
 interface AdminTopbarProps {
   email?: string;
@@ -15,12 +16,14 @@ export default function AdminTopbar({ email, onOpenMenu }: AdminTopbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const title = pageTitles[pathname] || pageTitles['/admin/dashboard'];
+  const role = getCachedAdminRole();
 
   const logout = async () => {
     if (isSupabaseConfigured()) {
       await getSupabaseBrowserClient()?.auth.signOut();
     }
     window.localStorage.removeItem('kuhelika-demo-admin');
+    setCachedAdminRole(null);
     router.replace('/admin/login');
   };
 
@@ -44,6 +47,11 @@ export default function AdminTopbar({ email, onOpenMenu }: AdminTopbarProps) {
         <div className="hidden items-center gap-2.5 rounded-full bg-white/80 border border-white shadow-sm px-4 py-2 text-sm font-semibold text-slate-700 md:flex backdrop-blur-md">
           <UserCircle className="h-5 w-5 text-[hsl(197,80%,40%)]" />
           <span className="max-w-[180px] truncate">{email || 'Admin'}</span>
+          {role === 'viewer' && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-amber-700">
+              Read only
+            </span>
+          )}
         </div>
 
         <Button variant="outline" onClick={logout} className="gap-2 rounded-xl bg-white/80 border-white shadow-sm hover:shadow-md transition-all duration-300 font-bold text-slate-600 hover:text-red-600 hover:bg-red-50">

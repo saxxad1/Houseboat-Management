@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { verifyAdminAccess } from '@/lib/admin/verifyAdmin';
+import { setCachedAdminRole } from '@/lib/admin/permissions';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function LoginForm() {
 
       if (!isSupabaseConfigured()) {
         window.localStorage.setItem('kuhelika-demo-admin', email);
+        setCachedAdminRole('admin');
         router.replace('/admin/dashboard');
         return;
       }
@@ -42,8 +44,10 @@ export default function LoginForm() {
       const adminCheck = await verifyAdminAccess(data.session?.access_token);
       if (!adminCheck.isAdmin) {
         await supabase.auth.signOut();
+        setCachedAdminRole(null);
         throw new Error(adminCheck.error || 'This user is not added as an admin in the admin_profiles table');
       }
+      setCachedAdminRole(adminCheck.profile?.role || null);
       router.replace('/admin/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');

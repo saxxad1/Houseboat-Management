@@ -1,6 +1,8 @@
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { assertWritableAdmin } from '@/lib/admin/permissions';
 
 export async function uploadHouseboatFile(bucket: string, folder: string, file: File) {
+  assertWritableAdmin();
   const supabase = getSupabaseBrowserClient();
 
   if (!supabase) {

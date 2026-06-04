@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { deleteRow, listRows, saveRow, type AdminRow } from '@/lib/admin/data';
+import { isReadOnlyAdmin } from '@/lib/admin/permissions';
 import { statusColors } from '@/lib/admin/constants';
 import { uploadHouseboatFile } from '@/lib/supabase/storage';
 import { isVideoUrl } from '@/lib/videoUtils';
@@ -235,6 +236,7 @@ export default function AdminResourcePage({
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [form, setForm] = useState<Record<string, unknown>>(emptyRow);
+  const [readOnly, setReadOnly] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -248,6 +250,7 @@ export default function AdminResourcePage({
   };
 
   useEffect(() => {
+    setReadOnly(isReadOnlyAdmin());
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table]);
@@ -419,10 +422,12 @@ export default function AdminResourcePage({
             <CardTitle className="text-xl">{title}</CardTitle>
             <p className="mt-1 text-sm text-slate-500">{description}</p>
           </div>
-          <Button onClick={() => edit()} className="w-full gap-2 sm:w-auto">
-            <Plus className="h-4 w-4" />
-            {addLabel}
-          </Button>
+          {!readOnly && (
+            <Button onClick={() => edit()} className="w-full gap-2 sm:w-auto">
+              <Plus className="h-4 w-4" />
+              {addLabel}
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center flex-wrap">
@@ -464,32 +469,34 @@ export default function AdminResourcePage({
                   {columns.map((column) => (
                     <TableHead key={column.key}>{column.label}</TableHead>
                   ))}
-                  <TableHead className="w-[120px] text-right">Actions</TableHead>
+                  {!readOnly && <TableHead className="w-[120px] text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={columns.length + 1}>Loading...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={columns.length + (readOnly ? 0 : 1)}>Loading...</TableCell></TableRow>
                 ) : filtered.length ? (
                   filtered.map((row) => (
                     <TableRow key={row.id}>
                       {columns.map((column) => (
                         <TableCell key={column.key}>{renderCell(row as Record<string, unknown>, column)}</TableCell>
                       ))}
-                      <TableCell className="text-right">
-                        <div className="inline-flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => edit(row)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => remove(row.id)}>
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </div>
-                      </TableCell>
+                      {!readOnly && (
+                        <TableCell className="text-right">
+                          <div className="inline-flex gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => edit(row)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => remove(row.id)}>
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))
                 ) : (
-                  <TableRow><TableCell colSpan={columns.length + 1} className="py-10 text-center text-slate-500">No data found</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={columns.length + (readOnly ? 0 : 1)} className="py-10 text-center text-slate-500">No data found</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>

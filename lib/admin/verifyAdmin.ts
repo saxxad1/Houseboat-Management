@@ -1,8 +1,14 @@
 'use client';
 
-export async function verifyAdminAccess(accessToken?: string | null) {
+type AdminAccessCheck = {
+  isAdmin: boolean;
+  profile?: { role?: string | null } | null;
+  error?: string;
+};
+
+export async function verifyAdminAccess(accessToken?: string | null): Promise<AdminAccessCheck> {
   if (!accessToken) {
-    return { isAdmin: false, error: 'Missing session token' };
+    return { isAdmin: false, profile: null, error: 'Missing session token' };
   }
 
   try {
@@ -16,11 +22,13 @@ export async function verifyAdminAccess(accessToken?: string | null) {
     const result = await response.json();
     return {
       isAdmin: Boolean(result.isAdmin),
+      profile: result.profile || null,
       error: typeof result.error === 'string' ? result.error : '',
     };
   } catch (error) {
     return {
       isAdmin: false,
+      profile: null,
       error: error instanceof Error ? error.message : 'Admin verification failed',
     };
   }

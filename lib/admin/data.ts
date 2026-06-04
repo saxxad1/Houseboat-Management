@@ -1,6 +1,7 @@
 'use client';
 
 import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
+import { assertWritableAdmin } from '@/lib/admin/permissions';
 import { demoTableData } from '@/lib/admin/demoData';
 import type {
   AdminTableName,
@@ -130,6 +131,7 @@ export async function listRows<T extends AdminRow>(table: AdminTableName) {
 }
 
 export async function saveRow<T extends AdminRow>(table: AdminTableName, row: Partial<T> & { id?: string }) {
+  assertWritableAdmin();
   const timestamp = now();
   const payload = {
     ...row,
@@ -159,6 +161,7 @@ export async function saveRow<T extends AdminRow>(table: AdminTableName, row: Pa
 }
 
 export async function deleteRow(table: AdminTableName, id: string) {
+  assertWritableAdmin();
   const supabase = getSupabaseBrowserClient();
 
   if (!supabase) {
