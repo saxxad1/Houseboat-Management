@@ -96,7 +96,7 @@ export default function AdminDashboard() {
     const totalGuests = validBookings.reduce((sum, b) => sum + (Number(b.number_of_guests) || 0), 0) + manualGuests;
     
     const validIncome = income.filter(i => i.income_date >= startDate && i.income_date <= endDate);
-    const totalAdditionalIncome = validIncome.filter(i => i.category !== 'booking').reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+    const totalAdditionalIncome = validIncome.filter(i => !i.booking_id).reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
     
     const totalBookingAmount = validBookings.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0) + manualRevenue + totalAdditionalIncome;
     const validExpenses = expenses.filter(e => e.expense_date >= startDate && e.expense_date <= endDate);

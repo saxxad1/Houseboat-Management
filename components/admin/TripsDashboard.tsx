@@ -54,7 +54,7 @@ export function TripsDashboard() {
         // Income includes booking payments AND additional incomes mapped to this trip
         const bookingIncome = tripBookings.reduce((sum, b) => sum + Number(b.total_amount || 0), 0) + manualBookings.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
         // Add only non-booking incomes since booking income is usually added automatically on payment
-        const otherIncome = tripIncome.filter(i => i.category !== 'booking').reduce((sum, i) => sum + Number(i.amount || 0), 0);
+        const otherIncome = tripIncome.filter(i => !i.booking_id).reduce((sum, i) => sum + Number(i.amount || 0), 0);
         
         const totalIncome = bookingIncome + otherIncome;
         const totalExpense = tripExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0) + manualExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
