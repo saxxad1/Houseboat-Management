@@ -38,20 +38,30 @@ export function TripsDashboard() {
         const tripIncome = income.filter((i) => i.trip_slot_id === trip.id);
         const tripExpenses = expenses.filter((e) => e.trip_slot_id === trip.id);
 
-        const totalGuests = tripBookings.reduce((sum, b) => sum + (b.number_of_guests || 0), 0);
+        let manualBookings: any[] = [];
+        let manualExpenses: any[] = [];
+        if (trip.note) {
+          try {
+            const parsed = JSON.parse(trip.note);
+            manualBookings = parsed.manualBookings || [];
+            manualExpenses = parsed.manualExpenses || [];
+          } catch (e) {}
+        }
+
+        const totalGuests = tripBookings.reduce((sum, b) => sum + (b.number_of_guests || 0), 0) + manualBookings.reduce((sum, b) => sum + (Number(b.number_of_guests) || 0), 0);
         
         // Income includes booking payments AND additional incomes mapped to this trip
-        const bookingIncome = tripBookings.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+        const bookingIncome = tripBookings.reduce((sum, b) => sum + Number(b.total_amount || 0), 0) + manualBookings.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
         // Add only non-booking incomes since booking income is usually added automatically on payment
         const otherIncome = tripIncome.filter(i => i.category !== 'booking').reduce((sum, i) => sum + Number(i.amount || 0), 0);
         
         const totalIncome = bookingIncome + otherIncome;
-        const totalExpense = tripExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+        const totalExpense = tripExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0) + manualExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
         
         return {
           trip,
           totalGuests,
-          totalBookings: tripBookings.length,
+          totalBookings: tripBookings.length + manualBookings.length,
           totalIncome,
           totalExpense,
           netProfit: totalIncome - totalExpense,
