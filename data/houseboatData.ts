@@ -133,7 +133,7 @@ export const cabins = [
     bath: "Private Bath",
     ac: "AC Available",
     features: ["Panorama View", "Premium View", "Private Bathroom", "Food Included"],
-    image: "/images/kuhelika/cabins/cabin-01.jpg",
+    image: "https://qluitrjuklzeuhobrdzq.supabase.co/storage/v1/object/public/houseboat-media/rooms/1780523876321-1ae0a048-4e8b-454e-a4a8-233e57c37c7a.blob",
     available: true
   },
   {
@@ -150,7 +150,7 @@ export const cabins = [
     bath: "Private Bath",
     ac: "AC Available",
     features: ["Panorama View", "Premium View", "Private Bathroom", "Food Included"],
-    image: "/images/kuhelika/cabins/cabin-02.jpg",
+    image: "https://qluitrjuklzeuhobrdzq.supabase.co/storage/v1/object/public/houseboat-media/rooms/1780523701871-351d6549-ff97-47af-b5b7-fa0b7fa6a1da.blob",
     available: true
   },
   {
@@ -166,7 +166,7 @@ export const cabins = [
     bath: "Private Bath",
     ac: "AC Available",
     features: ["AC", "Private Bathroom", "Food Included", "Comfortable Bed"],
-    image: "/images/kuhelika/cabins/cabin-03.jpg",
+    image: "https://qluitrjuklzeuhobrdzq.supabase.co/storage/v1/object/public/houseboat-media/rooms/1780523771186-22494816-07fd-4611-b907-829af2228523.blob",
     available: true
   },
   {
@@ -198,7 +198,7 @@ export const cabins = [
     bath: "Private Bath",
     ac: "AC Available",
     features: ["AC", "Private Bathroom", "Food Included", "Comfortable Bed"],
-    image: "/images/kuhelika/cabins/cabin-05.jpg",
+    image: "https://qluitrjuklzeuhobrdzq.supabase.co/storage/v1/object/public/houseboat-media/rooms/1780523898467-e73b3ac3-d9f3-41c5-87ab-25dbdd34fdc6.blob",
     available: true
   },
   {
@@ -214,7 +214,7 @@ export const cabins = [
     bath: "Private Bath",
     ac: "AC Available",
     features: ["AC", "Private Bathroom", "Food Included", "Comfortable Bed"],
-    image: "/images/kuhelika/cabins/cabin-06.jpg",
+    image: "https://qluitrjuklzeuhobrdzq.supabase.co/storage/v1/object/public/houseboat-media/rooms/1780523977279-6bce4c26-8caf-4df9-9d4e-3407e565e858.blob",
     available: true
   },
   {
@@ -246,7 +246,7 @@ export const cabins = [
     bath: "Private Bath",
     ac: "Non-AC",
     features: ["Non-AC", "Private Bathroom", "Food Included", "Best Value"],
-    image: "/images/kuhelika/cabins/cabin-02.jpg",
+    image: "https://qluitrjuklzeuhobrdzq.supabase.co/storage/v1/object/public/houseboat-media/rooms/1780524090985-f32f5de9-a5b2-47f6-b459-58eb6d2d9a4e.blob",
     available: true
   }
 ];
