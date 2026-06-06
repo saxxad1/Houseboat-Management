@@ -188,7 +188,7 @@ export default function Hero({ onBookNow }: HeroProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 1 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex justify-center pointer-events-none"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 hidden sm:flex justify-center pointer-events-none"
       >
         <div className="flex flex-col items-center gap-2 text-white/60">
           <span className="text-[10px] sm:text-xs font-medium uppercase tracking-widest">Scroll</span>
