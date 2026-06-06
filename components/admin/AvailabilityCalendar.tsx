@@ -301,11 +301,11 @@ export default function AvailabilityCalendar() {
       const existingTrip = tripSlots.find(slot => key >= slot.start_date && key <= slot.end_date && slot.duration_label !== 'Padma Day Trip');
       if (existingTrip) {
         const datesInTrip: string[] = [];
-        let curr = new Date(existingTrip.start_date);
-        const end = new Date(existingTrip.end_date);
+        let curr = new Date(`${existingTrip.start_date}T00:00:00Z`);
+        const end = new Date(`${existingTrip.end_date}T00:00:00Z`);
         while (curr <= end) {
           datesInTrip.push(curr.toISOString().slice(0, 10));
-          curr.setDate(curr.getDate() + 1);
+          curr.setUTCDate(curr.getUTCDate() + 1);
         }
         setSelectedDates(datesInTrip.length > 0 ? datesInTrip : [key]);
         return;
@@ -490,7 +490,7 @@ export default function AvailabilityCalendar() {
 }
 
 function selectedDateNext(date: string) {
-  const next = new Date(`${date}T00:00:00`);
-  next.setDate(next.getDate() + 1);
+  const next = new Date(`${date}T00:00:00Z`);
+  next.setUTCDate(next.getUTCDate() + 1);
   return next.toISOString().slice(0, 10);
 }

@@ -33,8 +33,8 @@ export function rangesOverlap(startA: string, endA: string, startB: string, endB
 }
 
 function nextDate(date: string) {
-  const parsed = new Date(`${date}T00:00:00`);
-  parsed.setDate(parsed.getDate() + 1);
+  const parsed = new Date(`${date}T00:00:00Z`);
+  parsed.setUTCDate(parsed.getUTCDate() + 1);
   return parsed.toISOString().slice(0, 10);
 }
 
