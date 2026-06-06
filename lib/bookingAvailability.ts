@@ -65,8 +65,17 @@ export function getBookingRoomIds(booking: Partial<Booking>) {
     roomIds.add(booking.room_id);
   }
 
-  if (Array.isArray(booking.room_details)) {
-    booking.room_details.forEach((detail) => {
+  let details = booking.room_details;
+  if (typeof details === 'string') {
+    try {
+      details = JSON.parse(details);
+    } catch (e) {
+      // Ignore parse error
+    }
+  }
+
+  if (Array.isArray(details)) {
+    details.forEach((detail) => {
       if (detail?.roomId) {
         roomIds.add(detail.roomId);
       }
@@ -81,8 +90,18 @@ export function getManualBookingRoomIds(booking: ManualTripBooking) {
   if (booking.roomId) {
     roomIds.add(booking.roomId);
   }
-  if (Array.isArray(booking.roomDetails)) {
-    booking.roomDetails.forEach((detail) => {
+  
+  let details = booking.roomDetails;
+  if (typeof details === 'string') {
+    try {
+      details = JSON.parse(details);
+    } catch (e) {
+      // Ignore parse error
+    }
+  }
+
+  if (Array.isArray(details)) {
+    details.forEach((detail) => {
       if (detail?.roomId) {
         roomIds.add(detail.roomId);
       }

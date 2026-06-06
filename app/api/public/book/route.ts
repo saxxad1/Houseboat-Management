@@ -291,7 +291,13 @@ export async function POST(req: Request) {
       const hasConflict = (conflicts || []).some((booking: { booking_type: string; room_id: string | null; room_details?: SubmittedRoomDetail[] | null }) => {
         if (bookingMode === 'full_boat' || booking.booking_type === 'full_boat') return true;
         if (booking.room_id && selectedRoomIds.has(booking.room_id)) return true;
-        return Array.isArray(booking.room_details) && booking.room_details.some((room) => room.roomId && selectedRoomIds.has(room.roomId));
+        let parsedDetails = booking.room_details;
+        if (typeof parsedDetails === 'string') {
+          try {
+            parsedDetails = JSON.parse(parsedDetails);
+          } catch(e) {}
+        }
+        return Array.isArray(parsedDetails) && parsedDetails.some((room: any) => room.roomId && selectedRoomIds.has(room.roomId));
       });
 
       if (hasConflict) {
