@@ -116,19 +116,27 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
+    const todayLocalStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+    
     if (!form.name.trim()) newErrors.name = 'Enter name';
     if (!form.phone.trim()) newErrors.phone = 'Enter phone number';
+    
     if (activeSeason === 'padma') {
       if (!form.eventDate) newErrors.eventDate = 'Enter event date';
+      else if (form.eventDate < todayLocalStr) newErrors.eventDate = 'Trip date cannot be in the past';
+      
       if (!Number.isFinite(Number(form.guests)) || Number(form.guests) <= 0) {
         newErrors.guests = 'Enter number of guests';
       }
     } else {
       if (!form.checkin) newErrors.checkin = 'Enter check-in date';
+      else if (form.checkin < todayLocalStr) newErrors.checkin = 'Check-in date cannot be in the past';
+      
       if (!form.checkout) newErrors.checkout = 'Enter check-out date';
       if (form.checkin && form.checkout && form.checkout <= form.checkin) {
         newErrors.checkout = 'Check-out date must be after check-in';
       }
+      
       if (form.bookingType === 'cabin') {
         const hasValidRoom = roomDetails.some(r => r.cabin.trim() !== '');
         if (!hasValidRoom) newErrors.rooms = 'Select at least one cabin';

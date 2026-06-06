@@ -53,6 +53,7 @@ export interface AvailabilityCalendarProps {
 export default function AvailabilityCalendar({ inline, selectedDate: propSelectedDate, onSelectDate }: AvailabilityCalendarProps = {}) {
   const { availability, bookings, tripSlots, cabins, activeSeason, seasonData } = usePublicData();
   const today = new Date();
+  const todayLocalStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
   const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [localSelectedDate, setLocalSelectedDate] = useState<string | null>(null);
   const [direction, setDirection] = useState(0);
@@ -250,9 +251,10 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
                     const key = getDateKey(day);
                     const data = getDayData(key);
                     
-                    const isToday = key === today.toISOString().split('T')[0];
+                    const isToday = key === todayLocalStr;
+                    const isPast = key < todayLocalStr;
                     const isSelected = key === selectedDate;
-                    const isDisabled = data?.status === 'full' || data?.status === 'blocked' || data?.tripInfo?.isEnd;
+                    const isDisabled = isPast || data?.status === 'full' || data?.status === 'blocked' || data?.tripInfo?.isEnd;
                     let cfg = data ? statusConfig[data.status] : null;
 
                     // If it's a trip slot, override the color to make it distinct, 
