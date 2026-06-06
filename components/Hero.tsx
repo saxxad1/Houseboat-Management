@@ -3,16 +3,29 @@
 import Image from 'next/image';
 import { MapPin, BedDouble, Users, Banknote, ChevronDown, CalendarCheck } from 'lucide-react';
 import { usePublicData } from '@/components/PublicDataProvider';
-import { motion, useScroll, useTransform, useReducedMotion, type Variants } from 'framer-motion';
-import { useRef } from 'react';
+import { motion, useScroll, useTransform, useReducedMotion, type Variants, AnimatePresence } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
 
 interface HeroProps {
   onBookNow: () => void;
 }
 
 export default function Hero({ onBookNow }: HeroProps) {
-  const { siteConfig, cabins, seasonData } = usePublicData();
+  const { siteConfig, cabins, seasonData, galleryImages } = usePublicData();
   const ref = useRef(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (!galleryImages || galleryImages.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [galleryImages]);
+
+  const currentImage = galleryImages && galleryImages.length > 0 
+    ? galleryImages[currentImageIndex]?.src || "/hero-kuhelika-houseboat.jpg"
+    : "/hero-kuhelika-houseboat.jpg";
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"]
@@ -62,22 +75,26 @@ export default function Hero({ onBookNow }: HeroProps) {
     <section ref={ref} id="home" className="relative min-h-screen flex flex-col overflow-hidden bg-black">
       {/* Background with Parallax */}
       <motion.div style={{ y, opacity }} className="absolute inset-0 z-0">
-        <motion.div
-          initial={{ scale: reduceMotion ? 1 : 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 3, ease: "easeOut" }}
-          className="absolute inset-0"
-        >
-          <Image
-            src="/hero-kuhelika-houseboat.jpg"
-            alt="Kuhelika Houseboat in Tanguar Haor"
-            fill
-            priority
-            quality={80}
-            sizes="100vw"
-            className="object-cover object-center"
-          />
-        </motion.div>
+        <AnimatePresence>
+          <motion.div
+            key={currentImageIndex}
+            initial={{ opacity: 0, scale: reduceMotion ? 1 : 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+            className="absolute inset-0"
+          >
+            <Image
+              src={currentImage}
+              alt="Kuhelika Houseboat"
+              fill
+              priority={currentImageIndex === 0}
+              quality={80}
+              sizes="100vw"
+              className="object-cover object-center"
+            />
+          </motion.div>
+        </AnimatePresence>
         {/* Improved aesthetic gradients */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-[hsl(197,80%,10%)]/95" />
         <div className="absolute inset-0 bg-gradient-to-r from-[hsl(197,80%,15%)]/80 via-transparent to-transparent" />
