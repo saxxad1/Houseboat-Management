@@ -25,9 +25,6 @@ export default function Hero({ onBookNow }: HeroProps) {
   const featuredImages = validGalleryImages.filter((img: any) => img.isFeatured);
   if (featuredImages.length > 0) {
     validGalleryImages = featuredImages;
-  } else if (loading) {
-    // Prevent flashing fallback images while loading
-    validGalleryImages = [];
   }
 
   useEffect(() => {
@@ -39,8 +36,8 @@ export default function Hero({ onBookNow }: HeroProps) {
   }, [validGalleryImages]);
 
   const currentImage = validGalleryImages.length > 0 
-    ? validGalleryImages[currentImageIndex]?.src 
-    : (loading ? null : "/hero-kuhelika-houseboat.jpg");
+    ? validGalleryImages[currentImageIndex]?.src || "/hero-kuhelika-houseboat.jpg"
+    : "/hero-kuhelika-houseboat.jpg";
     
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -91,9 +88,9 @@ export default function Hero({ onBookNow }: HeroProps) {
     <section ref={ref} id="home" className="relative min-h-screen flex flex-col overflow-hidden bg-black">
       {/* Background with Parallax */}
       <motion.div style={{ y, opacity }} className="absolute inset-0 z-0">
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           <motion.div
-            key={currentImageIndex}
+            key={currentImage}
             initial={{ opacity: 0, scale: reduceMotion ? 1 : 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
