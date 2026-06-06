@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,9 @@ export default function PromoDiscountSettingsForm() {
       setLoading(true);
       setError(null);
       try {
+        const supabase = getSupabaseBrowserClient();
+        if (!supabase) throw new Error('Supabase not configured');
+
         const { data, error } = await supabase
           .from('houseboat_settings')
           .select('id, promo_discount_percent, promo_discount_start_date, promo_discount_end_date, promo_discount_title')
@@ -62,6 +65,9 @@ export default function PromoDiscountSettingsForm() {
     setSuccess(null);
 
     try {
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) throw new Error('Supabase not configured');
+
       const { error } = await supabase
         .from('houseboat_settings')
         .update({
