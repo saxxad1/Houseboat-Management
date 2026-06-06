@@ -85,8 +85,35 @@ function setLocalSeason(season: string) {
   }
 }
 
-export function PublicDataProvider({ children }: { children: React.ReactNode }) {
-  const [value, setValue] = useState<PublicDataContextValue>(fallbackValue);
+export function PublicDataProvider({ children, initialData }: { children: React.ReactNode, initialData?: any }) {
+  const [value, setValue] = useState<PublicDataContextValue>(() => {
+    if (initialData) {
+      const activeSeason = normalizeSeason(initialData.settings?.active_season || getLocalSeason());
+      const seasonData = getEffectiveSeasonalData(getSeasonalData(activeSeason), initialData.settings, initialData.content, activeSeason);
+      const mappedRooms = mapRoomsToCabins(initialData.rooms, activeSeason);
+      const mappedGallery = mapGalleryToPublic(initialData.gallery, activeSeason);
+      const mappedSettings = mapSettingsToSiteConfig(initialData.settings, seasonData);
+      
+      return {
+        activeSeason,
+        seasonData,
+        siteConfig: mappedSettings,
+        cabins: mappedRooms.length
+          ? mappedRooms as any as PublicCabin[]
+          : (activeSeason === 'padma' ? [...seasonData.eventSpaces] : fallbackCabins) as any as PublicCabin[],
+        packages: [],
+        galleryImages: mappedGallery.length ? mappedGallery as PublicGalleryImage[] : [...seasonData.gallery.images] as PublicGalleryImage[],
+        availability: initialData.availability || [],
+        bookings: initialData.bookings || [],
+        tripSlots: initialData.trip_slots || [],
+        specialDates: initialData.special_dates || [],
+        content: initialData.content || [],
+        reviews: initialData.reviews || [],
+        loading: false,
+      };
+    }
+    return fallbackValue;
+  });
 
   useEffect(() => {
     let mounted = true;
