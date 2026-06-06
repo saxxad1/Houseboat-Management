@@ -5,6 +5,7 @@ import { X, CircleCheck as CheckCircle2, Send, MessageCircle, Phone, User, Calen
 import { usePublicData } from '@/components/PublicDataProvider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
+import { getBookedRoomIdsForRange, hasFullBoatBookingForRange } from '@/lib/bookingAvailability';
 import { calculateBookingDiscount } from '@/lib/discounts';
 
 
@@ -26,7 +27,6 @@ const initialForm = {
   guests: '16',
   bookingType: 'cabin' as 'cabin' | 'full',
   acPreference: 'AC',
-  package: '',
   request: '',
   payment: 'bkash',
   transactionId: '',
@@ -34,7 +34,6 @@ const initialForm = {
   eventType: 'Padma Day Long Trip',
   eventSlot: 'full_day',
   guestRange: '',
-  foodPackage: '',
   decorationRequired: 'No',
   soundSystemRequired: 'No',
   paymentMode: 'full' as 'advance' | 'full',
@@ -55,7 +54,7 @@ function parsePriceNumbers(value: unknown) {
 }
 
 export default function BookingForm({ isOpen, onClose, initialCabin, initialBookingType = 'cabin', initialCheckInDate, initialCheckOutDate }: BookingFormProps) {
-  const { siteConfig, cabins, packages, activeSeason, seasonData, tripSlots, specialDates } = usePublicData();
+  const { siteConfig, cabins, activeSeason, seasonData, bookings, tripSlots, specialDates } = usePublicData();
   const [form, setForm] = useState({ ...initialForm, bookingType: initialBookingType });
   const [roomDetails, setRoomDetails] = useState<{cabin: string, pax: number}[]>([{cabin: '', pax: 2}]);
   const [submitted, setSubmitted] = useState(false);
@@ -94,7 +93,6 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
       eventSlot: 'full_day',
       guests: prev.guests === '16' ? '1' : prev.guests,
       guestRange: '',
-      foodPackage: '',
       decorationRequired: 'No',
       soundSystemRequired: 'No',
     }));
@@ -134,6 +132,13 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
       if (form.bookingType === 'cabin') {
         const hasValidRoom = roomDetails.some(r => r.cabin.trim() !== '');
         if (!hasValidRoom) newErrors.rooms = 'Select at least one cabin';
+        const selectedRooms = getSelectedRoomDetails();
+        const selectedRoomIds = selectedRooms.map((room) => room.roomId).filter(Boolean);
+        const hasDuplicateRoom = selectedRoomIds.some((roomId, index) => selectedRoomIds.indexOf(roomId) !== index);
+        if (hasDuplicateRoom) newErrors.rooms = 'Select each cabin only once';
+        if (isSelectedDateFullBoatBooked || selectedRooms.some((room) => bookedRoomIdsForSelectedDates.has(room.roomId))) {
+          newErrors.rooms = 'One or more selected cabins are already booked for this trip date';
+        }
       }
     }
     return newErrors;
@@ -232,6 +237,23 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
       }
 
       setSubmitted(true);
+      window.dispatchEvent(new CustomEvent('kuhelika-public-data-change', {
+        detail: {
+          booking: {
+            id: `optimistic-${activeSeason}-${form.phone}-${activeSeason === 'padma' ? form.eventDate : form.checkin}-${activeSeason === 'padma' ? form.eventDate : form.checkout}`,
+            booking_type: form.bookingType === 'full' || activeSeason === 'padma' ? 'full_boat' : 'cabin_wise',
+            room_id: selectedRoomDetails[0]?.roomId || null,
+            room_details: selectedRoomDetails.length ? selectedRoomDetails : null,
+            check_in_date: activeSeason === 'padma' ? form.eventDate : form.checkin,
+            check_out_date: activeSeason === 'padma' ? form.eventDate : form.checkout,
+            booking_status: 'pending',
+            season_type: activeSeason,
+            event_date: activeSeason === 'padma' ? form.eventDate : null,
+            event_slot: activeSeason === 'padma' ? form.eventSlot : null,
+            trip_slot_id: null,
+          },
+        },
+      }));
     } catch (err: any) {
       setSubmitError(err.message || 'Failed to send booking request. Please try again or contact via WhatsApp.');
     } finally {
@@ -287,6 +309,18 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
   const padmaPricePerPerson = Number(siteConfig.padmaPricePerPerson || 0);
   const hasSelectedRoom = roomDetails.some((room) => room.cabin.trim() !== '');
   const showPricingSection = activeSeason === 'padma' || form.bookingType === 'full' || hasSelectedRoom || priceSummary.subtotalAmount > 0;
+  const hasBookingDates = activeSeason === 'haor' && Boolean(form.checkin && form.checkout);
+  const bookedRoomIdsForSelectedDates = hasBookingDates
+    ? getBookedRoomIdsForRange(bookings, tripSlots, form.checkin, form.checkout)
+    : new Set<string>();
+  const isSelectedDateFullBoatBooked = hasBookingDates
+    ? hasFullBoatBookingForRange(bookings, form.checkin, form.checkout)
+    : false;
+  const getCabinRoomId = (cabin: any) => String(cabin?.dbId || cabin?.id || '');
+  const isCabinBookedForSelectedDates = (cabin: any) => {
+    if (!hasBookingDates) return false;
+    return isSelectedDateFullBoatBooked || bookedRoomIdsForSelectedDates.has(getCabinRoomId(cabin));
+  };
 
   const buildWhatsappMessage = () => {
     if (activeSeason === 'padma') {
@@ -487,7 +521,7 @@ Thank you.`;
                           {form.eventDate ? new Date(form.eventDate + 'T00:00:00').toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : 'dd/mm/yyyy'}
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[calc(100vw-1rem)] max-w-sm p-0" align="start">
+                      <PopoverContent className="w-[min(92vw,28rem)] p-0" align="start">
                         <AvailabilityCalendar 
                           inline 
                           selectedDate={form.eventDate} 
@@ -539,7 +573,7 @@ Thank you.`;
                           {form.checkin ? new Date(form.checkin + 'T00:00:00').toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : 'dd/mm/yyyy'}
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[calc(100vw-1rem)] max-w-sm p-0" align="start">
+                      <PopoverContent className="w-[min(92vw,28rem)] p-0" align="start">
                         <AvailabilityCalendar 
                           inline 
                           selectedDate={form.checkin} 
@@ -575,7 +609,7 @@ Thank you.`;
                           {form.checkout ? new Date(form.checkout + 'T00:00:00').toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : 'dd/mm/yyyy'}
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[calc(100vw-1rem)] max-w-sm p-0" align="start">
+                      <PopoverContent className="w-[min(92vw,28rem)] p-0" align="start">
                         <AvailabilityCalendar 
                           inline 
                           selectedDate={form.checkout} 
@@ -613,11 +647,15 @@ Thank you.`;
                       className="flex-1 px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-slate-800 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[hsl(197,80%,38%)] transition-all min-h-[42px]"
                     >
                       <option value="">-- Select Cabin --</option>
-                      {cabins.filter((c: any) => c.available).map((c: any) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name}
+                      {cabins.filter((c: any) => c.available).map((c: any) => {
+                        const booked = isCabinBookedForSelectedDates(c);
+                        const isCurrentSelection = detail.cabin === c.name;
+                        return (
+                        <option key={c.id} value={c.name} disabled={booked && !isCurrentSelection}>
+                          {c.name}{booked ? ' (Booked)' : ''}
                         </option>
-                      ))}
+                        );
+                      })}
                     </select>
                     
                     <select
@@ -694,7 +732,7 @@ Thank you.`;
               <div className="bg-[hsl(195,95%,95%)] border border-[hsl(195,85%,85%)] rounded-xl p-3 sm:p-4 my-2">
                 <div>
                   <div className="text-xs sm:text-sm font-semibold text-[hsl(197,80%,30%)]">
-                    {activeSeason === 'padma' ? 'Estimated Day Long Total:' : 'Estimated Package Total:'}
+                    {activeSeason === 'padma' ? 'Estimated Day Long Total:' : 'Estimated Booking Total:'}
                   </div>
                   <div className="text-xs text-slate-500 mt-0.5">Final price and availability will be confirmed by Kuhelika team.</div>
                 </div>

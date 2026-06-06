@@ -18,13 +18,13 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
   const whatsappMessage = encodeURIComponent(
     activeSeason === 'padma'
-      ? `Hello, I want to book a Padma River event cruise for ${siteConfig.name}. Please confirm availability and package details.`
+      ? `Hello, I want to book a Padma River event cruise for ${siteConfig.name}. Please confirm availability and booking details.`
       : `Hello! I would like to know about haor/houseboat booking for ${siteConfig.name}.`
   );
   const whatsappUrl = `https://wa.me/${siteConfig.whatsapp}?text=${whatsappMessage}`;
   const services = activeSeason === 'padma'
     ? ['Slot Booking', 'Full Boat Event', 'Birthday Event', 'Corporate Event', 'Dinner Cruise', 'Custom Event']
-    : ['Cabin Booking', 'Full Boat Booking', 'Family Package', 'Group Tour', 'Corporate Package', 'Custom Tour'];
+    : ['Cabin Booking', 'Full Boat Booking', 'Family Tour', 'Group Tour', 'Corporate Tour', 'Custom Tour'];
 
   return (
     <footer className="bg-[hsl(195,50%,96%)] text-slate-800 border-t border-slate-200 pb-24 sm:pb-0">

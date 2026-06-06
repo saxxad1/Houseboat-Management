@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { hasManualTripBookingForRange, hasManualTripRoomConflict } from '@/lib/bookingAvailability';
 import { calculateBookingDiscount } from '@/lib/discounts';
 import type { SpecialDate } from '@/types/database';
 
@@ -294,6 +295,22 @@ export async function POST(req: Request) {
       });
 
       if (hasConflict) {
+        return NextResponse.json({ error: 'Selected date or cabin is already booked' }, { status: 409 });
+      }
+
+      const { data: manualTripSlots, error: manualTripError } = await supabase
+        .from('trip_slots')
+        .select('id, start_date, end_date, note')
+        .lt('start_date', checkOutDate)
+        .gt('end_date', checkInDate);
+
+      if (manualTripError) throw manualTripError;
+
+      const hasManualConflict = bookingMode === 'full_boat'
+        ? hasManualTripBookingForRange(manualTripSlots || [], checkInDate, checkOutDate)
+        : hasManualTripRoomConflict(selectedRoomIds, manualTripSlots || [], checkInDate, checkOutDate);
+
+      if (hasManualConflict) {
         return NextResponse.json({ error: 'Selected date or cabin is already booked' }, { status: 409 });
       }
     }

@@ -22,7 +22,8 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { hasBookingConflict, saveBookingWithCustomer } from '@/lib/admin/data';
-import type { Booking, Customer, Room, TourPackage } from '@/types/database';
+import { getBookedRoomIdsForRange, hasFullBoatBookingForRange } from '@/lib/bookingAvailability';
+import type { Booking, Customer, Room } from '@/types/database';
 import { usePublicData } from '@/components/PublicDataProvider';
 
 interface BookingFormProps {
@@ -32,7 +33,6 @@ interface BookingFormProps {
   bookings: Booking[];
   customers: Customer[];
   rooms: Room[];
-  packages: TourPackage[];
   onSaved: () => void;
 }
 
@@ -76,7 +76,6 @@ export default function BookingForm({
   bookings,
   customers,
   rooms,
-  packages,
   onSaved,
 }: BookingFormProps) {
   const [form, setForm] = useState(defaultForm);
@@ -140,6 +139,13 @@ export default function BookingForm({
     () => Math.max(Number(form.total_amount || 0) - Number(form.advance_amount || 0), 0),
     [form.advance_amount, form.total_amount]
   );
+  const haorBookingDatesSelected = form.season_type === 'haor' && Boolean(form.check_in_date && form.check_out_date);
+  const bookedRoomIdsForSelectedDates = haorBookingDatesSelected
+    ? getBookedRoomIdsForRange(bookings, tripSlots, form.check_in_date, form.check_out_date, { excludeBookingId: booking?.id })
+    : new Set<string>();
+  const isFullBoatBookedForSelectedDates = haorBookingDatesSelected
+    ? hasFullBoatBookingForRange(bookings, form.check_in_date, form.check_out_date, booking?.id)
+    : false;
 
   const setField = (name: string, value: string) => {
     setForm((current) => ({ ...current, [name]: value }));
@@ -159,6 +165,10 @@ export default function BookingForm({
         : [];
       const primaryRoomId = selectedRoomDetails[0]?.roomId || '';
       const selectedGuestCount = selectedRoomDetails.reduce((sum, detail) => sum + detail.pax, 0);
+      const selectedRoomIds = selectedRoomDetails.map((detail) => detail.roomId);
+      if (new Set(selectedRoomIds).size !== selectedRoomIds.length) {
+        throw new Error('Select each room only once.');
+      }
       const padmaCheckoutDate = form.event_date
         ? new Date(new Date(form.event_date).getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
         : '';
@@ -186,7 +196,7 @@ export default function BookingForm({
         event_date: parsed.event_date,
         event_slot: parsed.event_slot,
       };
-      if (hasBookingConflict(conflictCandidate, bookings)) {
+      if (hasBookingConflict(conflictCandidate, bookings, tripSlots)) {
         throw new Error('Selected room/full boat is already booked on this date.');
       }
       await saveBookingWithCustomer(
@@ -233,7 +243,7 @@ export default function BookingForm({
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{booking ? 'Edit booking' : 'New Booking'}</DialogTitle>
-          <DialogDescription>Update customer, date, package, payment, and booking status.</DialogDescription>
+          <DialogDescription>Update customer, date, rooms, payment, and booking status.</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -282,9 +292,15 @@ export default function BookingForm({
                     }}>
                       <SelectTrigger className="flex-1"><SelectValue placeholder="Select room" /></SelectTrigger>
                       <SelectContent>
-                        {rooms.filter((room) => (room.season_type || 'haor') === 'haor').map((room) => (
-                          <SelectItem key={room.id} value={room.id}>{room.name}</SelectItem>
-                        ))}
+                        {rooms.filter((room) => (room.season_type || 'haor') === 'haor').map((room) => {
+                          const booked = isFullBoatBookedForSelectedDates || bookedRoomIdsForSelectedDates.has(room.id);
+                          const selectedHere = detail.roomId === room.id;
+                          return (
+                            <SelectItem key={room.id} value={room.id} disabled={booked && !selectedHere}>
+                              {room.name}{booked ? ' (Booked)' : ''}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                     <Select value={String(detail.pax)} onValueChange={(val) => {
@@ -309,18 +325,6 @@ export default function BookingForm({
               </div>
             </div>
           )}
-          <div className="space-y-2">
-            <Label>Package</Label>
-            <Select value={form.package_id} onValueChange={(value) => setField('package_id', value)}>
-              <SelectTrigger><SelectValue placeholder="Select package" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No package</SelectItem>
-                {packages.filter((pkg) => (pkg.season_type || 'haor') === form.season_type).map((pkg) => (
-                  <SelectItem key={pkg.id} value={pkg.id}>{pkg.title}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           {form.season_type === 'haor' ? <div className="space-y-2">
             <Label>Check-in</Label>
             <Input type="date" value={form.check_in_date} onChange={(event) => setField('check_in_date', event.target.value)} />
@@ -360,11 +364,11 @@ export default function BookingForm({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Food package</Label>
+                <Label>Food plan</Label>
                 <Select value={form.food_package} onValueChange={(value) => setField('food_package', value)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {['Snacks Only', 'Lunch Package', 'Dinner Package', 'BBQ Package', 'Buffet Package', 'Custom Food Plan'].map((item) => (
+                    {['Snacks Only', 'Lunch Plan', 'Dinner Plan', 'BBQ Plan', 'Buffet Plan', 'Custom Food Plan'].map((item) => (
                       <SelectItem key={item} value={item}>{item}</SelectItem>
                     ))}
                   </SelectContent>

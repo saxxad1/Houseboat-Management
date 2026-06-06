@@ -3,6 +3,13 @@
 import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { assertWritableAdmin } from '@/lib/admin/permissions';
 import { demoTableData } from '@/lib/admin/demoData';
+import {
+  activeBookingStatuses,
+  getBookingRoomIds,
+  hasManualTripBookingForRange,
+  hasManualTripRoomConflict,
+  rangesOverlap,
+} from '@/lib/bookingAvailability';
 import type {
   AdminTableName,
   AvailabilityBlock,
@@ -85,6 +92,12 @@ function sortRows<T extends AdminRow>(rows: T[]) {
   });
 }
 
+function notifyPublicDataChanged(table: AdminTableName) {
+  if (typeof window === 'undefined') return;
+  if (!['bookings', 'trip_slots', 'rooms', 'availability_blocks'].includes(table)) return;
+  window.dispatchEvent(new Event('kuhelika-public-data-change'));
+}
+
 async function getAdminAccessToken() {
   const supabase = getSupabaseBrowserClient();
   if (!supabase) {
@@ -150,6 +163,7 @@ export async function saveRow<T extends AdminRow>(table: AdminTableName, row: Pa
       ? rows.map((item) => (item.id === row.id ? { ...item, ...nextRow } : item))
       : [nextRow, ...rows];
     setLocalRows(table, nextRows);
+    notifyPublicDataChanged(table);
     return nextRow;
   }
 
@@ -157,6 +171,7 @@ export async function saveRow<T extends AdminRow>(table: AdminTableName, row: Pa
     method: 'POST',
     body: JSON.stringify({ row: payload }),
   });
+  notifyPublicDataChanged(table);
   return result.row;
 }
 
@@ -167,12 +182,14 @@ export async function deleteRow(table: AdminTableName, id: string) {
   if (!supabase) {
     const rows = getLocalRows(table).filter((row) => row.id !== id);
     setLocalRows(table, rows);
+    notifyPublicDataChanged(table);
     return;
   }
 
   await adminJsonRequest(`/api/admin/data/${table}?id=${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
+  notifyPublicDataChanged(table);
 }
 
 export function generateBookingCode() {
@@ -182,35 +199,15 @@ export function generateBookingCode() {
   return `KHL-${datePart}-${suffix}`;
 }
 
-export function rangesOverlap(startA: string, endA: string, startB: string, endB: string) {
-  return startA < endB && startB < endA;
-}
+export { rangesOverlap };
 
-function getBookingRoomIds(booking: Partial<Booking>) {
-  const roomIds = new Set<string>();
-  if (booking.room_id) {
-    roomIds.add(booking.room_id);
-  }
-
-  if (Array.isArray(booking.room_details)) {
-    booking.room_details.forEach((detail) => {
-      if (detail?.roomId) {
-        roomIds.add(detail.roomId);
-      }
-    });
-  }
-
-  return roomIds;
-}
-
-export function hasBookingConflict(candidate: Partial<Booking>, bookings: Booking[]) {
-  const activeStatuses = ['pending', 'confirmed', 'checked_in'];
+export function hasBookingConflict(candidate: Partial<Booking>, bookings: Booking[], tripSlots: TripSlot[] = []) {
   if ((candidate.season_type || 'haor') === 'padma') {
     if (!candidate.event_date || !candidate.event_slot) return false;
     return bookings.some((booking) => {
       if (booking.id === candidate.id) return false;
       if ((booking.season_type || 'haor') !== 'padma') return false;
-      if (!activeStatuses.includes(booking.booking_status)) return false;
+      if (!activeBookingStatuses.includes(booking.booking_status)) return false;
       if ((booking.event_date || booking.check_in_date) !== candidate.event_date) return false;
       return booking.event_slot === candidate.event_slot || booking.event_slot === 'full_day' || candidate.event_slot === 'full_day';
     });
@@ -221,7 +218,7 @@ export function hasBookingConflict(candidate: Partial<Booking>, bookings: Bookin
   return bookings.some((booking) => {
     if (booking.id === candidate.id) return false;
     if ((booking.season_type || 'haor') !== 'haor') return false;
-    if (!activeStatuses.includes(booking.booking_status)) return false;
+    if (!activeBookingStatuses.includes(booking.booking_status)) return false;
     if (!rangesOverlap(candidate.check_in_date!, candidate.check_out_date!, booking.check_in_date, booking.check_out_date)) {
       return false;
     }
@@ -233,7 +230,16 @@ export function hasBookingConflict(candidate: Partial<Booking>, bookings: Bookin
     const candidateRoomIds = getBookingRoomIds(candidate);
     const bookedRoomIds = getBookingRoomIds(booking);
     return Array.from(candidateRoomIds).some((roomId) => bookedRoomIds.has(roomId));
-  });
+  }) || (
+    candidate.booking_type === 'full_boat'
+      ? hasManualTripBookingForRange(tripSlots, candidate.check_in_date, candidate.check_out_date)
+      : hasManualTripRoomConflict(
+          getBookingRoomIds(candidate),
+          tripSlots,
+          candidate.check_in_date,
+          candidate.check_out_date
+        )
+  );
 }
 
 export async function saveBookingWithCustomer(

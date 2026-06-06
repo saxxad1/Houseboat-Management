@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePublicData } from '@/components/PublicDataProvider';
+import { getBookedRoomIdsForRange, getManualBookingRoomIds, hasFullBoatBookingForRange, parseManualTripData } from '@/lib/bookingAvailability';
 import type { AvailabilityStatus } from '@/types/database';
 
 type Status = 'available' | 'partial' | 'full' | 'blocked';
@@ -11,6 +12,7 @@ type Status = 'available' | 'partial' | 'full' | 'blocked';
 interface DayStatus {
   status: Status;
   availableCabins?: number;
+  totalCabins?: number;
   price?: number;
   tripInfo?: {
     isStart: boolean;
@@ -49,7 +51,7 @@ export interface AvailabilityCalendarProps {
 }
 
 export default function AvailabilityCalendar({ inline, selectedDate: propSelectedDate, onSelectDate }: AvailabilityCalendarProps = {}) {
-  const { availability, tripSlots, cabins, activeSeason, seasonData } = usePublicData();
+  const { availability, bookings, tripSlots, cabins, activeSeason, seasonData } = usePublicData();
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [localSelectedDate, setLocalSelectedDate] = useState<string | null>(null);
@@ -102,14 +104,35 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
   const availableCabinCount = cabins.filter((cabin) => cabin.available).length || cabins.length;
   const startingPrice = 10000;
   const isPadma = activeSeason === 'padma';
+  const getTripManualRoomIds = (date: string) => {
+    const roomIds = new Set<string>();
+    tripSlots
+      .filter((slot) => date === slot.start_date)
+      .forEach((slot) => {
+        const manualData = parseManualTripData(slot.note);
+        manualData.manualBookings.forEach((booking) => {
+          getManualBookingRoomIds(booking).forEach((roomId) => roomIds.add(roomId));
+        });
+      });
+    return roomIds;
+  };
 
   const getDayData = (date: string): DayStatus => {
     const blocks = availability.filter((block) => block.date === date && (block.season_type || 'haor') === activeSeason);
+    const nextDate = selectedDateNext(date);
     if (isPadma) {
+      const dayBookings = bookings.filter((booking) =>
+        (booking.season_type || 'haor') === 'padma'
+        && ['pending', 'confirmed', 'checked_in'].includes(booking.booking_status)
+        && (booking.event_date || booking.check_in_date) === date
+      );
       const blocked = blocks.some((block) => block.status === 'blocked' || block.status === 'maintenance' || block.slot_status === 'blocked' || block.slot_status === 'maintenance');
       const bookedSlotKeys = blocks
         .filter((block) => block.slot_status === 'booked' || block.status === 'fully_booked')
         .map((block) => block.event_slot || 'custom');
+      dayBookings.forEach((booking) => {
+        if (booking.event_slot) bookedSlotKeys.push(booking.event_slot);
+      });
       const hasFullDay = bookedSlotKeys.includes('full_day') || blocks.some((block) => block.event_slot === 'full_day');
       const status: Status = blocked ? 'blocked' : hasFullDay || bookedSlotKeys.length > 0 ? 'full' : 'available';
       return {
@@ -119,15 +142,31 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
     }
 
     const trip = tripSlots.find((slot) => date >= slot.start_date && date <= slot.end_date);
+    const fullBoatBooked = hasFullBoatBookingForRange(bookings, date, nextDate);
+    const bookedRoomIds = getBookedRoomIdsForRange(bookings, tripSlots, date, nextDate);
+    getTripManualRoomIds(date).forEach((roomId) => bookedRoomIds.add(roomId));
+    const availableRooms = fullBoatBooked ? 0 : Math.max(availableCabinCount - bookedRoomIds.size, 0);
+    const liveStatus: Status = fullBoatBooked
+      ? 'full'
+      : bookedRoomIds.size >= availableCabinCount
+        ? 'full'
+        : bookedRoomIds.size > 0
+          ? 'partial'
+          : 'available';
+
     if (trip) {
       const isStart = date === trip.start_date;
       const isEnd = date === trip.end_date;
-      const status = publicStatusMap[trip.status];
-      // Note: In real app, booked cabins would be checked from bookings table for this trip slot.
-      // For now we assume if it's partially booked, some cabins are taken.
+      const tripStatus = publicStatusMap[trip.status];
+      const status = tripStatus === 'full' || tripStatus === 'blocked'
+        ? tripStatus
+        : liveStatus !== 'available'
+          ? liveStatus
+          : tripStatus;
       return {
         status,
-        availableCabins: status === 'available' ? availableCabinCount : status === 'partial' ? Math.max(availableCabinCount - 1, 1) : 0,
+        availableCabins: status === 'blocked' || status === 'full' ? 0 : availableRooms,
+        totalCabins: availableCabinCount,
         price: status === 'full' || status === 'blocked' ? 0 : startingPrice,
         tripInfo: {
           isStart,
@@ -140,22 +179,23 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
     }
 
     return {
-      status: 'available',
-      availableCabins: availableCabinCount,
-      price: startingPrice,
+      status: liveStatus,
+      availableCabins: availableRooms,
+      totalCabins: availableCabinCount,
+      price: liveStatus === 'full' ? 0 : startingPrice,
     };
   };
 
           {/* Calendar */}
   const calendarGrid = (
-    <div className={`bg-white/80 backdrop-blur-xl rounded-[2rem] ${inline ? 'p-3 sm:p-4' : 'shadow-xl shadow-slate-200/50 border border-white p-5 sm:p-8'} relative`}>
+    <div className={`bg-white/80 backdrop-blur-xl ${inline ? 'rounded-xl p-2.5 sm:p-3' : 'rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white p-5 sm:p-8'} relative`}>
       {/* Month Navigation */}
-            <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <div className={`flex items-center justify-between ${inline ? 'mb-3' : 'mb-6 sm:mb-8'}`}>
               <button
                 onClick={prevMonth}
-                className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center hover:bg-white hover:shadow-md hover:scale-105 transition-all text-slate-600"
+                className={`${inline ? 'h-8 w-8' : 'h-10 w-10'} rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center hover:bg-white hover:shadow-md hover:scale-105 transition-all text-slate-600`}
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className={`${inline ? 'h-4 w-4' : 'h-5 w-5'}`} />
               </button>
               <AnimatePresence mode="popLayout" custom={direction}>
                 <motion.h3 
@@ -166,25 +206,25 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
                   animate="center"
                   exit="exit"
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="font-bold text-slate-800 text-lg sm:text-xl"
+                  className={`font-bold text-slate-800 ${inline ? 'text-base' : 'text-lg sm:text-xl'}`}
                 >
                   {months[month]} {year}
                 </motion.h3>
               </AnimatePresence>
               <button
                 onClick={nextMonth}
-                className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center hover:bg-white hover:shadow-md hover:scale-105 transition-all text-slate-600"
+                className={`${inline ? 'h-8 w-8' : 'h-10 w-10'} rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center hover:bg-white hover:shadow-md hover:scale-105 transition-all text-slate-600`}
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className={`${inline ? 'h-4 w-4' : 'h-5 w-5'}`} />
               </button>
             </div>
 
             {/* Weekday Headers */}
-            <div className="grid grid-cols-7 mb-3">
+            <div className={`grid grid-cols-7 ${inline ? 'mb-1.5' : 'mb-3'}`}>
               {weekdays.map((d, i) => (
-                <div key={d} className="text-center py-2">
-                  <span className="hidden sm:inline text-xs font-bold text-slate-400 uppercase tracking-wider">{d}</span>
-                  <span className="sm:hidden text-xs font-bold text-slate-400 uppercase">{weekdaysMobile[i]}</span>
+                <div key={d} className={`text-center ${inline ? 'py-1' : 'py-2'}`}>
+                  <span className="hidden sm:inline text-[10px] font-bold text-slate-400 uppercase tracking-wider">{inline ? weekdaysMobile[i] : d}</span>
+                  <span className="sm:hidden text-[10px] font-bold text-slate-400 uppercase">{weekdaysMobile[i]}</span>
                 </div>
               ))}
             </div>
@@ -200,7 +240,7 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
                   animate="center"
                   exit="exit"
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="grid grid-cols-7 gap-1.5 sm:gap-2 w-full"
+                  className={`grid grid-cols-7 ${inline ? 'gap-1' : 'gap-1.5 sm:gap-2'} w-full`}
                 >
                   {[...Array(firstDay)].map((_, i) => (
                     <div key={`empty-${i}`} />
@@ -238,6 +278,20 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
 
                     const isJoinedWithPrev = isSameTripAsPrev || (isDisabled && !data?.tripInfo && prevData?.status === data?.status && !prevData?.tripInfo);
                     const isJoinedWithNext = isSameTripAsNext || (isDisabled && !data?.tripInfo && nextData?.status === data?.status && !nextData?.tripInfo);
+                    const showRoomCount = !isPadma
+                      && !data?.tripInfo?.isEnd
+                      && typeof data?.availableCabins === 'number'
+                      && typeof data?.totalCabins === 'number';
+                    const roomCountLabel = showRoomCount ? `${data.availableCabins}/${data.totalCabins}${inline ? '' : ' rooms'}` : '';
+                    const roomCountClass = isSelected
+                      ? 'bg-white/20 text-white'
+                      : data?.status === 'full'
+                        ? 'bg-rose-100 text-rose-700'
+                        : data?.status === 'partial'
+                          ? 'bg-amber-100 text-amber-800'
+                          : data?.status === 'blocked'
+                            ? 'bg-slate-200 text-slate-500'
+                            : 'bg-emerald-100 text-emerald-700';
 
                     return (
                       <motion.button
@@ -247,7 +301,7 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
                         whileHover={!isDisabled && !isSelected ? { scale: 1.05 } : {}}
                         whileTap={!isDisabled ? { scale: 0.95 } : {}}
                         className={`
-                          relative aspect-square rounded-2xl flex flex-col items-center justify-center transition-all duration-200 min-w-0 overflow-hidden
+                          relative aspect-square ${inline ? 'rounded-xl' : 'rounded-2xl'} flex flex-col items-center justify-center transition-all duration-200 min-w-0 overflow-hidden
                           ${isSelected ? 'bg-gradient-to-br from-[hsl(197,80%,40%)] to-[hsl(197,80%,30%)] text-white shadow-lg shadow-[hsl(197,80%,30%)]/30 scale-105 z-20' : 'z-10'}
                           ${!isSelected && cfg ? `${cfg.bg} ${cfg.text} ${cfg.hover}` : ''}
                           ${!cfg && !isSelected ? 'text-slate-300' : ''}
@@ -261,23 +315,28 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
                         {isJoinedWithNext && !isSelected && cfg && (
                           <div className={`absolute top-[-1px] -right-[6px] sm:-right-[8px] w-[12px] sm:w-[16px] h-[calc(100%+2px)] ${cfg.bg.split(' ')[0]} border-y border-y-inherit ${cfg.bg.split(' ')[1] || ''} z-[-1] pointer-events-none`} />
                         )}
-                        <span className="text-[13px] sm:text-base font-medium z-10">{day}</span>
+                        <span className={`${inline ? 'text-[12px] sm:text-sm' : 'text-[13px] sm:text-base'} font-medium z-10`}>{day}</span>
                         {cfg && !data?.tripInfo && data?.status !== 'available' && (
                           <span className={`text-[9px] sm:text-[10px] font-semibold tracking-tighter leading-none mt-0.5 z-10 ${isSelected ? 'text-white/90' : ''}`}>
                             ✕
                           </span>
                         )}
+                        {showRoomCount && (
+                          <span className={`absolute ${inline ? 'bottom-0.5 px-1 py-0 text-[7px] sm:text-[8px]' : 'bottom-1 px-1.5 py-0.5 text-[7px] sm:text-[9px]'} rounded-full font-bold leading-none z-10 whitespace-nowrap ${roomCountClass}`}>
+                            {roomCountLabel}
+                          </span>
+                        )}
                         {data?.tripInfo?.isStart && data?.status !== 'blocked' && data?.status !== 'full' && (
-                          <span className="absolute bottom-1 text-[8px] sm:text-[9px] font-bold tracking-tighter leading-none z-10 text-indigo-600 whitespace-nowrap overflow-hidden max-w-[95%]">
+                          <span className={`absolute ${inline ? 'bottom-3.5 text-[7px]' : 'bottom-[18px] sm:bottom-5 text-[8px] sm:text-[9px]'} font-bold tracking-tighter leading-none z-10 text-indigo-600 whitespace-nowrap overflow-hidden max-w-[95%]`}>
                             {inline ? 'IN' : <><span className="sm:hidden">IN</span><span className="hidden sm:inline">Check-in</span></>}
                           </span>
                         )}
                         {data?.tripInfo?.isEnd && data?.status !== 'blocked' && data?.status !== 'full' && (
-                          <span className="absolute bottom-1 text-[8px] sm:text-[9px] font-bold tracking-tighter leading-none z-10 text-indigo-600 whitespace-nowrap overflow-hidden max-w-[95%]">
+                          <span className={`absolute ${inline ? 'bottom-1 text-[7px]' : 'bottom-[18px] sm:bottom-5 text-[8px] sm:text-[9px]'} font-bold tracking-tighter leading-none z-10 text-indigo-600 whitespace-nowrap overflow-hidden max-w-[95%]`}>
                             {inline ? 'OUT' : <><span className="sm:hidden">OUT</span><span className="hidden sm:inline">Checkout</span></>}
                           </span>
                         )}
-                        {(data?.status === 'blocked' || data?.status === 'full') && !inline && (
+                        {(data?.status === 'blocked' || data?.status === 'full') && !inline && !showRoomCount && (
                           <span className={`absolute bottom-1 text-[8px] sm:text-[9px] font-bold tracking-tighter leading-none z-10 whitespace-nowrap overflow-hidden max-w-[95%] ${isSelected ? 'text-white' : 'text-slate-600'}`}>
                             {data.status === 'full' ? 'Booked' : 'Maintenance'}
                           </span>
@@ -290,11 +349,11 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
             </div>
             
       {/* Legend */}
-      <div className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-5 mt-4 sm:mt-2 pt-5 border-t border-slate-100">
+      <div className={`flex flex-wrap justify-center sm:justify-start ${inline ? 'gap-2 mt-2 pt-2' : 'gap-3 sm:gap-5 mt-4 sm:mt-2 pt-5'} border-t border-slate-100`}>
         {Object.entries(statusConfig).filter(([key]) => !isPadma || key !== 'partial').map(([key, cfg]) => (
           <div key={key} className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full shadow-sm ${cfg.dot}`} />
-            <span className="text-xs font-medium text-slate-500">{cfg.label}</span>
+            <div className={`${inline ? 'h-2.5 w-2.5' : 'w-3 h-3'} rounded-full shadow-sm ${cfg.dot}`} />
+            <span className={`${inline ? 'text-[10px]' : 'text-xs'} font-medium text-slate-500`}>{cfg.label}</span>
           </div>
         ))}
       </div>
@@ -351,4 +410,10 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
       </div>
     </section>
   );
+}
+
+function selectedDateNext(date: string) {
+  const next = new Date(`${date}T00:00:00`);
+  next.setDate(next.getDate() + 1);
+  return next.toISOString().slice(0, 10);
 }

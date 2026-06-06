@@ -14,7 +14,7 @@ export default function BookingCTA({ onBookNow }: BookingCTAProps) {
   const [titleBeforeHighlight, titleAfterHighlight = ''] = cta.title.split(cta.highlight);
   const whatsappMessage = encodeURIComponent(
     activeSeason === 'padma'
-      ? `Hello, I want to book a Padma Day Long cruise for ${siteConfig.name}. Please confirm availability and package details.`
+      ? `Hello, I want to book a Padma Day Long cruise for ${siteConfig.name}. Please confirm availability and booking details.`
       : `Hello! I would like to know about Haor/Houseboat booking for ${siteConfig.name}.`
   );
 

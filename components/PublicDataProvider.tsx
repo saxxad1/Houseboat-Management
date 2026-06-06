@@ -4,7 +4,6 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import {
   cabins as fallbackCabins,
   galleryImages as fallbackGalleryImages,
-  packages as fallbackPackages,
   siteConfig as fallbackSiteConfig,
 } from '@/data/houseboatData';
 import { getSeasonalData, normalizeSeason, type SeasonType, type SeasonalContent } from '@/data/seasonalData';
@@ -12,11 +11,10 @@ import {
   getEffectiveSeasonalData,
   loadPublicHouseboatData,
   mapGalleryToPublic,
-  mapPackagesToPublic,
   mapRoomsToCabins,
   mapSettingsToSiteConfig,
 } from '@/lib/admin/publicData';
-import type { AvailabilityBlock, Review, SpecialDate, WebsiteContent, TripSlot } from '@/types/database';
+import type { AvailabilityBlock, Booking, Review, SpecialDate, WebsiteContent, TripSlot } from '@/types/database';
 
 type PublicSiteConfig = typeof fallbackSiteConfig & {
   logoUrl?: string;
@@ -26,7 +24,7 @@ type PublicSiteConfig = typeof fallbackSiteConfig & {
   padmaPricePerPerson?: number;
 };
 type PublicCabin = (typeof fallbackCabins)[number];
-type PublicPackage = (typeof fallbackPackages)[number];
+type PublicPackage = SeasonalContent['packages'][number];
 type PublicGalleryImage = (typeof fallbackGalleryImages)[number];
 
 interface PublicDataContextValue {
@@ -37,6 +35,7 @@ interface PublicDataContextValue {
   packages: PublicPackage[];
   galleryImages: PublicGalleryImage[];
   availability: AvailabilityBlock[];
+  bookings: Booking[];
   tripSlots: TripSlot[];
   specialDates: SpecialDate[];
   content: WebsiteContent[];
@@ -51,9 +50,10 @@ const fallbackValue: PublicDataContextValue = {
   seasonData: initialSeason,
   siteConfig: { ...fallbackSiteConfig, ...initialSeason.site, logoUrl: '/logo-kuhelika-clean.png' },
   cabins: fallbackCabins,
-  packages: fallbackPackages,
+  packages: [],
   galleryImages: fallbackGalleryImages,
   availability: [],
+  bookings: [],
   tripSlots: [],
   specialDates: [],
   content: [],
@@ -103,7 +103,7 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
           logoUrl: current.siteConfig.logoUrl || '/logo-kuhelika-clean.png',
         },
         cabins: season === 'padma' ? [...seasonData.eventSpaces] as any as PublicCabin[] : [...fallbackCabins] as any as PublicCabin[],
-        packages: seasonData.packages.length ? [...seasonData.packages] as PublicPackage[] : [...fallbackPackages] as PublicPackage[],
+        packages: [],
         galleryImages: seasonData.gallery.images.length ? [...seasonData.gallery.images] as PublicGalleryImage[] : [...fallbackGalleryImages] as PublicGalleryImage[],
         reviews: current.reviews,
       }));
@@ -121,7 +121,6 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
       const activeSeason = normalizeSeason(data.settings?.active_season || localSeason);
       const seasonData = getEffectiveSeasonalData(getSeasonalData(activeSeason), data.settings, data.content, activeSeason);
       const mappedRooms = mapRoomsToCabins(data.rooms, activeSeason);
-      const mappedPackages = mapPackagesToPublic(data.packages, activeSeason);
       const mappedGallery = mapGalleryToPublic(data.gallery, activeSeason);
       const mappedSettings = mapSettingsToSiteConfig(data.settings, seasonData);
       
@@ -134,9 +133,10 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
         cabins: mappedRooms.length
           ? mappedRooms as any as PublicCabin[]
           : (activeSeason === 'padma' ? [...seasonData.eventSpaces] : fallbackCabins) as any as PublicCabin[],
-        packages: mappedPackages.length ? mappedPackages as PublicPackage[] : (seasonData.packages.length ? [...seasonData.packages] : [...fallbackPackages]) as PublicPackage[],
+        packages: [],
         galleryImages: mappedGallery.length ? mappedGallery as PublicGalleryImage[] : [...seasonData.gallery.images] as PublicGalleryImage[],
         availability: data.availability,
+        bookings: data.bookings || [],
         tripSlots: data.trip_slots || [],
         specialDates: data.special_dates || [],
         content: data.content,
@@ -149,11 +149,24 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
     load().finally(() => {
       if (mounted) setValue((current) => ({ ...current, loading: false }));
     });
-    window.addEventListener('kuhelika-public-data-change', load);
+    const handlePublicDataChange = (event: Event) => {
+      const booking = (event as CustomEvent<{ booking?: Booking }>).detail?.booking;
+      if (booking) {
+        setValue((current) => ({
+          ...current,
+          bookings: [
+            ...current.bookings.filter((item) => item.id !== booking.id),
+            booking,
+          ],
+        }));
+      }
+      load();
+    };
+    window.addEventListener('kuhelika-public-data-change', handlePublicDataChange);
 
     return () => {
       mounted = false;
-      window.removeEventListener('kuhelika-public-data-change', load);
+      window.removeEventListener('kuhelika-public-data-change', handlePublicDataChange);
     };
   }, []);
 
@@ -179,7 +192,7 @@ export function PublicDataProvider({ children }: { children: React.ReactNode }) 
           galleryImages: [...seasonData.gallery.images] as PublicGalleryImage[],
           specialDates: current.specialDates,
           cabins: (season === 'padma' ? [...seasonData.eventSpaces] : [...fallbackCabins]) as any as PublicCabin[],
-          packages: (seasonData.packages.length ? [...seasonData.packages] : [...fallbackPackages]) as PublicPackage[],
+          packages: [],
           reviews: current.reviews,
         };
       });

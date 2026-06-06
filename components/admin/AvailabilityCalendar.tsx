@@ -16,6 +16,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { normalizeSeason, seasonMeta, type SeasonType } from '@/data/seasonalData';
 import { deleteRow, fetchAdminDataset, saveRow, rangesOverlap } from '@/lib/admin/data';
+import { getBookedRoomIdsForRange, hasFullBoatBookingForRange } from '@/lib/bookingAvailability';
 import { statusColors } from '@/lib/admin/constants';
 import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
 import type { AvailabilityBlock, AvailabilityStatus, Booking, Customer, EventSlot, EventSlotStatus, Room, TripSlot } from '@/types/database';
@@ -152,9 +153,10 @@ export default function AvailabilityCalendar() {
       && (booking.season_type || 'haor') === 'haor'
       && rangesOverlap(date, selectedDateNext(date), booking.check_in_date, booking.check_out_date)
     );
-    if (dayBookings.some((booking) => booking.booking_type === 'full_boat')) return 'fully_booked';
-    if (visibleRooms.length && dayBookings.length >= visibleRooms.length) return 'fully_booked';
-    if (dayBookings.length > 0) return 'partially_booked';
+    const bookedRoomIds = getBookedRoomIdsForRange(bookings, tripSlots, date, selectedDateNext(date));
+    if (dayBookings.some((booking) => booking.booking_type === 'full_boat') || hasFullBoatBookingForRange(bookings, date, selectedDateNext(date))) return 'fully_booked';
+    if (visibleRooms.length && bookedRoomIds.size >= visibleRooms.length) return 'fully_booked';
+    if (bookedRoomIds.size > 0) return 'partially_booked';
     return 'available';
   };
 
@@ -162,7 +164,8 @@ export default function AvailabilityCalendar() {
     if (selectedBlock) return selectedBlock.status;
     const roomBlock = blocks.find((block) => block.date === selectedDate && block.room_id === room.id);
     if (roomBlock) return roomBlock.status;
-    const booked = selectedBookings.some((booking) => booking.booking_type === 'full_boat' || booking.room_id === room.id);
+    const bookedRoomIds = getBookedRoomIdsForRange(bookings, tripSlots, selectedDate, selectedDateNext(selectedDate));
+    const booked = selectedBookings.some((booking) => booking.booking_type === 'full_boat') || bookedRoomIds.has(room.id);
     return booked ? 'fully_booked' : 'available';
   };
 

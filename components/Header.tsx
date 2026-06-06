@@ -14,14 +14,10 @@ export default function Header({ onBookNow }: HeaderProps) {
   const { siteConfig, seasonData } = usePublicData();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const packagesSection = seasonData.packagesSection as typeof seasonData.packagesSection & { is_active?: boolean };
   const router = useRouter();
   const pathname = usePathname();
   
-  // Filter out the packages link if the section is hidden via admin
-  const baseNavLinks = seasonData.nav.links.filter(link => 
-    link.href !== '#packages' || packagesSection?.is_active !== false
-  );
+  const baseNavLinks = seasonData.nav.links.filter((link) => link.href !== '#packages');
   
   const navLinks = [...baseNavLinks, { label: 'My Bookings', href: '/my-bookings' }];
 

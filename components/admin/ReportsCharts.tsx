@@ -23,11 +23,9 @@ type TrendDatum = { date: string; income: number; expense: number; profit: numbe
 type CategoryDatum = { category: string; amount: number };
 type CountDatum = { name: string; value: number };
 type TopRoomDatum = { room: string; bookings: number };
-type TopPackageDatum = { package: string; bookings: number };
 
 interface ReportsChartsProps {
   roomData: TopRoomDatum[];
-  packageData: TopPackageDatum[];
   incomeByCategory: CategoryDatum[];
   expenseByCategory: CategoryDatum[];
   seasonData?: CountDatum[];
@@ -243,13 +241,11 @@ function HorizontalBarChartCard({
 
 export default function ReportsCharts({
   roomData,
-  packageData,
   incomeByCategory,
   expenseByCategory,
   seasonData = [],
 }: ReportsChartsProps) {
   const roomChartData = roomData.map((item) => ({ name: item.room, value: item.bookings }));
-  const packageChartData = packageData.map((item) => ({ name: item.package, value: item.bookings }));
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
@@ -284,7 +280,7 @@ export default function ReportsCharts({
         </div>
       )}
 
-      <div className="md:col-span-1 lg:col-span-2">
+      <div className="md:col-span-2 lg:col-span-4">
         <HorizontalBarChartCard
           title="Top Booked Rooms"
           subtitle="Most selected cabins"
@@ -293,14 +289,6 @@ export default function ReportsCharts({
         />
       </div>
 
-      <div className="md:col-span-1 lg:col-span-2">
-        <HorizontalBarChartCard
-          title="Top Booked Packages"
-          subtitle="Most selected packages"
-          data={packageChartData}
-          emptyLabel="No packages booked"
-        />
-      </div>
     </div>
   );
 }

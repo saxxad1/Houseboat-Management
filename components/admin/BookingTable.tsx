@@ -14,13 +14,12 @@ import { format, parseISO } from 'date-fns';
 import { Edit2, XCircle, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { bookingStatusLabels, paymentStatusLabels, statusColors } from '@/lib/admin/constants';
-import type { Booking, Customer, Room, TourPackage } from '@/types/database';
+import type { Booking, Customer, Room } from '@/types/database';
 
 interface BookingTableProps {
   bookings: Booking[];
   customers: Customer[];
   rooms: Room[];
-  packages: TourPackage[];
   onEdit: (booking: Booking) => void;
   onCancel: (booking: Booking) => void;
   onDelete: (booking: Booking) => void;
@@ -31,7 +30,6 @@ export default function BookingTable({
   bookings,
   customers,
   rooms,
-  packages,
   onEdit,
   onCancel,
   onDelete,
@@ -39,7 +37,6 @@ export default function BookingTable({
 }: BookingTableProps) {
   const customerMap = new Map(customers.map((customer) => [customer.id, customer]));
   const roomMap = new Map(rooms.map((room) => [room.id, room]));
-  const packageMap = new Map(packages.map((pkg) => [pkg.id, pkg]));
 
   return (
     <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg shadow-slate-200/50 overflow-hidden">
@@ -62,7 +59,6 @@ export default function BookingTable({
               bookings.map((booking) => {
                 const customer = booking.customer_id ? customerMap.get(booking.customer_id) : null;
                 const room = booking.room_id ? roomMap.get(booking.room_id) : null;
-                const pkg = booking.package_id ? packageMap.get(booking.package_id) : null;
                 return (
                   <TableRow key={booking.id} className="border-b border-slate-100/50 hover:bg-slate-50/50 transition-colors">
                     <TableCell>
@@ -85,7 +81,6 @@ export default function BookingTable({
                     </TableCell>
                     <TableCell>
                       <div className="font-medium text-slate-600">{(booking.season_type || 'haor') === 'padma' ? booking.event_type || 'Event' : booking.booking_type === 'full_boat' ? 'Full boat' : room?.name || '-'}</div>
-                      {pkg && <div className="text-[11px] font-semibold text-slate-400 mt-0.5">{pkg.title}</div>}
                     </TableCell>
                     <TableCell>
                       <div className="font-bold text-slate-700">৳{Number(booking.total_amount).toLocaleString()}</div>

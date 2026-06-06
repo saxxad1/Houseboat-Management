@@ -1,7 +1,7 @@
 // ============================================================
 // HOUSEBOAT DATA FILE
 // Edit this file to change all content across the website.
-// Change name, images, prices, contact, rooms, packages, etc.
+// Change name, images, prices, contact, rooms, etc.
 // ============================================================
 
 export const siteConfig = {
@@ -25,7 +25,6 @@ export const siteConfig = {
 
 export const navLinks = [
   { label: "Cabins", href: "#cabins" },
-  { label: "Packages", href: "#packages" },
   { label: "Itinerary", href: "#itinerary" },
   { label: "Food Menu", href: "#food-menu" },
   { label: "Spots", href: "#destinations" },
@@ -664,7 +663,7 @@ export const testimonials = [
     location: "Sylhet",
     rating: 5,
     review:
-      "Took a 2 night 3 days package with friends. BBQ night and Niladri lake were the best highlights. Service was great for the price. Will come back InshaAllah.",
+      "Took a 2 night 3 days trip with friends. BBQ night and Niladri lake were the best highlights. Service was great for the price. Will come back InshaAllah.",
     date: "December 2023",
     avatar: "TA",
   },
@@ -692,9 +691,9 @@ export const faqs = [
       "If cancelled 7 days before the tour, full advance will be refunded. Between 3-7 days, 50% will be refunded. If cancelled less than 3 days prior, advance will not be refunded.",
   },
   {
-    question: "Is food included in the package?",
+    question: "Is food included with the booking?",
     answer:
-      "Yes, food is included in all packages. A full Bangladeshi menu is served including fresh fish, bharta, vegetables, dal. Please inform us early if you have any special dietary needs.",
+      "Food can be included with the booking. A full Bangladeshi menu is served including fresh fish, bharta, vegetables, dal. Please inform us early if you have any special dietary needs.",
   },
   {
     question: "Is it suitable for family or couples?",
@@ -718,6 +717,6 @@ export const faqs = [
   {
     question: "Can the whole boat be booked?",
     answer:
-      "Yes, definitely! The whole boat can be booked exclusively for a maximum of 24 people. Special discounts are also available on group and corporate packages.",
+      "Yes, definitely! The whole boat can be booked exclusively for a maximum of 24 people. Special discounts are also available for group and corporate bookings.",
   },
 ];

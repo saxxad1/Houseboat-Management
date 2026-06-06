@@ -5,7 +5,6 @@ import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
 import Cabins from '@/components/Cabins';
-import Packages from '@/components/Packages';
 import Destinations from '@/components/Destinations';
 import FoodMenu from '@/components/FoodMenu';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
@@ -65,10 +64,6 @@ export default function Home() {
         <ScrollReveal>
           <Cabins onBookNow={handleBookNow} />
         </ScrollReveal>
-        <ScrollReveal>
-          <Packages onBookNow={() => handleBookNow()} />
-        </ScrollReveal>
-
         <ScrollReveal>
           <AvailabilityCalendar onSelectDate={handleCalendarSelect} />
         </ScrollReveal>

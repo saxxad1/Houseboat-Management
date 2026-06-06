@@ -40,7 +40,7 @@ export const guestGuidelinesData = {
     },
     {
       title: "Extra Local Costs",
-      description: "Some local costs such as entry fees, small boat charges, bike/auto fares, and personal expenses are not included unless clearly mentioned in the selected package.",
+      description: "Some local costs such as entry fees, small boat charges, bike/auto fares, and personal expenses are not included unless clearly confirmed before booking.",
       icon: "Wallet"
     },
     {

@@ -37,7 +37,6 @@ export const seasonMeta: Record<SeasonType, {
 
 const padmaNavLinks = [
   { label: 'Book Trip', href: '#cabins' },
-  { label: 'Day Long Package', href: '#packages' },
   { label: 'Tour Plan', href: '#itinerary' },
   { label: 'Food Menu', href: '#food-menu' },
   { label: 'Highlights', href: '#destinations' },
@@ -433,7 +432,7 @@ const padmaFoodMenu = {
       ],
     },
   ],
-  note: 'Menu may slightly change based on fresh ingredient availability, weather, guest count, and confirmed package. Custom food arrangements can be discussed before booking.',
+  note: 'Menu may slightly change based on fresh ingredient availability, weather, guest count, and confirmed booking. Custom food arrangements can be discussed before booking.',
   cta: {
     title: 'Want a custom Padma food arrangement?',
     description: 'For corporate groups, family gatherings, birthdays, or private day-long trips, you can discuss your preferred food plan before confirming.',
@@ -489,7 +488,7 @@ const padmaFaqs = [
   { question: 'How are rooms used in Padma season?', answer: 'Kuhelika has 8 rooms for Padma Day Long trips. Rooms are shared fresh-up/rest facilities, usually for 4-6 guests. Male and female guests are allocated separate rooms, and mixed male/female sharing in the same room is not allowed.' },
   { question: 'Can we book the full boat for a private group?', answer: 'Yes. Full boat booking can be arranged for corporate trips, family get-togethers, birthdays, photoshoots, and private day-long groups.' },
   { question: 'Can corporate day trips be held?', answer: 'Yes, office outings, team refreshment trips, and corporate Day Long sessions can be arranged.' },
-  { question: 'Is food included in the package?', answer: 'The Day Long food plan can include welcome drink, breakfast, lunch, tea-biscuits, and live BBQ. Final food details are confirmed based on package and guest count.' },
+  { question: 'Is food included with the booking?', answer: 'The Day Long food plan can include welcome drink, breakfast, lunch, tea-biscuits, and live BBQ. Final food details are confirmed based on booking type and guest count.' },
   { question: 'Where is the boarding point?', answer: 'The usual boarding point is Louhajang ghat beside Mawa. The exact point and reporting instructions will be shared after booking confirmation.' },
   { question: 'Will we get a Padma Bridge view?', answer: 'Yes, the route is planned for Padma Bridge view when river condition, weather, timing, and permission allow it.' },
   { question: 'What activities are included?', answer: 'Padma cruising, white char stop, cricket, football, volleyball, badminton, fun games, indoor games, music, bathing opportunity, and photo sessions can be included.' },
@@ -550,7 +549,7 @@ export const seasonalData = {
       badge: 'TRAVEL PLAN',
       title: 'Daily Travel Plan',
       subtitle: 'A carefully planned 2 days 1 night journey through Tanguar Haor, Niladri Lake, Tekerghat, Shimul Bagan, Barikka Tila, and Jadukata River.',
-      note: 'This itinerary is approximate and may change depending on weather, water level, local conditions, and guest preferences. Extra transport, entry fees, small boat charges, bike/auto fares, and personal expenses are not included unless mentioned in the selected package.',
+      note: 'This itinerary is approximate and may change depending on weather, water level, local conditions, and guest preferences. Extra transport, entry fees, small boat charges, bike/auto fares, and personal expenses are not included unless clearly confirmed before booking.',
       items: itinerary,
     },
     facilitiesSection: {

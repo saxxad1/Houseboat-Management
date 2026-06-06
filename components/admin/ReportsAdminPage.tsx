@@ -5,7 +5,7 @@ import ReportTable from '@/components/admin/ReportTable';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { fetchAdminDataset } from '@/lib/admin/data';
-import type { Booking, Expense, Income, Room, TourPackage, TripSlot } from '@/types/database';
+import type { Booking, Expense, Income, Room, TripSlot } from '@/types/database';
 import { parseISO, format } from 'date-fns';
 
 import ReportsCharts from '@/components/admin/ReportsCharts';
@@ -39,7 +39,6 @@ export default function ReportsAdminPage() {
   const [income, setIncome] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [packages, setPackages] = useState<TourPackage[]>([]);
   const [tripSlots, setTripSlots] = useState<TripSlot[]>([]);
 
   useEffect(() => {
@@ -48,7 +47,6 @@ export default function ReportsAdminPage() {
       setIncome(data.income);
       setExpenses(data.expenses);
       setRooms(data.rooms);
-      setPackages(data.packages);
       setTripSlots(data.trip_slots || []);
     });
   }, []);
@@ -102,12 +100,8 @@ export default function ReportsAdminPage() {
       room: room.name,
       bookings: rangeBookings.filter((booking) => booking.room_id === room.id).length,
     })).filter(r => r.bookings > 0).sort((a, b) => b.bookings - a.bookings).slice(0, 5); // top 5
-    const packageCounts = packages.map((pkg) => ({
-      package: pkg.title,
-      bookings: rangeBookings.filter((booking) => booking.package_id === pkg.id).length,
-    })).filter(p => p.bookings > 0).sort((a, b) => b.bookings - a.bookings).slice(0, 5); // top 5
-    return { roomCounts, packageCounts };
-  }, [packages, rangeBookings, rooms]);
+    return { roomCounts };
+  }, [rangeBookings, rooms]);
 
   const tripRows = useMemo(() => {
     return [...rangeTripSlots]
@@ -213,7 +207,6 @@ export default function ReportsAdminPage() {
       {/* Visual Analytics */}
       <ReportsCharts 
         roomData={mostBooked.roomCounts} 
-        packageData={mostBooked.packageCounts} 
         incomeByCategory={incomeByCategory}
         expenseByCategory={expenseByCategory}
         seasonData={seasonData}

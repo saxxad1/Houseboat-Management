@@ -191,12 +191,9 @@ export default function SeasonSettingsPage() {
               <p className="mt-1 text-sm text-slate-500">{data.hero.locationBadge}</p>
             </div>
             <div className="rounded-xl border border-slate-200 p-4">
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Main packages</div>
-              <div className="mt-2 space-y-1 text-sm font-medium text-slate-800">
-                {data.packages.slice(0, 4).map((pkg) => (
-                  <div key={pkg.id}>{pkg.title}</div>
-                ))}
-              </div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Booking focus</div>
+              <div className="mt-2 text-lg font-bold text-slate-900">{meta.bookingMode}</div>
+              <p className="mt-1 text-sm text-slate-500">{meta.location}</p>
             </div>
             <div className="rounded-xl border border-slate-200 p-4">
               <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Booking form mode</div>

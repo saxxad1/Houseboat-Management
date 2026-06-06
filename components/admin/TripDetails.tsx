@@ -18,6 +18,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
+import { getBookedRoomIdsForRange, getManualBookingRoomIds } from '@/lib/bookingAvailability';
+import type { Booking, Room } from '@/types/database';
 
 interface ManualBooking {
   id: string;
@@ -25,6 +27,9 @@ interface ManualBooking {
   phone: string;
   number_of_guests: number;
   total_amount: number;
+  roomId: string;
+  roomName: string;
+  roomDetails?: { roomId: string; roomName: string }[];
 }
 
 interface ManualExpense {
@@ -47,6 +52,9 @@ export function TripDetails({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [trip, setTrip] = useState<TripSlot | null>(null);
   const [tripIndex, setTripIndex] = useState<number>(0);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [tripSlots, setTripSlots] = useState<TripSlot[]>([]);
   
   const [manualBookings, setManualBookings] = useState<ManualBooking[]>([]);
   const [manualExpenses, setManualExpenses] = useState<ManualExpense[]>([]);
@@ -54,7 +62,13 @@ export function TripDetails({ id }: { id: string }) {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   
-  const [quickBookingForm, setQuickBookingForm] = useState({ customer_name: '', phone: '', number_of_guests: '2', total_amount: '0' });
+  const [quickBookingForm, setQuickBookingForm] = useState({
+    customer_name: '',
+    phone: '',
+    number_of_guests: '2',
+    total_amount: '0',
+    roomDetails: [{ roomId: '' }],
+  });
   const [expenseForm, setExpenseForm] = useState({ title: '', category: 'food', amount: '', expense_date: new Date().toISOString().slice(0,10), vendor_name: '', note: '' });
   
   const [saving, setSaving] = useState(false);
@@ -63,14 +77,32 @@ export function TripDetails({ id }: { id: string }) {
   const handleSaveQuickBooking = async () => {
     if (readOnly) return;
     if (!trip) return;
+    const selectedRooms = quickBookingForm.roomDetails
+      .map((detail) => rooms.find((room) => room.id === detail.roomId))
+      .filter((room): room is Room => Boolean(room));
+    if (!selectedRooms.length) {
+      toast.error('Select at least one room');
+      return;
+    }
+    if (new Set(selectedRooms.map((room) => room.id)).size !== selectedRooms.length) {
+      toast.error('Select each room only once');
+      return;
+    }
+    if (selectedRooms.some((room) => bookedRoomIdsForTrip.has(room.id))) {
+      toast.error('One or more selected rooms are already booked for this trip');
+      return;
+    }
     setSaving(true);
     try {
       const newBooking: ManualBooking = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: crypto.randomUUID(),
         customer_name: quickBookingForm.customer_name,
         phone: quickBookingForm.phone,
         number_of_guests: Number(quickBookingForm.number_of_guests),
-        total_amount: Number(quickBookingForm.total_amount)
+        total_amount: Number(quickBookingForm.total_amount),
+        roomId: selectedRooms[0].id,
+        roomName: selectedRooms[0].name,
+        roomDetails: selectedRooms.map((room) => ({ roomId: room.id, roomName: room.name })),
       };
       
       const newBookings = [...manualBookings, newBooking];
@@ -83,7 +115,7 @@ export function TripDetails({ id }: { id: string }) {
       
       setManualBookings(newBookings);
       setIsBookingModalOpen(false);
-      setQuickBookingForm({ customer_name: '', phone: '', number_of_guests: '2', total_amount: '0' });
+      setQuickBookingForm({ customer_name: '', phone: '', number_of_guests: '2', total_amount: '0', roomDetails: [{ roomId: '' }] });
       toast.success('Booking added successfully!');
     } catch (e) {
       console.error(e);
@@ -99,7 +131,7 @@ export function TripDetails({ id }: { id: string }) {
     setSaving(true);
     try {
       const newExpense: ManualExpense = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: crypto.randomUUID(),
         title: expenseForm.title,
         category: expenseForm.category,
         amount: Number(expenseForm.amount),
@@ -140,6 +172,9 @@ export function TripDetails({ id }: { id: string }) {
       
       setTrip(foundTrip);
       setTripIndex(idx);
+      setRooms(data.rooms.filter((room) => (room.season_type || 'haor') === 'haor' && room.status === 'active'));
+      setBookings(data.bookings);
+      setTripSlots(data.trip_slots || []);
       
       let parsedData: ManualTripData = { manualBookings: [], manualExpenses: [] };
       if (foundTrip.note) {
@@ -168,6 +203,20 @@ export function TripDetails({ id }: { id: string }) {
   const totalIncome = manualBookings.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
   const totalExpense = manualExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
   const netProfit = totalIncome - totalExpense;
+  const bookedRoomIdsForTrip = trip
+    ? getBookedRoomIdsForRange(bookings, tripSlots, trip.start_date, trip.end_date)
+    : new Set<string>();
+  manualBookings.forEach((booking) => {
+    getManualBookingRoomIds(booking).forEach((roomId) => bookedRoomIdsForTrip.add(roomId));
+  });
+  const selectedQuickRoomIds = quickBookingForm.roomDetails.map((detail) => detail.roomId).filter(Boolean);
+  const hasQuickBookingRoom = selectedQuickRoomIds.length > 0;
+  const getManualBookingRoomNames = (booking: ManualBooking) => {
+    if (Array.isArray(booking.roomDetails) && booking.roomDetails.length) {
+      return booking.roomDetails.map((room) => room.roomName).filter(Boolean).join(', ');
+    }
+    return booking.roomName || '-';
+  };
 
   return (
     <div className="space-y-6">
@@ -263,6 +312,7 @@ export function TripDetails({ id }: { id: string }) {
                   <TableRow>
                     <TableHead>Code</TableHead>
                     <TableHead>Customer</TableHead>
+                    <TableHead>Room</TableHead>
                     <TableHead>Guests</TableHead>
                     <TableHead>Total</TableHead>
                     <TableHead>Status</TableHead>
@@ -278,6 +328,7 @@ export function TripDetails({ id }: { id: string }) {
                           <div className="font-semibold text-slate-800">{booking.customer_name}</div>
                           <div className="text-xs text-slate-500">{booking.phone}</div>
                         </TableCell>
+                        <TableCell>{getManualBookingRoomNames(booking)}</TableCell>
                         <TableCell>{booking.number_of_guests} Pax</TableCell>
                         <TableCell className="font-semibold text-[hsl(197,80%,30%)]">
                           {currencyFormatter.format(Number(booking.total_amount || 0))}
@@ -306,7 +357,7 @@ export function TripDetails({ id }: { id: string }) {
                   })}
                   {manualBookings.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={readOnly ? 5 : 6} className="h-24 text-center text-slate-500">
+                      <TableCell colSpan={readOnly ? 6 : 7} className="h-24 text-center text-slate-500">
                         No manual bookings found.
                       </TableCell>
                     </TableRow>
@@ -400,6 +451,58 @@ export function TripDetails({ id }: { id: string }) {
               <Label>Phone Number</Label>
               <Input value={quickBookingForm.phone} onChange={e => setQuickBookingForm({...quickBookingForm, phone: e.target.value})} placeholder="e.g., 017XXXXXXXX" />
             </div>
+            <div className="space-y-2">
+              <Label>Rooms</Label>
+              <div className="space-y-2">
+                {quickBookingForm.roomDetails.map((detail, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Select
+                      value={detail.roomId}
+                      onValueChange={(val) => {
+                        const nextRooms = [...quickBookingForm.roomDetails];
+                        nextRooms[index] = { roomId: val };
+                        setQuickBookingForm({ ...quickBookingForm, roomDetails: nextRooms });
+                      }}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select room" /></SelectTrigger>
+                      <SelectContent>
+                        {rooms.map((room) => {
+                          const booked = bookedRoomIdsForTrip.has(room.id);
+                          const selectedInAnotherRow = quickBookingForm.roomDetails.some((item, itemIndex) => itemIndex !== index && item.roomId === room.id);
+                          return (
+                            <SelectItem key={room.id} value={room.id} disabled={booked || selectedInAnotherRow}>
+                              {room.name}{booked ? ' (Booked)' : selectedInAnotherRow ? ' (Selected)' : ''}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const nextRooms = quickBookingForm.roomDetails.filter((_, itemIndex) => itemIndex !== index);
+                        setQuickBookingForm({ ...quickBookingForm, roomDetails: nextRooms.length ? nextRooms : [{ roomId: '' }] });
+                      }}
+                    >
+                      X
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuickBookingForm({
+                    ...quickBookingForm,
+                    roomDetails: [...quickBookingForm.roomDetails, { roomId: '' }],
+                  })}
+                >
+                  + Add Room
+                </Button>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Total Guests</Label>
@@ -413,7 +516,7 @@ export function TripDetails({ id }: { id: string }) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsBookingModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveQuickBooking} disabled={saving || !quickBookingForm.customer_name || !quickBookingForm.phone}>
+            <Button onClick={handleSaveQuickBooking} disabled={saving || !quickBookingForm.customer_name || !quickBookingForm.phone || !hasQuickBookingRoom}>
               {saving ? 'Saving...' : 'Save Booking'}
             </Button>
           </DialogFooter>

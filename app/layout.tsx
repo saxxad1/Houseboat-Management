@@ -25,12 +25,12 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://kuhelika.com'),
   title: 'Kuhelika - An Aesthetic Water Villa',
   description:
-    'Welcome to the luxury houseboat in Tanguar Haor. Tanguar Haor houseboat booking Bangladesh. Ideal travel packages for family, friends, and corporate teams.',
+    'Welcome to the luxury houseboat in Tanguar Haor. Tanguar Haor houseboat booking Bangladesh. Ideal for family, friends, and corporate teams.',
   keywords: [
     'Tanguar Haor houseboat',
     'Sunamganj houseboat booking',
     'Tanguar Haor Houseboat',
-    'Tanguar Haor tour package',
+    'Tanguar Haor tour',
     'Houseboat booking Bangladesh',
     'kuhelika',
     'Kuhelika',

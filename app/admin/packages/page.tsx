@@ -1,5 +1,5 @@
-import { PackagesAdminPage } from '@/components/admin/ResourcePages';
+import { redirect } from 'next/navigation';
 
 export default function AdminPackagesPage() {
-  return <PackagesAdminPage />;
+  redirect('/admin/dashboard');
 }

@@ -3,7 +3,7 @@
 import { isSupabaseConfigured } from '@/lib/supabase/client';
 import { cabins as fallbackRooms, siteConfig } from '@/data/houseboatData';
 import type { SeasonType, SeasonalContent } from '@/data/seasonalData';
-import type { AvailabilityBlock, GalleryImage, HouseboatSettings, Review, Room, SpecialDate, TourPackage, TripSlot, WebsiteContent } from '@/types/database';
+import type { AvailabilityBlock, Booking, GalleryImage, HouseboatSettings, Review, Room, SpecialDate, TripSlot, WebsiteContent } from '@/types/database';
 
 export async function loadPublicHouseboatData() {
   if (!isSupabaseConfigured()) {
@@ -19,13 +19,14 @@ export async function loadPublicHouseboatData() {
   return {
     settings: result.settings as HouseboatSettings | null,
     rooms: (result.rooms || []) as Room[],
-    packages: (result.packages || []) as TourPackage[],
+    packages: [],
     gallery: (result.gallery || []) as GalleryImage[],
     content: (result.content || []) as WebsiteContent[],
     availability: (result.availability || []) as AvailabilityBlock[],
     trip_slots: (result.trip_slots || []) as TripSlot[],
     special_dates: (result.special_dates || []) as SpecialDate[],
     reviews: (result.reviews || []) as Review[],
+    bookings: (result.bookings || []) as Booking[],
   };
 }
 
@@ -82,7 +83,6 @@ export function getEffectiveSeasonalData(
   const hero = contentFor(content, season, 'hero');
   const about = contentFor(content, season, 'about');
   const cabinsSection = contentFor(content, season, season === 'padma' ? 'event_spaces' : 'cabins') || contentFor(content, season, 'cabins');
-  const packagesSection = contentFor(content, season, season === 'padma' ? 'event_packages' : 'packages', true) || contentFor(content, season, 'packages', true);
   const availability = contentFor(content, season, 'availability');
   const itinerary = contentFor(content, season, 'itinerary');
   const facilities = contentFor(content, season, 'facilities');
@@ -123,15 +123,6 @@ export function getEffectiveSeasonalData(
           is_active: cabinsSection.is_active ?? true,
         }
       : seasonData.cabinsSection,
-    packagesSection: packagesSection
-      ? {
-          ...seasonData.packagesSection,
-          title: textOr(packagesSection.title, seasonData.packagesSection.title),
-          subtitle: textOr(packagesSection.subtitle, seasonData.packagesSection.subtitle),
-          note: textOr(packagesSection.content, seasonData.packagesSection.note),
-          is_active: packagesSection.is_active ?? true,
-        }
-      : seasonData.packagesSection,
     availability: availability
       ? {
           ...seasonData.availability,
@@ -256,28 +247,6 @@ export function mapRoomsToCabins(rooms: Room[], season: SeasonType = 'haor') {
       buttonLabel: season === 'padma' ? 'Book this event space' : undefined,
     };
   });
-}
-
-export function mapPackagesToPublic(packages: TourPackage[], season: SeasonType = 'haor') {
-  const filtered = packages.filter((pkg) => (pkg.season_type || 'haor') === season);
-  if (!filtered.length) return [];
-  return filtered.map((pkg, index) => ({
-    id: index + 1,
-    title: pkg.title,
-    titleEn: pkg.slug,
-    duration: pkg.duration || '',
-    price: pkg.price,
-    priceDisplay: season === 'padma' ? (pkg.price > 0 ? `From ৳${pkg.price.toLocaleString()}` : 'Custom Quote') : undefined,
-    priceNote: season === 'padma' ? 'Starts from package' : 'According to package',
-    maxGuests: pkg.max_guests,
-    meals: season === 'padma' ? (pkg.best_for || pkg.meal_info || '') : (pkg.meal_info || ''),
-    time: pkg.suggested_time || undefined,
-    popular: index === 0,
-    color: ['sky', 'teal', 'amber', 'emerald', 'orange', 'slate'][index % 6],
-    includes: pkg.included_services || [],
-    spots: pkg.route_spots || [],
-    badge: index === 0 ? 'Featured' : '',
-  }));
 }
 
 export function mapGalleryToPublic(gallery: GalleryImage[], season: SeasonType = 'haor') {

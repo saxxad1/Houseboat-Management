@@ -49,46 +49,6 @@ export function RoomsAdminPage() {
   );
 }
 
-import PackagesSectionToggle from '@/components/admin/PackagesSectionToggle';
-
-export function PackagesAdminPage() {
-  return (
-    <AdminResourcePage
-      table="packages"
-      renderTop={() => <PackagesSectionToggle />}
-      title="Package List"
-      description="Manage travel packages, services, food, routes, and price."
-      addLabel="New Package"
-      storageFolder="packages"
-      searchKeys={['title', 'duration', 'meal_info']}
-      columns={[
-        { key: 'season_type', label: 'Season', type: 'status' },
-        { key: 'title', label: 'Package' },
-        { key: 'duration', label: 'Duration' },
-        { key: 'price', label: 'Price', type: 'money' },
-        { key: 'max_guests', label: 'Guests' },
-        { key: 'status', label: 'Status', type: 'status' },
-      ]}
-      fields={[
-        { name: 'title', label: 'Title', required: true },
-        { name: 'season_type', label: 'Season', type: 'select', options: [{ value: 'haor', label: 'Haor package' }, { value: 'padma', label: 'Padma event package' }] },
-        { name: 'image_url', label: 'Package image', type: 'image', colSpan: 'full' },
-        { name: 'description', label: 'Description', type: 'textarea' },
-        { name: 'duration', label: 'Duration' },
-        { name: 'suggested_time', label: 'Suggested time' },
-        { name: 'price', label: 'Price', type: 'number', defaultValue: 0, min: 0 },
-        { name: 'best_for', label: 'Best for' },
-        { name: 'max_guests', label: 'Max guests', type: 'number', defaultValue: 1, min: 1 },
-        { name: 'included_services', label: 'Included services', type: 'tags', colSpan: 'full' },
-        { name: 'meal_info', label: 'Meal info', type: 'textarea' },
-        { name: 'route_spots', label: 'Route/spots', type: 'tags', colSpan: 'full' },
-        { name: 'status', label: 'Status', type: 'select', options: [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }] },
-        { name: 'sort_order', label: 'Sort order', type: 'number', defaultValue: 0 },
-      ]}
-    />
-  );
-}
-
 export function CustomersAdminPage() {
   return (
     <AdminResourcePage

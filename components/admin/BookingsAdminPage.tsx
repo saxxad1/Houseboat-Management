@@ -16,13 +16,12 @@ import {
 } from '@/components/ui/select';
 import { deleteRow, fetchAdminDataset, saveRow } from '@/lib/admin/data';
 import { isReadOnlyAdminForTable } from '@/lib/admin/permissions';
-import type { Booking, Customer, Room, TourPackage } from '@/types/database';
+import type { Booking, Customer, Room } from '@/types/database';
 
 export default function BookingsAdminPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [packages, setPackages] = useState<TourPackage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selected, setSelected] = useState<Booking | null>(null);
   const [open, setOpen] = useState(false);
@@ -42,7 +41,6 @@ export default function BookingsAdminPage() {
     setBookings(data.bookings);
     setCustomers(data.customers);
     setRooms(data.rooms);
-    setPackages(data.packages);
     setIsLoading(false);
   };
 
@@ -169,7 +167,6 @@ export default function BookingsAdminPage() {
               bookings={filtered}
               customers={customers}
               rooms={rooms}
-              packages={packages}
               onEdit={(booking) => {
                 if (readOnly) return;
                 setSelected(booking);
@@ -190,7 +187,6 @@ export default function BookingsAdminPage() {
         bookings={bookings}
         customers={customers}
         rooms={rooms}
-        packages={packages}
         onSaved={load}
       />
     </div>

@@ -10,7 +10,7 @@ export default function FloatingWhatsApp() {
 
   const message = encodeURIComponent(
     activeSeason === 'padma'
-      ? `Hello, I want to book a Padma Day Long cruise for ${siteConfig.name}. Please confirm availability and package details.`
+      ? `Hello, I want to book a Padma Day Long cruise for ${siteConfig.name}. Please confirm availability and booking details.`
       : `Hello! I would like to know about Haor/Houseboat booking for ${siteConfig.name}.`
   );
   const url = `https://wa.me/${siteConfig.whatsapp}?text=${message}`;
