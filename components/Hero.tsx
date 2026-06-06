@@ -108,11 +108,11 @@ export default function Hero({ onBookNow }: HeroProps) {
                 quality={90}
               />
             )}
-            <div className="absolute inset-0 bg-black/40 mix-blend-multiply" />
+            <div className="absolute inset-0 bg-black/20 mix-blend-multiply" />
           </motion.div>
         </AnimatePresence>
         {/* Improved aesthetic gradients */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-[hsl(197,80%,10%)]/95" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-[hsl(197,80%,10%)]/90" />
         <div className="absolute inset-0 bg-gradient-to-r from-[hsl(197,80%,15%)]/80 via-transparent to-transparent" />
       </motion.div>
 
