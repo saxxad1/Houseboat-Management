@@ -323,7 +323,7 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
                           <div className={`absolute top-[-1px] -right-[6px] sm:-right-[8px] w-[12px] sm:w-[16px] h-[calc(100%+2px)] ${cfg.bg.split(' ')[0]} border-y border-y-inherit ${cfg.bg.split(' ')[1] || ''} z-[-1] pointer-events-none`} />
                         )}
                         <span className={`${inline ? 'text-[12px] sm:text-sm' : 'text-[13px] sm:text-base'} font-medium z-10`}>{day}</span>
-                        {cfg && !data?.tripInfo && data?.status !== 'available' && (
+                        {cfg && !data?.tripInfo && (data?.status === 'full' || data?.status === 'blocked') && (
                           <span className={`text-[9px] sm:text-[10px] font-semibold tracking-tighter leading-none mt-0.5 z-10 ${isSelected ? 'text-white/90' : ''}`}>
                             ✕
                           </span>
