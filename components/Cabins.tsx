@@ -176,9 +176,20 @@ function CabinCard({
             <div className="flex flex-col items-end gap-1.5 py-0.5">
               {display.rawPrice2Pax && (
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[hsl(197,80%,30%)] font-black text-sm sm:text-base leading-none">
-                    ৳{display.rawPrice2Pax.toLocaleString()}
-                  </span>
+                  {isPromoActive && siteConfig.promoDiscountPercent ? (
+                    <>
+                      <span className="text-slate-400 font-semibold text-xs sm:text-sm leading-none line-through mr-1">
+                        ৳{display.rawPrice2Pax.toLocaleString()}
+                      </span>
+                      <span className="text-[hsl(197,80%,30%)] font-black text-sm sm:text-base leading-none">
+                        ৳{Math.round(display.rawPrice2Pax * (1 - siteConfig.promoDiscountPercent / 100)).toLocaleString()}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-[hsl(197,80%,30%)] font-black text-sm sm:text-base leading-none">
+                      ৳{display.rawPrice2Pax.toLocaleString()}
+                    </span>
+                  )}
                   <span className="text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider">
                     / person (2 persons)
                   </span>
@@ -186,9 +197,20 @@ function CabinCard({
               )}
               {display.rawPrice3Pax && (
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[hsl(197,80%,30%)] font-black text-sm sm:text-base leading-none">
-                    ৳{display.rawPrice3Pax.toLocaleString()}
-                  </span>
+                  {isPromoActive && siteConfig.promoDiscountPercent ? (
+                    <>
+                      <span className="text-slate-400 font-semibold text-xs sm:text-sm leading-none line-through mr-1">
+                        ৳{display.rawPrice3Pax.toLocaleString()}
+                      </span>
+                      <span className="text-[hsl(197,80%,30%)] font-black text-sm sm:text-base leading-none">
+                        ৳{Math.round(display.rawPrice3Pax * (1 - siteConfig.promoDiscountPercent / 100)).toLocaleString()}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-[hsl(197,80%,30%)] font-black text-sm sm:text-base leading-none">
+                      ৳{display.rawPrice3Pax.toLocaleString()}
+                    </span>
+                  )}
                   <span className="text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider">
                     / person (3 persons)
                   </span>
@@ -197,9 +219,20 @@ function CabinCard({
             </div>
           ) : (
             <>
-              <span className="text-[hsl(197,80%,30%)] font-black text-lg sm:text-xl leading-none">
-                {display.mainPrice}
-              </span>
+              {isPromoActive && siteConfig.promoDiscountPercent && display.mainPrice.includes('৳') ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-400 font-semibold text-sm line-through">
+                    {display.mainPrice}
+                  </span>
+                  <span className="text-[hsl(197,80%,30%)] font-black text-lg sm:text-xl leading-none">
+                    ৳{Math.round(parseInt(display.mainPrice.replace(/\D/g, '')) * (1 - siteConfig.promoDiscountPercent / 100)).toLocaleString()}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-[hsl(197,80%,30%)] font-black text-lg sm:text-xl leading-none">
+                  {display.mainPrice}
+                </span>
+              )}
               <span className="text-slate-400 text-[10px] font-semibold uppercase tracking-wider mt-0.5">
                 {display.priceLabel || '/Night'}
               </span>
