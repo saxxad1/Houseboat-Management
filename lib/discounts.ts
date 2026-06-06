@@ -41,14 +41,41 @@ function getSpecialDate(date: string, specialDates: DiscountSpecialDate[]) {
   });
 }
 
+export type PromoOptions = {
+  percent?: number;
+  startDate?: string;
+  endDate?: string;
+  title?: string;
+};
+
 export function calculateBookingDiscount(
   subtotal: unknown,
   bookingDate: string | null | undefined,
   specialDates: DiscountSpecialDate[] = [],
-  discountPercent = STANDARD_DISCOUNT_PERCENT
+  discountPercent = STANDARD_DISCOUNT_PERCENT,
+  promoOptions?: PromoOptions
 ): DiscountCalculation {
   const subtotalAmount = toMoney(subtotal);
-  const percent = Math.max(Number(discountPercent || 0), 0);
+  const defaultPercent = Math.max(Number(discountPercent || 0), 0);
+  
+  let percent = defaultPercent;
+  let reason = `${defaultPercent}% weekday discount`;
+  let isPromo = false;
+
+  if (
+    promoOptions &&
+    promoOptions.percent &&
+    promoOptions.percent > 0 &&
+    promoOptions.startDate &&
+    promoOptions.endDate &&
+    bookingDate &&
+    bookingDate >= promoOptions.startDate &&
+    bookingDate <= promoOptions.endDate
+  ) {
+    percent = Math.max(Number(promoOptions.percent), 0);
+    reason = promoOptions.title || `${percent}% Promotional Discount`;
+    isPromo = true;
+  }
 
   if (!subtotalAmount || !bookingDate || !percent) {
     return {
@@ -57,18 +84,6 @@ export function calculateBookingDiscount(
       totalAmount: subtotalAmount,
       discountPercent: 0,
       discountReason: null,
-      isDiscountApplied: false,
-    };
-  }
-
-  const weekday = getWeekday(bookingDate);
-  if (weekday !== null && noDiscountWeekdays.has(weekday)) {
-    return {
-      subtotalAmount,
-      discountAmount: 0,
-      totalAmount: subtotalAmount,
-      discountPercent: 0,
-      discountReason: `${weekdayNames[weekday]} no-discount date`,
       isDiscountApplied: false,
     };
   }
@@ -85,6 +100,21 @@ export function calculateBookingDiscount(
     };
   }
 
+  const weekday = getWeekday(bookingDate);
+  // We apply the weekday no-discount rule ONLY if it's NOT a promo discount
+  // If promo is active, we apply it to ALL days including weekends.
+  // Wait, if it's not promo, check if it's a no-discount weekday.
+  if (!isPromo && weekday !== null && noDiscountWeekdays.has(weekday)) {
+    return {
+      subtotalAmount,
+      discountAmount: 0,
+      totalAmount: subtotalAmount,
+      discountPercent: 0,
+      discountReason: `${weekdayNames[weekday]} no-discount date`,
+      isDiscountApplied: false,
+    };
+  }
+
   const discountAmount = Math.round((subtotalAmount * percent) / 100);
 
   return {
@@ -92,7 +122,7 @@ export function calculateBookingDiscount(
     discountAmount,
     totalAmount: Math.max(subtotalAmount - discountAmount, 0),
     discountPercent: percent,
-    discountReason: `${percent}% weekday discount`,
+    discountReason: reason,
     isDiscountApplied: discountAmount > 0,
   };
 }

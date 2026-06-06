@@ -303,6 +303,12 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
 
   const estimatedSubtotal = getEstimatedPrice();
   const bookingDate = activeSeason === 'padma' ? form.eventDate : form.checkin;
+  const promoOptions = {
+    percent: siteConfig.promoDiscountPercent,
+    startDate: siteConfig.promoDiscountStartDate,
+    endDate: siteConfig.promoDiscountEndDate,
+    title: siteConfig.promoDiscountTitle,
+  };
   const priceSummary = activeSeason === 'padma'
     ? {
         subtotalAmount: Math.max(Math.round(Number(estimatedSubtotal || 0)), 0),
@@ -312,7 +318,7 @@ export default function BookingForm({ isOpen, onClose, initialCabin, initialBook
         discountReason: null,
         isDiscountApplied: false,
       }
-    : calculateBookingDiscount(estimatedSubtotal || 0, bookingDate, specialDates);
+    : calculateBookingDiscount(estimatedSubtotal || 0, bookingDate, specialDates, undefined, promoOptions);
   const payableAmount = form.paymentMode === 'advance' ? Math.ceil(priceSummary.totalAmount / 2) : priceSummary.totalAmount;
   const padmaPricePerPerson = Number(siteConfig.padmaPricePerPerson || 0);
   const hasSelectedRoom = roomDetails.some((room) => room.cabin.trim() !== '');

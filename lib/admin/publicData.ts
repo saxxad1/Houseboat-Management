@@ -50,6 +50,10 @@ export function mapSettingsToSiteConfig(settings?: HouseboatSettings | null, sea
     nagadNumber: settings.nagad_number || undefined,
     bankInfo: settings.bank_info || undefined,
     padmaPricePerPerson: Number(settings.padma_price_per_person || 0),
+    promoDiscountPercent: Number(settings.promo_discount_percent || 0),
+    promoDiscountStartDate: settings.promo_discount_start_date || undefined,
+    promoDiscountEndDate: settings.promo_discount_end_date || undefined,
+    promoDiscountTitle: settings.promo_discount_title || undefined,
   };
 }
 

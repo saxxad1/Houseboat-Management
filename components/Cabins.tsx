@@ -78,6 +78,18 @@ function CabinCard({
     [emblaApi]
   );
 
+  const { siteConfig } = usePublicData();
+  const todayLocalStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+  const isPromoActive = Boolean(
+    siteConfig.promoDiscountStartDate && 
+    siteConfig.promoDiscountEndDate && 
+    todayLocalStr >= siteConfig.promoDiscountStartDate && 
+    todayLocalStr <= siteConfig.promoDiscountEndDate &&
+    siteConfig.promoDiscountPercent && 
+    siteConfig.promoDiscountPercent > 0
+  );
+  const promoText = siteConfig.promoDiscountTitle || `${siteConfig.promoDiscountPercent}% Promotional Discount`;
+
   return (
     <div className="h-full bg-white/80 backdrop-blur-md rounded-[2rem] overflow-hidden shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-2 border border-white flex flex-col group">
       {/* Image Carousel */}
@@ -157,7 +169,7 @@ function CabinCard({
           </div>
           {!isPadma && (
             <div className="mb-1 text-[10px] font-black uppercase tracking-wide text-emerald-600">
-              10% off on weekdays
+              {isPromoActive ? promoText : '10% off on weekdays'}
             </div>
           )}
           {display.rawPrice2Pax || display.rawPrice3Pax ? (

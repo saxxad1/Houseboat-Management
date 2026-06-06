@@ -22,6 +22,10 @@ type PublicSiteConfig = typeof fallbackSiteConfig & {
   nagadNumber?: string;
   bankInfo?: string;
   padmaPricePerPerson?: number;
+  promoDiscountPercent?: number;
+  promoDiscountStartDate?: string;
+  promoDiscountEndDate?: string;
+  promoDiscountTitle?: string;
 };
 type PublicCabin = (typeof fallbackCabins)[number];
 type PublicPackage = SeasonalContent['packages'][number];

@@ -372,16 +372,23 @@ export async function POST(req: Request) {
         : parseGuestCount(guests, 1);
 
     let padmaPricePerPerson = 0;
-    if (isPadma) {
-      const { data: settings, error: settingsError } = await supabase
-        .from('houseboat_settings')
-        .select('padma_price_per_person')
-        .limit(1)
-        .maybeSingle();
+    const { data: settings, error: settingsError } = await supabase
+      .from('houseboat_settings')
+      .select('padma_price_per_person, promo_discount_percent, promo_discount_start_date, promo_discount_end_date, promo_discount_title')
+      .limit(1)
+      .maybeSingle();
 
+    if (isPadma) {
       if (settingsError) throw settingsError;
       padmaPricePerPerson = Math.max(Math.round(Number(settings?.padma_price_per_person || 0)), 0);
     }
+
+    const promoOptions = {
+      percent: Number(settings?.promo_discount_percent || 0),
+      startDate: settings?.promo_discount_start_date,
+      endDate: settings?.promo_discount_end_date,
+      title: settings?.promo_discount_title,
+    };
 
     const subtotalAmount = isPadma
       ? padmaPricePerPerson * guestCount
@@ -409,7 +416,9 @@ export async function POST(req: Request) {
       : calculateBookingDiscount(
           Number(subtotalAmount || 0),
           checkInDate,
-          (specialDates || []) as SpecialDate[]
+          (specialDates || []) as SpecialDate[],
+          undefined,
+          promoOptions
         );
     const requestedPayableAmount = Math.max(Math.round(Number(payableAmount || 0)), 0);
     const calculatedPayableAmount = paymentMode === 'full' ? pricing.totalAmount : Math.ceil(pricing.totalAmount / 2);

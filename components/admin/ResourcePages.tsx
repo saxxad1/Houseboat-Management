@@ -206,41 +206,46 @@ export function ContentAdminPage() {
   );
 }
 
+import PromoDiscountSettingsForm from './PromoDiscountSettingsForm';
+
 export function DiscountAdminPage() {
   return (
-    <AdminResourcePage
-      table="special_dates"
-      title="Discount Controls"
-      description="Manage full moon, government holidays, and custom no-discount dates. Thursday, Friday, and Saturday are excluded automatically."
-      addLabel="Add No-discount Date"
-      searchKeys={['title', 'date', 'date_type']}
-      columns={[
-        { key: 'date', label: 'Date', type: 'date' },
-        { key: 'title', label: 'Title' },
-        { key: 'date_type', label: 'Type', type: 'status' },
-        { key: 'is_discount_excluded', label: 'No Discount', type: 'boolean' },
-        { key: 'is_active', label: 'Active', type: 'boolean' },
-        { key: 'note', label: 'Note' },
-      ]}
-      fields={[
-        { name: 'date', label: 'Date', type: 'date', required: true },
-        { name: 'title', label: 'Title', required: true },
-        {
-          name: 'date_type',
-          label: 'Date type',
-          type: 'select',
-          options: [
-            { value: 'public_holiday', label: 'Government holiday' },
-            { value: 'full_moon', label: 'Full moon' },
-            { value: 'custom_no_discount', label: 'Custom no-discount date' },
-            { value: 'other', label: 'Other' },
-          ],
-        },
-        { name: 'is_discount_excluded', label: 'Exclude this date from discount', type: 'boolean', defaultValue: true },
-        { name: 'is_active', label: 'Active', type: 'boolean', defaultValue: true },
-        { name: 'note', label: 'Note', type: 'textarea', colSpan: 'full' },
-      ]}
-    />
+    <div className="space-y-8">
+      <PromoDiscountSettingsForm />
+      <AdminResourcePage
+        table="special_dates"
+        title="Discount Controls"
+        description="Manage full moon, government holidays, and custom no-discount dates. Thursday, Friday, and Saturday are excluded automatically."
+        addLabel="Add No-discount Date"
+        searchKeys={['title', 'date', 'date_type']}
+        columns={[
+          { key: 'date', label: 'Date', type: 'date' },
+          { key: 'title', label: 'Title' },
+          { key: 'date_type', label: 'Type', type: 'status' },
+          { key: 'is_discount_excluded', label: 'No Discount', type: 'boolean' },
+          { key: 'is_active', label: 'Active', type: 'boolean' },
+          { key: 'note', label: 'Note' },
+        ]}
+        fields={[
+          { name: 'date', label: 'Date', type: 'date', required: true },
+          { name: 'title', label: 'Title', required: true },
+          {
+            name: 'date_type',
+            label: 'Date type',
+            type: 'select',
+            options: [
+              { value: 'public_holiday', label: 'Government holiday' },
+              { value: 'full_moon', label: 'Full moon' },
+              { value: 'custom_no_discount', label: 'Custom no-discount date' },
+              { value: 'other', label: 'Other' },
+            ],
+          },
+          { name: 'is_discount_excluded', label: 'Exclude this date from discount', type: 'boolean', defaultValue: true },
+          { name: 'is_active', label: 'Active', type: 'boolean', defaultValue: true },
+          { name: 'note', label: 'Note', type: 'textarea', colSpan: 'full' },
+        ]}
+      />
+    </div>
   );
 }
 

@@ -57,6 +57,10 @@ export interface HouseboatSettings extends BaseRow {
   logo_url: string | null;
   active_season?: SeasonType | null;
   season_updated_at?: string | null;
+  promo_discount_percent?: number | null;
+  promo_discount_start_date?: string | null;
+  promo_discount_end_date?: string | null;
+  promo_discount_title?: string | null;
 }
 
 export interface Room extends BaseRow {
