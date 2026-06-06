@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { listRows, saveRow } from '@/lib/admin/data';
+import type { HouseboatSettings } from '@/types/database';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,23 +27,9 @@ export default function PromoDiscountSettingsForm() {
       setLoading(true);
       setError(null);
       try {
-        const supabase = getSupabaseBrowserClient();
-        if (!supabase) throw new Error('Supabase not configured');
+        const rows = await listRows<HouseboatSettings>('houseboat_settings');
+        const data = rows.length > 0 ? rows[0] : null;
 
-        const { data, error } = await supabase
-          .from('houseboat_settings')
-          .select('id, promo_discount_percent, promo_discount_start_date, promo_discount_end_date, promo_discount_title')
-          .limit(1)
-          .maybeSingle();
-
-        if (error) {
-          // If the column doesn't exist, it usually throws a PGRST204 or similar error
-          if (error.message.includes('Could not find the') || error.message.includes('column')) {
-            throw new Error('Database migration is missing! Please run the SQL file in your Supabase Dashboard.');
-          }
-          throw error;
-        }
-        
         if (data) {
           setSettingsId(data.id);
           setForm({
@@ -52,7 +39,7 @@ export default function PromoDiscountSettingsForm() {
             promo_discount_title: data.promo_discount_title || '',
           });
         } else {
-          setError('No houseboat settings found. Please add Houseboat Settings first below.');
+          setError('No houseboat settings found. Please go to the Settings tab and add Houseboat Settings first.');
         }
       } catch (err: any) {
         console.error('Failed to load promo settings:', err);
@@ -73,27 +60,26 @@ export default function PromoDiscountSettingsForm() {
     setSuccess(null);
 
     try {
-      const supabase = getSupabaseBrowserClient();
-      if (!supabase) throw new Error('Supabase not configured');
+      await saveRow<HouseboatSettings>('houseboat_settings', {
+        id: settingsId,
+        promo_discount_percent: form.promo_discount_percent ? parseInt(form.promo_discount_percent, 10) : null,
+        promo_discount_start_date: form.promo_discount_start_date || null,
+        promo_discount_end_date: form.promo_discount_end_date || null,
+        promo_discount_title: form.promo_discount_title || null,
+      });
 
-      const { error } = await supabase
-        .from('houseboat_settings')
-        .update({
-          promo_discount_percent: form.promo_discount_percent ? parseInt(form.promo_discount_percent, 10) : null,
-          promo_discount_start_date: form.promo_discount_start_date || null,
-          promo_discount_end_date: form.promo_discount_end_date || null,
-          promo_discount_title: form.promo_discount_title || null,
-        })
-        .eq('id', settingsId);
-
-      if (error) throw error;
       setSuccess('Promotional discount settings updated successfully');
       
       // Auto hide success message
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
       console.error('Failed to save promo settings:', err);
-      setError(err.message || 'Failed to save settings');
+      // If the column doesn't exist, it usually throws a PGRST204 or similar error
+      if (err.message && (err.message.includes('Could not find the') || err.message.includes('column'))) {
+        setError('Database migration is missing! Please run the SQL file in your Supabase Dashboard.');
+      } else {
+        setError(err.message || 'Failed to save settings');
+      }
     } finally {
       setSaving(false);
     }
