@@ -15,16 +15,23 @@ export default function Hero({ onBookNow }: HeroProps) {
   const ref = useRef(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  const validGalleryImages = (galleryImages || []).filter(img => 
+    !img.src.includes('facebook.com') && 
+    !img.src.includes('youtube.com') && 
+    !img.src.includes('tiktok.com') &&
+    !img.src.includes('instagram.com')
+  );
+
   useEffect(() => {
-    if (!galleryImages || galleryImages.length === 0) return;
+    if (validGalleryImages.length === 0) return;
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
+      setCurrentImageIndex((prev) => (prev + 1) % validGalleryImages.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [galleryImages]);
+  }, [validGalleryImages]);
 
-  const currentImage = galleryImages && galleryImages.length > 0 
-    ? galleryImages[currentImageIndex]?.src || "/hero-kuhelika-houseboat.jpg"
+  const currentImage = validGalleryImages.length > 0 
+    ? validGalleryImages[currentImageIndex]?.src || "/hero-kuhelika-houseboat.jpg"
     : "/hero-kuhelika-houseboat.jpg";
   const { scrollYProgress } = useScroll({
     target: ref,
