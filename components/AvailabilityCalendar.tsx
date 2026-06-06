@@ -256,10 +256,14 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
                     const isSelected = key === selectedDate;
                     const isDisabled = isPast || data?.status === 'full' || data?.status === 'blocked' || data?.tripInfo?.isEnd;
                     let cfg = data ? statusConfig[data.status] : null;
+                    
+                    if (isPast) {
+                      cfg = null;
+                    }
 
                     // If it's a trip slot, override the color to make it distinct, 
                     // unless it's full/blocked in which case keep the red/gray color.
-                    if (data?.tripInfo && data.status !== 'full' && data.status !== 'blocked') {
+                    if (!isPast && data?.tripInfo && data.status !== 'full' && data.status !== 'blocked') {
                       cfg = {
                         label: 'Trip',
                         bg: 'bg-indigo-50 border-indigo-300',
@@ -281,6 +285,7 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
                     const isJoinedWithPrev = isSameTripAsPrev || (isDisabled && !data?.tripInfo && prevData?.status === data?.status && !prevData?.tripInfo);
                     const isJoinedWithNext = isSameTripAsNext || (isDisabled && !data?.tripInfo && nextData?.status === data?.status && !nextData?.tripInfo);
                     const showRoomCount = !isPadma
+                      && !isPast
                       && !data?.tripInfo?.isEnd
                       && typeof data?.availableCabins === 'number'
                       && typeof data?.totalCabins === 'number';
