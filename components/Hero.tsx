@@ -25,6 +25,9 @@ export default function Hero({ onBookNow }: HeroProps) {
   const featuredImages = validGalleryImages.filter((img: any) => img.isFeatured);
   if (featuredImages.length > 0) {
     validGalleryImages = featuredImages;
+  } else if (loading) {
+    // Prevent flashing fallback images while loading
+    validGalleryImages = [];
   }
 
   useEffect(() => {
@@ -36,8 +39,9 @@ export default function Hero({ onBookNow }: HeroProps) {
   }, [validGalleryImages]);
 
   const currentImage = validGalleryImages.length > 0 
-    ? validGalleryImages[currentImageIndex]?.src || "/hero-kuhelika-houseboat.jpg"
-    : "/hero-kuhelika-houseboat.jpg";
+    ? validGalleryImages[currentImageIndex]?.src 
+    : (loading ? null : "/hero-kuhelika-houseboat.jpg");
+    
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"]
@@ -96,15 +100,18 @@ export default function Hero({ onBookNow }: HeroProps) {
             transition={{ duration: 1.5, ease: "easeInOut" }}
             className="absolute inset-0"
           >
-            <Image
-              src={currentImage}
-              alt="Kuhelika Houseboat"
-              fill
-              priority={currentImageIndex === 0}
-              quality={80}
-              sizes="100vw"
-              className="object-cover object-center"
-            />
+            {currentImage && (
+              <Image
+                src={currentImage}
+                alt="Houseboat Hero"
+                fill
+                priority
+                className="object-cover"
+                sizes="100vw"
+                quality={90}
+              />
+            )}
+            <div className="absolute inset-0 bg-black/40 mix-blend-multiply" />
           </motion.div>
         </AnimatePresence>
         {/* Improved aesthetic gradients */}
