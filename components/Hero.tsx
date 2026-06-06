@@ -15,12 +15,17 @@ export default function Hero({ onBookNow }: HeroProps) {
   const ref = useRef(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const validGalleryImages = (galleryImages || []).filter(img => 
+  let validGalleryImages = (galleryImages || []).filter(img => 
     !img.src.includes('facebook.com') && 
     !img.src.includes('youtube.com') && 
     !img.src.includes('tiktok.com') &&
     !img.src.includes('instagram.com')
   );
+
+  const featuredImages = validGalleryImages.filter((img: any) => img.isFeatured);
+  if (featuredImages.length > 0) {
+    validGalleryImages = featuredImages;
+  }
 
   useEffect(() => {
     if (validGalleryImages.length === 0) return;

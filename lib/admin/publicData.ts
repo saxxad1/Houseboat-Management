@@ -289,5 +289,6 @@ export function mapGalleryToPublic(gallery: GalleryImage[], season: SeasonType =
       src: image.image_url,
       alt: image.title || 'Houseboat gallery image',
       category: image.category || 'Gallery',
+      isFeatured: image.is_featured || false,
     }));
 }
