@@ -333,12 +333,12 @@ export default function AvailabilityCalendar({ inline, selectedDate: propSelecte
                             {roomCountLabel}
                           </span>
                         )}
-                        {data?.tripInfo?.isStart && data?.status !== 'blocked' && data?.status !== 'full' && (
+                        {data?.tripInfo?.isStart && !isPast && data?.status !== 'blocked' && data?.status !== 'full' && (
                           <span className={`absolute ${inline ? 'bottom-3.5 text-[7px]' : 'bottom-[18px] sm:bottom-5 text-[8px] sm:text-[9px]'} font-bold tracking-tighter leading-none z-10 text-indigo-600 whitespace-nowrap overflow-hidden max-w-[95%]`}>
                             {inline ? 'IN' : <><span className="sm:hidden">IN</span><span className="hidden sm:inline">Check-in</span></>}
                           </span>
                         )}
-                        {data?.tripInfo?.isEnd && data?.status !== 'blocked' && data?.status !== 'full' && (
+                        {data?.tripInfo?.isEnd && !isPast && data?.status !== 'blocked' && data?.status !== 'full' && (
                           <span className={`absolute ${inline ? 'bottom-1 text-[7px]' : 'bottom-[18px] sm:bottom-5 text-[8px] sm:text-[9px]'} font-bold tracking-tighter leading-none z-10 text-indigo-600 whitespace-nowrap overflow-hidden max-w-[95%]`}>
                             {inline ? 'OUT' : <><span className="sm:hidden">OUT</span><span className="hidden sm:inline">Checkout</span></>}
                           </span>
