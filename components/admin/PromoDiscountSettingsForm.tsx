@@ -35,7 +35,13 @@ export default function PromoDiscountSettingsForm() {
           .limit(1)
           .maybeSingle();
 
-        if (error) throw error;
+        if (error) {
+          // If the column doesn't exist, it usually throws a PGRST204 or similar error
+          if (error.message.includes('Could not find the') || error.message.includes('column')) {
+            throw new Error('Database migration is missing! Please run the SQL file in your Supabase Dashboard.');
+          }
+          throw error;
+        }
         
         if (data) {
           setSettingsId(data.id);
@@ -45,6 +51,8 @@ export default function PromoDiscountSettingsForm() {
             promo_discount_end_date: data.promo_discount_end_date || '',
             promo_discount_title: data.promo_discount_title || '',
           });
+        } else {
+          setError('No houseboat settings found. Please add Houseboat Settings first below.');
         }
       } catch (err: any) {
         console.error('Failed to load promo settings:', err);
