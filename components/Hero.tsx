@@ -11,7 +11,7 @@ interface HeroProps {
 }
 
 export default function Hero({ onBookNow }: HeroProps) {
-  const { siteConfig, cabins, seasonData, galleryImages } = usePublicData();
+  const { siteConfig, cabins, seasonData, galleryImages, loading } = usePublicData();
   const ref = useRef(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
