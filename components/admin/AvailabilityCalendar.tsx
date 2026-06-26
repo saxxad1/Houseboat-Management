@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -172,37 +173,42 @@ export default function AvailabilityCalendar() {
   const blockDate = async (status: 'blocked' | 'maintenance' | 'fully_booked' | 'available') => {
     if (activeSeason === 'haor' && !canWriteTripSlots) return;
     if (activeSeason !== 'haor' && !canWriteAvailabilityBlocks) return;
-    if (activeSeason === 'haor') {
-      const startDate = selectedDates[0];
-      const endDate = selectedDates[selectedDates.length - 1];
-      const existing = tripSlots.find(slot => slot.start_date === startDate);
-      
-      await saveRow<TripSlot>('trip_slots', {
-        id: existing?.id,
-        start_date: startDate,
-        end_date: endDate,
-        duration_label: `${selectedDates.length} Days ${Math.max(selectedDates.length - 1, 1)} Night`,
-        status,
-        reason,
-        note,
-      });
-    } else {
-      for (const date of selectedDates) {
-        const existing = blocks.find((block) =>
-          block.date === date && !block.room_id && !block.event_slot && (block.season_type || 'haor') === activeSeason
-        );
-        await saveRow<AvailabilityBlock>('availability_blocks', {
+    try {
+      if (activeSeason === 'haor') {
+        const startDate = selectedDates[0];
+        const endDate = selectedDates[selectedDates.length - 1];
+        const existing = tripSlots.find(slot => slot.start_date === startDate);
+        
+        await saveRow<TripSlot>('trip_slots', {
           id: existing?.id,
-          date,
-          room_id: null,
-          status: status === 'available' ? 'available' : status,
-          season_type: activeSeason,
+          start_date: startDate,
+          end_date: endDate,
+          duration_label: `${selectedDates.length} Days ${Math.max(selectedDates.length - 1, 1)} Night`,
+          status,
           reason,
           note,
         });
+      } else {
+        for (const date of selectedDates) {
+          const existing = blocks.find((block) =>
+            block.date === date && !block.room_id && !block.event_slot && (block.season_type || 'haor') === activeSeason
+          );
+          await saveRow<AvailabilityBlock>('availability_blocks', {
+            id: existing?.id,
+            date,
+            room_id: null,
+            status: status === 'available' ? 'available' : status,
+            season_type: activeSeason,
+            reason,
+            note,
+          });
+        }
       }
+      await load();
+      toast.success('Calendar updated');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Action failed');
     }
-    await load();
   };
 
   const saveSlot = async () => {
@@ -214,86 +220,111 @@ export default function AvailabilityCalendar() {
           ? 'partially_booked'
           : eventSlotStatus;
     
-    for (const date of selectedDates) {
-      const existing = blocks.find((block) =>
-        block.date === date && block.event_slot === eventSlot && (block.season_type || 'haor') === 'padma'
-      );
-      await saveRow<AvailabilityBlock>('availability_blocks', {
-        id: existing?.id,
-        date,
-        room_id: null,
-        status: availabilityStatus,
-        season_type: 'padma',
-        event_slot: eventSlot,
-        slot_status: eventSlotStatus,
-        reason,
-        note,
-      });
+    try {
+      for (const date of selectedDates) {
+        const existing = blocks.find((block) =>
+          block.date === date && block.event_slot === eventSlot && (block.season_type || 'haor') === 'padma'
+        );
+        await saveRow<AvailabilityBlock>('availability_blocks', {
+          id: existing?.id,
+          date,
+          room_id: null,
+          status: availabilityStatus,
+          season_type: 'padma',
+          event_slot: eventSlot,
+          slot_status: eventSlotStatus,
+          reason,
+          note,
+        });
+      }
+      await load();
+      toast.success('Slot status saved');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Action failed');
     }
-    await load();
   };
 
   const releaseSlot = async () => {
     if (!canWriteAvailabilityBlocks) return;
-    for (const date of selectedDates) {
-      const existing = blocks.find((block) =>
-        block.date === date && block.event_slot === eventSlot && (block.season_type || 'haor') === 'padma'
-      );
-      if (existing) {
-        await deleteRow('availability_blocks', existing.id);
+    try {
+      for (const date of selectedDates) {
+        const existing = blocks.find((block) =>
+          block.date === date && block.event_slot === eventSlot && (block.season_type || 'haor') === 'padma'
+        );
+        if (existing) {
+          await deleteRow('availability_blocks', existing.id);
+        }
       }
+      await load();
+      toast.success('Slot released');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Action failed');
     }
-    await load();
   };
 
   const createPadmaTrip = async () => {
     if (!canWriteTripSlots) return;
-    const startDate = selectedDates[0];
-    const existing = tripSlots.find(slot => slot.start_date === startDate && slot.duration_label === 'Padma Day Trip');
-    await saveRow<TripSlot>('trip_slots', {
-      id: existing?.id,
-      start_date: startDate,
-      end_date: startDate,
-      duration_label: 'Padma Day Trip',
-      status: 'available',
-      reason,
-      note,
-    });
-    await load();
+    try {
+      const startDate = selectedDates[0];
+      const existing = tripSlots.find(slot => slot.start_date === startDate && slot.duration_label === 'Padma Day Trip');
+      await saveRow<TripSlot>('trip_slots', {
+        id: existing?.id,
+        start_date: startDate,
+        end_date: startDate,
+        duration_label: 'Padma Day Trip',
+        status: 'available',
+        reason,
+        note,
+      });
+      await load();
+      toast.success('Padma trip created');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Action failed');
+    }
   };
 
   const releasePadmaTrip = async () => {
     if (!canWriteTripSlots) return;
-    const startDate = selectedDates[0];
-    const existing = tripSlots.find(slot => slot.start_date === startDate && slot.duration_label === 'Padma Day Trip');
-    if (existing) {
-      await deleteRow('trip_slots', existing.id);
-      await load();
+    try {
+      const startDate = selectedDates[0];
+      const existing = tripSlots.find(slot => slot.start_date === startDate && slot.duration_label === 'Padma Day Trip');
+      if (existing) {
+        await deleteRow('trip_slots', existing.id);
+        await load();
+        toast.success('Padma trip released');
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Action failed');
     }
   };
 
   const releaseDate = async () => {
     if (activeSeason === 'haor' && !canWriteTripSlots) return;
     if (activeSeason !== 'haor' && !canWriteAvailabilityBlocks) return;
-    if (activeSeason === 'haor') {
-      const startDate = selectedDates[0];
-      const existing = tripSlots.find(slot => slot.start_date === startDate || (startDate >= slot.start_date && startDate <= slot.end_date));
-      if (existing) {
-        await deleteRow('trip_slots', existing.id);
-      }
-    } else {
-      for (const date of selectedDates) {
-        const existing = blocks.find((block) =>
-          block.date === date && !block.room_id && !block.event_slot && (block.season_type || 'haor') === activeSeason
-        );
+    try {
+      if (activeSeason === 'haor') {
+        const startDate = selectedDates[0];
+        const existing = tripSlots.find(slot => slot.start_date === startDate || (startDate >= slot.start_date && startDate <= slot.end_date));
         if (existing) {
-          await deleteRow('availability_blocks', existing.id);
+          await deleteRow('trip_slots', existing.id);
+        }
+      } else {
+        for (const date of selectedDates) {
+          const existing = blocks.find((block) =>
+            block.date === date && !block.room_id && !block.event_slot && (block.season_type || 'haor') === activeSeason
+          );
+          if (existing) {
+            await deleteRow('availability_blocks', existing.id);
+          }
         }
       }
+      setReason('');
+      setNote('');
+      await load();
+      toast.success('Released successfully');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Action failed');
     }
-    setReason('');
-    setNote('');
-    await load();
   };
 
   const toggleDate = (key: string) => {
