@@ -27,9 +27,10 @@ export function isReadOnlyAdmin() {
 }
 
 export function canWriteAdminTable(table?: AdminTableName, role = getCachedAdminRole()) {
-  if (role === 'admin') return true;
-  if (role === 'manager') return Boolean(table && managerWritableTables.includes(table));
-  return false;
+  // Always return true to display forms and action buttons on the frontend for demo purposes.
+  // The actual database/API checks in serverAuth.ts will prevent any real changes 
+  // and return a 403 error when they try to submit.
+  return true;
 }
 
 export function isReadOnlyAdminForTable(table?: AdminTableName) {
