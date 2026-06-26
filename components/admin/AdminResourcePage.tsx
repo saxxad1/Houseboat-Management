@@ -345,9 +345,9 @@ export default function AdminResourcePage({
       setOpen(false);
       await load();
       window.dispatchEvent(new Event('kuhelika-public-data-change'));
-      setMessage('Saved successfully');
+      toast.success('Saved successfully');
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Save failed');
+      toast.error(error instanceof Error ? error.message : 'Save failed');
     } finally {
       setSaving(false);
     }
@@ -355,14 +355,13 @@ export default function AdminResourcePage({
 
   const remove = async (id: string) => {
     if (!window.confirm('Delete this item?')) return;
-    setMessage('');
     try {
       await deleteRow(table, id);
       await load();
       window.dispatchEvent(new Event('kuhelika-public-data-change'));
-      setMessage('Deleted successfully');
+      toast.success('Deleted successfully');
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Delete failed');
+      toast.error(error instanceof Error ? error.message : 'Delete failed');
     }
   };
 

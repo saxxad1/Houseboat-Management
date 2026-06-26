@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -79,8 +80,9 @@ export default function PaymentForm({ open, onOpenChange, bookings, payment, onS
       });
       onOpenChange(false);
       onSaved();
+      toast.success('Payment saved successfully');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Payment save failed');
+      toast.error(err instanceof Error ? err.message : 'Payment save failed');
     } finally {
       setSaving(false);
     }
@@ -131,7 +133,6 @@ export default function PaymentForm({ open, onOpenChange, bookings, payment, onS
             <Textarea value={form.note} onChange={(event) => setForm((current) => ({ ...current, note: event.target.value }))} />
           </div>
         </div>
-        {error && <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button disabled={saving} onClick={save}>{saving ? 'Saving...' : 'Save payment'}</Button>

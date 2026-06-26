@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Plus, Search, Filter } from 'lucide-react';
 import BookingForm from '@/components/admin/BookingForm';
 import BookingTable from '@/components/admin/BookingTable';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -75,17 +76,25 @@ export default function BookingsAdminPage() {
   const cancel = async (booking: Booking) => {
     if (readOnly) return;
     if (!window.confirm('Cancel this booking?')) return;
-    await saveRow<Booking>('bookings', { ...booking, booking_status: 'cancelled' });
-    setMessage('Booking cancelled');
-    await load();
+    try {
+      await saveRow<Booking>('bookings', { ...booking, booking_status: 'cancelled' });
+      toast.success('Booking cancelled');
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Action failed');
+    }
   };
 
   const remove = async (booking: Booking) => {
     if (readOnly) return;
     if (!window.confirm('Delete this booking permanently?')) return;
-    await deleteRow('bookings', booking.id);
-    setMessage('Booking deleted');
-    await load();
+    try {
+      await deleteRow('bookings', booking.id);
+      toast.success('Booking deleted');
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Action failed');
+    }
   };
 
   return (

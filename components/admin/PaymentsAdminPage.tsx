@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Plus, Search } from 'lucide-react';
 import PaymentForm from '@/components/admin/PaymentForm';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,8 +67,13 @@ export default function PaymentsAdminPage() {
   const remove = async (payment: Payment) => {
     if (readOnly) return;
     if (!window.confirm('Delete this payment?')) return;
-    await deleteRow('payments', payment.id);
-    await load();
+    try {
+      await deleteRow('payments', payment.id);
+      toast.success('Payment deleted');
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Action failed');
+    }
   };
 
   return (

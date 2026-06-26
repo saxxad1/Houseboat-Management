@@ -342,11 +342,15 @@ export function TripDetails({ id }: { id: string }) {
                           <TableCell className="text-right">
                             <Button variant="ghost" size="sm" onClick={async () => {
                               if (!trip) return;
-                              const newBookings = manualBookings.filter(b => b.id !== booking.id);
-                              const payload = { manualBookings: newBookings, manualExpenses };
-                              await saveRow('trip_slots', { id: trip.id, note: JSON.stringify(payload) });
-                              setManualBookings(newBookings);
-                              toast.success('Removed');
+                              try {
+                                const newBookings = manualBookings.filter(b => b.id !== booking.id);
+                                const payload = { manualBookings: newBookings, manualExpenses };
+                                await saveRow('trip_slots', { id: trip.id, note: JSON.stringify(payload) });
+                                setManualBookings(newBookings);
+                                toast.success('Removed');
+                              } catch (error) {
+                                toast.error(error instanceof Error ? error.message : 'Action failed');
+                              }
                             }}>
                               Remove
                             </Button>
@@ -403,11 +407,15 @@ export function TripDetails({ id }: { id: string }) {
                         <TableCell className="text-right">
                           <Button variant="ghost" size="sm" onClick={async () => {
                             if (!trip) return;
-                            const newExpenses = manualExpenses.filter(e => e.id !== exp.id);
-                            const payload = { manualBookings, manualExpenses: newExpenses };
-                            await saveRow('trip_slots', { id: trip.id, note: JSON.stringify(payload) });
-                            setManualExpenses(newExpenses);
-                            toast.success('Removed');
+                            try {
+                              const newExpenses = manualExpenses.filter(e => e.id !== exp.id);
+                              const payload = { manualBookings, manualExpenses: newExpenses };
+                              await saveRow('trip_slots', { id: trip.id, note: JSON.stringify(payload) });
+                              setManualExpenses(newExpenses);
+                              toast.success('Removed');
+                            } catch (error) {
+                              toast.error(error instanceof Error ? error.message : 'Action failed');
+                            }
                           }}>
                             Remove
                           </Button>

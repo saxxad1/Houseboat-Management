@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { bookingSchema } from '@/lib/validations';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -226,12 +227,13 @@ export default function BookingForm({
       );
       onOpenChange(false);
       onSaved();
+      toast.success('Booking saved successfully');
     } catch (err) {
       if (err && typeof err === 'object' && 'issues' in err) {
         const issues = (err as { issues: { message: string }[] }).issues;
-        setError(issues[0]?.message || 'Invalid booking data');
+        toast.error(issues[0]?.message || 'Invalid booking data');
       } else {
-        setError(err instanceof Error ? err.message : 'Save failed');
+        toast.error(err instanceof Error ? err.message : 'Save failed');
       }
     } finally {
       setSaving(false);
@@ -492,8 +494,6 @@ export default function BookingForm({
             <Textarea value={form.admin_note} onChange={(event) => setField('admin_note', event.target.value)} />
           </div>
         </div>
-
-        {error && <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
