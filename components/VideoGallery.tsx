@@ -1,19 +1,28 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Video, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { Video, ChevronLeft, ChevronRight, ExternalLink, Play, Loader2 } from 'lucide-react';
 import { usePublicData } from '@/components/PublicDataProvider';
-import { isVideoUrl, getEmbedUrl, isVerticalVideo } from '@/lib/videoUtils';
+import { isVideoUrl, isFacebookVideoUrl, getEmbedUrl, getVideoExternalUrl, isVerticalVideo } from '@/lib/videoUtils';
 import { motion, AnimatePresence } from 'framer-motion';
+
+type ResolvedVideo = {
+  status: 'loading' | 'ready' | 'error';
+  src?: string;
+  externalUrl?: string;
+};
 
 export default function VideoGallery() {
   const { galleryImages } = usePublicData();
   const [activeCategory, setActiveCategory] = useState('All');
   const carouselRef = useRef<HTMLDivElement>(null);
+  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [resolvedVideos, setResolvedVideos] = useState<Record<string, ResolvedVideo>>({});
+  const [playingVideos, setPlayingVideos] = useState<Record<string, boolean>>({});
 
-  const videoImages = galleryImages.filter((img) => isVideoUrl(img.src));
+  const videoImages = useMemo(() => galleryImages.filter((img) => isVideoUrl(img.src)), [galleryImages]);
 
   const checkScroll = () => {
     if (carouselRef.current) {
@@ -28,6 +37,53 @@ export default function VideoGallery() {
     window.addEventListener('resize', checkScroll);
     return () => window.removeEventListener('resize', checkScroll);
   }, [videoImages, activeCategory]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const facebookVideos = videoImages.filter((video) => isFacebookVideoUrl(video.src));
+
+    if (!facebookVideos.length) return;
+
+    setResolvedVideos((current) => {
+      const next = { ...current };
+      facebookVideos.forEach((video) => {
+        const key = String(video.id);
+        if (!next[key]) {
+          next[key] = {
+            status: 'loading',
+            externalUrl: getVideoExternalUrl(video.src),
+          };
+        }
+      });
+      return next;
+    });
+
+    facebookVideos.forEach(async (video) => {
+      const key = String(video.id);
+      try {
+        const response = await fetch(`/api/public/facebook-video?url=${encodeURIComponent(video.src)}`);
+        const data = await response.json().catch(() => null);
+        if (cancelled) return;
+
+        setResolvedVideos((current) => ({
+          ...current,
+          [key]: response.ok && data?.src
+            ? { status: 'ready', src: data.src, externalUrl: data.externalUrl || getVideoExternalUrl(video.src) }
+            : { status: 'error', externalUrl: data?.externalUrl || getVideoExternalUrl(video.src) },
+        }));
+      } catch {
+        if (cancelled) return;
+        setResolvedVideos((current) => ({
+          ...current,
+          [key]: { status: 'error', externalUrl: getVideoExternalUrl(video.src) },
+        }));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [videoImages]);
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     const carousel = carouselRef.current;
@@ -117,7 +173,13 @@ export default function VideoGallery() {
           >
             <AnimatePresence mode="popLayout">
               {filtered.map((video) => {
+                const videoKey = String(video.id);
                 const isVertical = isVerticalVideo(video.src);
+                const embedUrl = getEmbedUrl(video.src);
+                const externalUrl = getVideoExternalUrl(video.src);
+                const resolved = resolvedVideos[videoKey];
+                const isPlaying = Boolean(playingVideos[videoKey]);
+                const isFacebook = isFacebookVideoUrl(video.src);
                 return (
                   <motion.div
                     layout
@@ -129,13 +191,76 @@ export default function VideoGallery() {
                     className="snap-center sm:snap-start shrink-0 relative flex flex-col bg-slate-50 rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 w-[85vw] sm:w-[320px] md:w-[400px] lg:w-[480px]"
                   >
                     <div className={`relative w-full ${isVertical ? 'pt-[177.77%]' : 'pt-[56.25%]'} bg-black`}>
-                      <iframe
-                        src={getEmbedUrl(video.src)}
-                        className="absolute top-0 left-0 w-full h-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                        title={video.alt || "Video"}
-                      />
+                      {isFacebook ? (
+                        resolved?.status === 'ready' && resolved.src ? (
+                          <>
+                            <video
+                              ref={(element) => {
+                                videoRefs.current[videoKey] = element;
+                              }}
+                              src={`${resolved.src}#t=0.1`}
+                              className="absolute left-0 top-0 h-full w-full bg-black object-contain"
+                              onPlay={() => setPlayingVideos((current) => ({ ...current, [videoKey]: true }))}
+                              onPause={() => setPlayingVideos((current) => ({ ...current, [videoKey]: false }))}
+                              onEnded={() => setPlayingVideos((current) => ({ ...current, [videoKey]: false }))}
+                              controls
+                              playsInline
+                              preload="metadata"
+                            />
+                            {!isPlaying && (
+                              <button
+                                type="button"
+                                onClick={() => videoRefs.current[videoKey]?.play()}
+                                aria-label="Play video"
+                                title="Play video"
+                                className="absolute left-1/2 top-1/2 z-20 inline-flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/45 bg-black/65 text-white shadow-[0_16px_40px_rgba(0,0,0,0.32)] backdrop-blur-md transition-all hover:scale-105 hover:bg-black/80"
+                              >
+                                <Play className="ml-0.5 h-5 w-5 fill-current" />
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <a
+                            href={resolved?.externalUrl || externalUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Open video"
+                            className="absolute inset-0 flex items-center justify-center bg-black"
+                          >
+                            {resolved?.status === 'error' ? (
+                              <span className="inline-flex h-16 w-16 items-center justify-center rounded-full border border-white/35 bg-white/10 text-white shadow-[0_14px_40px_rgba(0,0,0,0.32)] backdrop-blur-md">
+                                <Play className="h-7 w-7 fill-current" />
+                              </span>
+                            ) : (
+                              <span className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md">
+                                <Loader2 className="h-6 w-6 animate-spin" />
+                              </span>
+                            )}
+                          </a>
+                        )
+                      ) : (
+                        <iframe
+                          src={embedUrl}
+                          className="absolute top-0 left-0 w-full h-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          loading="lazy"
+                          scrolling="no"
+                          title={video.alt || "Video"}
+                        />
+                      )}
+                      {isFacebook && (resolved?.externalUrl || externalUrl) && (
+                        <a
+                          href={resolved?.externalUrl || externalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="Open video"
+                          title="Open video"
+                          className="absolute bottom-3 right-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/65 text-white shadow-[0_10px_24px_rgba(0,0,0,0.25)] backdrop-blur-md transition-all hover:bg-black/80"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      )}
                     </div>
                     <div className="p-5 sm:p-6 flex flex-col flex-1 justify-center">
                       <span className="text-[10px] sm:text-xs font-bold text-[hsl(197,80%,50%)] uppercase tracking-widest mb-1.5 block">

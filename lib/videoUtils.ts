@@ -1,11 +1,30 @@
+const normalizeAbsoluteUrl = (url: string): string => {
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('//')) return `https:${trimmed}`;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+};
+
+export const isFacebookVideoUrl = (url: string): boolean => {
+  if (!url) return false;
+
+  try {
+    const urlObj = new URL(normalizeAbsoluteUrl(url));
+    const hostname = urlObj.hostname.replace(/^m\./, 'www.').replace(/^web\./, 'www.');
+    return hostname === 'fb.watch' || hostname.endsWith('facebook.com');
+  } catch {
+    return false;
+  }
+};
+
 export const isVideoUrl = (url: string): boolean => {
   if (!url) return false;
   const lowerUrl = url.toLowerCase();
   return (
     lowerUrl.includes('youtube.com') ||
     lowerUrl.includes('youtu.be') ||
-    lowerUrl.includes('facebook.com') ||
-    lowerUrl.includes('fb.watch')
+    isFacebookVideoUrl(url)
   );
 };
 
@@ -15,20 +34,84 @@ export const isVerticalVideo = (url: string): boolean => {
   return lowerUrl.includes('/reel/') || lowerUrl.includes('/shorts/');
 };
 
+const cleanSearchParams = (urlObj: URL, allowedParams: string[] = []) => {
+  const allowed = new Set(allowedParams);
+  Array.from(urlObj.searchParams.keys()).forEach((key) => {
+    if (!allowed.has(key)) {
+      urlObj.searchParams.delete(key);
+    }
+  });
+};
+
+const normalizeFacebookUrl = (url: string): string => {
+  const absoluteUrl = normalizeAbsoluteUrl(url);
+  if (!absoluteUrl) return '';
+
+  try {
+    const urlObj = new URL(absoluteUrl);
+    const hostname = urlObj.hostname.replace(/^m\./, 'www.').replace(/^web\./, 'www.');
+
+    if (hostname === 'fb.watch') {
+      urlObj.hostname = hostname;
+      cleanSearchParams(urlObj);
+      return urlObj.toString();
+    }
+
+    if (!hostname.endsWith('facebook.com')) {
+      return absoluteUrl;
+    }
+
+    urlObj.protocol = 'https:';
+    urlObj.hostname = hostname === 'facebook.com' ? 'www.facebook.com' : hostname;
+
+    if (urlObj.pathname === '/plugins/video.php') {
+      return urlObj.toString();
+    }
+
+    const videoId =
+      urlObj.searchParams.get('v') ||
+      urlObj.pathname.match(/\/videos\/(?:[^/]+\/)?(\d+)/)?.[1] ||
+      (urlObj.pathname.match(/\/watch\/?$/) ? urlObj.searchParams.get('v') : null) ||
+      urlObj.pathname.match(/\/share\/v\/(\d+)/)?.[1] ||
+      urlObj.pathname.match(/\/reel\/(\d+)/)?.[1];
+
+    if (
+      videoId &&
+      (urlObj.pathname.includes('/watch') ||
+        urlObj.pathname.includes('/videos/') ||
+        urlObj.pathname.includes('/share/v/') ||
+        urlObj.pathname.includes('/reel/'))
+    ) {
+      return `https://www.facebook.com/video.php?v=${videoId}`;
+    }
+
+    cleanSearchParams(urlObj, videoId && urlObj.searchParams.has('v') ? ['v'] : []);
+
+    const normalized = urlObj.toString();
+    return urlObj.pathname.includes('/reel/') && !normalized.endsWith('/')
+      ? `${normalized}/`
+      : normalized;
+  } catch {
+    return absoluteUrl;
+  }
+};
+
 export const getEmbedUrl = (url: string): string => {
   if (!url) return '';
+  const trimmedUrl = url.trim();
+  const lowerUrl = trimmedUrl.toLowerCase();
   
   // YouTube
-  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+  if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) {
     let videoId = '';
-    if (url.includes('youtu.be/')) {
-      videoId = url.split('youtu.be/')[1]?.split('?')[0];
-    } else if (url.includes('v=')) {
-      videoId = url.split('v=')[1]?.split('&')[0];
-    } else if (url.includes('/embed/')) {
-      videoId = url.split('/embed/')[1]?.split('?')[0];
-    } else if (url.includes('/shorts/')) {
-      videoId = url.split('/shorts/')[1]?.split('?')[0];
+    if (lowerUrl.includes('youtu.be/')) {
+      videoId = trimmedUrl.split('youtu.be/')[1]?.split('?')[0];
+    } else if (lowerUrl.includes('v=')) {
+      videoId = trimmedUrl.split('v=')[1]?.split('&')[0];
+    } else if (lowerUrl.includes('/embed/')) {
+      videoId = trimmedUrl.split('/embed/')[1]?.split('?')[0];
+    } else if (lowerUrl.includes('/shorts/')) {
+      videoId = trimmedUrl.split('/shorts/')[1]?.split('?')[0];
     }
     
     if (videoId) {
@@ -37,39 +120,24 @@ export const getEmbedUrl = (url: string): string => {
   }
 
   // Facebook
-  if (url.includes('facebook.com') || url.includes('fb.watch')) {
-    let cleanUrl = url;
-    
-    // Replace mobile facebook with www
-    cleanUrl = cleanUrl.replace('m.facebook.com', 'www.facebook.com');
+  if (isFacebookVideoUrl(trimmedUrl)) {
+    const cleanUrl = normalizeFacebookUrl(trimmedUrl);
 
-    // Remove tracking parameters
-    try {
-      const urlObj = new URL(cleanUrl);
-      const v = urlObj.searchParams.get('v');
-      
-      // Clean up watch URLs
-      if (urlObj.pathname.includes('/watch') && v) {
-        cleanUrl = `https://www.facebook.com/video.php?v=${v}`;
-      } else if (urlObj.pathname.includes('/reel/')) {
-        // Handle Facebook Reels
-        const reelId = urlObj.pathname.split('/reel/')[1]?.replace('/', '');
-        if (reelId) {
-          cleanUrl = `https://www.facebook.com/video.php?v=${reelId}`;
-        }
-      } else {
-        // Remove tracking params like mibextid that can break embeds
-        urlObj.searchParams.delete('mibextid');
-        urlObj.searchParams.delete('extid');
-        cleanUrl = urlObj.toString();
-      }
-    } catch (e) {
-      // Ignore invalid URLs
+    if (cleanUrl.includes('/plugins/video.php')) {
+      return cleanUrl;
     }
 
-    // Standardize Facebook embed URL
     return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(cleanUrl)}&show_text=false&width=560`;
   }
 
-  return url;
+  return trimmedUrl;
+};
+
+export const getVideoExternalUrl = (url: string): string => {
+  if (!url) return '';
+  const trimmedUrl = url.trim();
+  if (isFacebookVideoUrl(trimmedUrl)) {
+    return normalizeFacebookUrl(trimmedUrl);
+  }
+  return getEmbedUrl(trimmedUrl) || trimmedUrl;
 };
