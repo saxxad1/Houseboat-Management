@@ -1,4 +1,5 @@
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { replaceLegacyBrandText } from '@/lib/branding';
 
 type ManualTripBooking = {
   id?: string;
@@ -83,6 +84,24 @@ function normalizeText(value: unknown) {
   return String(value || '').trim().toLowerCase();
 }
 
+function replaceLegacyBrandInValue<T>(value: T): T {
+  if (typeof value === 'string') {
+    return replaceLegacyBrandText(value) as T;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => replaceLegacyBrandInValue(item)) as T;
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, item]) => [key, replaceLegacyBrandInValue(item)])
+    ) as T;
+  }
+
+  return value;
+}
+
 function hydrateBookingRoomsFromRequest(bookings: PublicBookingRow[], rooms: { id: string; name: string }[]) {
   const roomsByName = new Map(rooms.map((room) => [normalizeText(room.name), room]));
 
@@ -153,7 +172,7 @@ export async function fetchPublicHouseboatData() {
   const bookingRows = hydrateBookingRoomsFromRequest((bookings.data || []) as PublicBookingRow[], (rooms.data || []) as { id: string; name: string }[]);
   const manualTripBookingRows = getManualTripBookingRows(tripSlotRows);
 
-  return {
+  return replaceLegacyBrandInValue({
     settings: settings.data,
     rooms: rooms.data || [],
     gallery: gallery.data || [],
@@ -163,5 +182,5 @@ export async function fetchPublicHouseboatData() {
     special_dates: special_dates.error ? [] : special_dates.data || [],
     reviews: reviews.data || [],
     bookings: [...bookingRows, ...manualTripBookingRows],
-  };
+  });
 }

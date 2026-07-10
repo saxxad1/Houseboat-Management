@@ -25,7 +25,7 @@ export default function AdminSidebar({ open = true, onClose }: AdminSidebarProps
       <div className="flex h-full flex-col">
         <div className="flex h-20 items-center justify-between border-b border-slate-100 px-5">
           <Link href="/admin/dashboard" className="flex items-center" onClick={onClose}>
-            <Logo className="w-28" imageClassName="drop-shadow-sm" />
+            <Logo className="w-48" imageClassName="drop-shadow-sm" />
           </Link>
           <button
             type="button"
@@ -63,11 +63,11 @@ export default function AdminSidebar({ open = true, onClose }: AdminSidebarProps
         <div className="p-4 border-t border-white/50 bg-gradient-to-t from-slate-50/80 to-transparent">
           <div className="rounded-xl bg-white/60 backdrop-blur-md border border-white p-3 shadow-sm flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] flex items-center justify-center shadow-inner">
-              <span className="text-white font-bold text-xs">K</span>
+              <span className="text-white font-bold text-xs">F</span>
             </div>
             <div>
               <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Houseboat Admin</div>
-              <div className="font-black text-slate-800 text-sm">Kuhelika</div>
+              <div className="font-black text-slate-800 text-sm">FloatBoat</div>
             </div>
           </div>
         </div>

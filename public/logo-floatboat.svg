@@ -1,0 +1,43 @@
+<svg width="930" height="260" viewBox="20 45 930 260" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">FloatBoat logo</title>
+  <desc id="desc">A stylized houseboat floating over waves beside the FloatBoat wordmark.</desc>
+  <defs>
+    <linearGradient id="water" x1="86" y1="240" x2="330" y2="152" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#0E7490"/>
+    </linearGradient>
+    <linearGradient id="hull" x1="110" y1="152" x2="350" y2="246" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F3F4A"/>
+      <stop offset="1" stop-color="#062A35"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="186" y1="66" x2="288" y2="168" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FACC15"/>
+      <stop offset="1" stop-color="#F97316"/>
+    </linearGradient>
+    <filter id="softShadow" x="20" y="24" width="844" height="286" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#062A35" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <circle cx="236" cy="118" r="58" fill="url(#sun)"/>
+    <path d="M76 226C121 203 164 202 207 224C255 249 304 248 354 221" stroke="url(#water)" stroke-width="22" stroke-linecap="round"/>
+    <path d="M74 261C128 238 183 239 236 260C285 279 333 278 382 258" stroke="#67E8F9" stroke-width="10" stroke-linecap="round"/>
+    <path d="M103 178H318C349 178 374 198 382 226L390 255H146C118 255 94 237 86 211L78 187C76 182 82 178 103 178Z" fill="url(#hull)"/>
+    <path d="M128 134H295L326 178H108L128 134Z" fill="#FFFFFF" stroke="#062A35" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M145 105H286L309 134H126L145 105Z" fill="#F59E0B" stroke="#062A35" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M155 134V178M205 134V178M255 134V178" stroke="#062A35" stroke-width="8" stroke-linecap="round"/>
+    <rect x="160" y="146" width="28" height="24" rx="3" fill="#0E7490"/>
+    <rect x="211" y="146" width="28" height="24" rx="3" fill="#0E7490"/>
+    <rect x="262" y="146" width="28" height="24" rx="3" fill="#0E7490"/>
+    <path d="M317 178C346 188 367 203 382 226" stroke="#F8FAFC" stroke-width="13" stroke-linecap="round"/>
+  </g>
+
+  <g>
+    <text x="390" y="168" textLength="520" lengthAdjust="spacingAndGlyphs" stroke="white" stroke-width="8" paint-order="stroke" font-family="Outfit, Arial, sans-serif" font-size="92" font-weight="900" letter-spacing="0">
+      <tspan fill="#073B4C">Float</tspan><tspan fill="#0E7490">Boat</tspan>
+    </text>
+    <path d="M400 204H910" stroke="#F59E0B" stroke-width="10" stroke-linecap="round"/>
+    <text x="396" y="246" textLength="500" lengthAdjust="spacingAndGlyphs" fill="#0F3F4A" stroke="white" stroke-width="5" paint-order="stroke" font-family="Outfit, Arial, sans-serif" font-size="34" font-weight="800" letter-spacing="0">An Aesthetic Water Villa</text>
+  </g>
+</svg>

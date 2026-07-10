@@ -22,7 +22,6 @@ import FloatingWhatsApp from '@/components/FloatingWhatsApp';
 import NetlifyForms from '@/components/NetlifyForms';
 import { PublicDataProvider } from '@/components/PublicDataProvider';
 import { ScrollReveal } from '@/components/ScrollReveal';
-import PromoBanner from '@/components/PromoBanner';
 
 export default function Home() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -58,9 +57,6 @@ export default function Home() {
     <main className="min-h-screen">
       <Header onBookNow={() => handleBookNow()} />
       <Hero onBookNow={() => handleBookNow()} />
-      
-      {/* Promotional Banner Section */}
-      <PromoBanner onBookNow={() => handleBookNow()} />
 
       <ScrollReveal>
         <About />

@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { usePublicData } from '@/components/PublicDataProvider';
+import { FLOATBOAT_BRAND, normalizeBrandLogoUrl } from '@/lib/branding';
 
 interface LogoProps {
   className?: string;
@@ -15,10 +16,10 @@ export default function Logo({ className = '', imageClassName = '', priority = f
   return (
     <span className={`inline-flex items-center ${className}`}>
       <Image
-        src={siteConfig.logoUrl || '/logo-kuhelika-clean.png'}
+        src={normalizeBrandLogoUrl(siteConfig.logoUrl) || FLOATBOAT_BRAND.logoUrl}
         alt={`${siteConfig.name} logo`}
-        width={242}
-        height={172}
+        width={930}
+        height={260}
         priority={priority}
         className={`h-auto w-full object-contain ${imageClassName}`}
       />

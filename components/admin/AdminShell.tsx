@@ -27,7 +27,7 @@ export default function AdminShell({ children }: AdminShellProps) {
 
     const check = async () => {
       if (!isSupabaseConfigured()) {
-        const demoEmail = window.localStorage.getItem('kuhelika-demo-admin') || '';
+        const demoEmail = window.localStorage.getItem('floatboat-demo-admin') || '';
         if (!mounted) return;
         setAuthed(Boolean(demoEmail));
         setEmail(demoEmail);

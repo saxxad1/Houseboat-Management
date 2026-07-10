@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin/', '/api/'],
     },
-    sitemap: 'https://kuhelika.com/sitemap.xml',
+    sitemap: 'https://floatboat.com/sitemap.xml',
   };
 }

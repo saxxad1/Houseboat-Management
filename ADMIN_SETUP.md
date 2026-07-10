@@ -1,4 +1,4 @@
-# Kuhelika Admin Setup
+# FloatBoat Admin Setup
 
 ## Environment
 

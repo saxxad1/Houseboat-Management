@@ -39,7 +39,7 @@ const padmaDetails = [
   {
     icon: Ship,
     title: 'Booking Flow',
-    desc: 'Guests select date and guest count only. Kuhelika team manages room allocation.',
+    desc: 'Guests select date and guest count only. FloatBoat team manages room allocation.',
   },
 ];
 
@@ -75,12 +75,12 @@ export default function PadmaTripAdminPage() {
       const saved = await saveRow<HouseboatSettings>('houseboat_settings', {
         ...settings,
         id: settings?.id,
-        houseboat_name: settings?.houseboat_name || 'Kuhelika',
+        houseboat_name: settings?.houseboat_name || 'FloatBoat',
         padma_price_per_person: Math.max(Number(price || 0), 0),
       });
       setSettings(saved);
       setPrice(Number(saved.padma_price_per_person || 0));
-      window.dispatchEvent(new Event('kuhelika-public-data-change'));
+      window.dispatchEvent(new Event('floatboat-public-data-change'));
       setMessage('Padma trip price saved successfully.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Save failed');

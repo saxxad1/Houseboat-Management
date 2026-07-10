@@ -1,6 +1,7 @@
 'use client';
 
 import { isSupabaseConfigured } from '@/lib/supabase/client';
+import { FLOATBOAT_BRAND, normalizeBrandLogoUrl, normalizeBrandName, replaceLegacyBrandText } from '@/lib/branding';
 import { cabins as fallbackRooms, siteConfig } from '@/data/houseboatData';
 import type { SeasonType, SeasonalContent } from '@/data/seasonalData';
 import type { AvailabilityBlock, Booking, GalleryImage, HouseboatSettings, Review, Room, SpecialDate, TripSlot, WebsiteContent } from '@/types/database';
@@ -32,20 +33,27 @@ export async function loadPublicHouseboatData() {
 
 export function mapSettingsToSiteConfig(settings?: HouseboatSettings | null, seasonData?: SeasonalContent) {
   const baseSite = seasonData?.site || siteConfig;
-  if (!settings) return baseSite;
+  if (!settings) return {
+    ...baseSite,
+    name: normalizeBrandName(baseSite.name),
+    nameEn: normalizeBrandName(baseSite.nameEn),
+    email: replaceLegacyBrandText(baseSite.email),
+    facebook: replaceLegacyBrandText(baseSite.facebook),
+    logoUrl: FLOATBOAT_BRAND.logoUrl,
+  };
   return {
     ...baseSite,
-    name: settings.houseboat_name || baseSite.name,
-    nameEn: settings.houseboat_name || baseSite.nameEn,
-    tagline: baseSite.tagline,
-    description: baseSite.description,
+    name: normalizeBrandName(settings.houseboat_name || baseSite.name),
+    nameEn: normalizeBrandName(settings.houseboat_name || baseSite.nameEn),
+    tagline: replaceLegacyBrandText(baseSite.tagline),
+    description: replaceLegacyBrandText(baseSite.description),
     phone: settings.phone || baseSite.phone,
     whatsapp: settings.whatsapp || baseSite.whatsapp,
-    email: settings.email || baseSite.email,
-    facebook: settings.facebook_url || baseSite.facebook,
-    location: baseSite.location,
-    locationEn: baseSite.locationEn,
-    logoUrl: settings.logo_url || '/logo-kuhelika-clean.png',
+    email: replaceLegacyBrandText(settings.email || baseSite.email),
+    facebook: replaceLegacyBrandText(settings.facebook_url || baseSite.facebook),
+    location: replaceLegacyBrandText(baseSite.location),
+    locationEn: replaceLegacyBrandText(baseSite.locationEn),
+    logoUrl: normalizeBrandLogoUrl(settings.logo_url),
     bkashNumber: settings.bkash_number || undefined,
     nagadNumber: settings.nagad_number || undefined,
     bankInfo: settings.bank_info || undefined,
@@ -58,7 +66,7 @@ export function mapSettingsToSiteConfig(settings?: HouseboatSettings | null, sea
 }
 
 function textOr<T extends string | null | undefined>(value: T, fallback: string) {
-  return typeof value === 'string' && value.trim() ? value : fallback;
+  return replaceLegacyBrandText(typeof value === 'string' && value.trim() ? value : fallback);
 }
 
 function contentFor(content: WebsiteContent[], season: SeasonType, key: string, includeInactive = false) {
@@ -225,10 +233,10 @@ export function mapRoomsToCabins(rooms: Room[], season: SeasonType = 'haor') {
       id: room.id || room.slug || `room-${index}`,
       dbId: room.id,
       slug: room.slug,
-      name: room.name,
+      name: replaceLegacyBrandText(room.name),
       nameEn: room.slug,
-      desc: room.description || '',
-      image: room.image_url || fallbackRooms[index % fallbackRooms.length]?.image || '',
+      desc: replaceLegacyBrandText(room.description || ''),
+      image: replaceLegacyBrandText(room.image_url || fallbackRooms[index % fallbackRooms.length]?.image || ''),
       bedType: room.bed_type || 'Double Bed',
       capacity: rawCap,
       capacityLabel: String(rawCap).toLowerCase().includes('person') 
@@ -245,7 +253,9 @@ export function mapRoomsToCabins(rooms: Room[], season: SeasonType = 'haor') {
       priceLabel: season === 'padma' ? 'Event setup' : '/ person',
       unitLabel: season === 'padma' ? 'Event setup' : undefined,
       size: '',
-      features: Array.isArray(room.facilities) ? room.facilities : (room.facilities ? String(room.facilities).split(',').map((s: string) => s.trim()).filter(Boolean) : []),
+      features: Array.isArray(room.facilities)
+        ? room.facilities.map((feature) => replaceLegacyBrandText(String(feature)))
+        : (room.facilities ? String(room.facilities).split(',').map((s: string) => replaceLegacyBrandText(s.trim())).filter(Boolean) : []),
       available: room.status === 'active',
       badge: index === 0 ? 'Premium' : '',
       buttonLabel: season === 'padma' ? 'Book this event space' : undefined,
@@ -259,9 +269,9 @@ export function mapGalleryToPublic(gallery: GalleryImage[], season: SeasonType =
     .filter((image) => Boolean(String(image.image_url || '').trim()))
     .map((image, index) => ({
       id: index + 1,
-      src: image.image_url,
-      alt: image.title || 'Houseboat gallery image',
-      category: image.category || 'Gallery',
+      src: replaceLegacyBrandText(image.image_url),
+      alt: replaceLegacyBrandText(image.title || 'Houseboat gallery image'),
+      category: replaceLegacyBrandText(image.category || 'Gallery'),
       isFeatured: image.is_featured || false,
     }));
 }

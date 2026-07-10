@@ -3,6 +3,7 @@
 import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { assertWritableAdmin } from '@/lib/admin/permissions';
 import { demoTableData } from '@/lib/admin/demoData';
+import { FLOATBOAT_BRAND, normalizeBrandLogoUrl, normalizeBrandName, replaceLegacyBrandText } from '@/lib/branding';
 import {
   activeBookingStatuses,
   getBookingRoomIds,
@@ -46,7 +47,7 @@ export type AdminRow =
   | WebsiteContent
   | (BaseRow & Record<string, unknown>);
 
-const localKey = (table: AdminTableName) => `kuhelika-admin-${table}`;
+const localKey = (table: AdminTableName) => `${FLOATBOAT_BRAND.adminStoragePrefix}-${table}`;
 
 const now = () => new Date().toISOString();
 
@@ -92,10 +93,61 @@ function sortRows<T extends AdminRow>(rows: T[]) {
   });
 }
 
+const brandTextFields = [
+  'houseboat_name',
+  'tagline',
+  'description',
+  'email',
+  'facebook_url',
+  'location',
+  'address',
+  'title',
+  'subtitle',
+  'content',
+  'button_text',
+  'button_url',
+  'image_url',
+  'name',
+  'review',
+  'note',
+  'special_request',
+  'admin_note',
+  'source_url',
+];
+
+function normalizeBrandRow<T extends Partial<AdminRow>>(table: AdminTableName, row: T): T {
+  const next = { ...row } as Record<string, unknown>;
+
+  brandTextFields.forEach((field) => {
+    if (typeof next[field] === 'string') {
+      next[field] = replaceLegacyBrandText(next[field] as string);
+    }
+  });
+
+  ['facilities', 'included_services', 'route_spots'].forEach((field) => {
+    if (Array.isArray(next[field])) {
+      next[field] = (next[field] as unknown[]).map((item) =>
+        typeof item === 'string' ? replaceLegacyBrandText(item) : item
+      );
+    }
+  });
+
+  if (table === 'houseboat_settings') {
+    next.houseboat_name = normalizeBrandName(String(next.houseboat_name || ''));
+    next.logo_url = normalizeBrandLogoUrl(String(next.logo_url || ''));
+  }
+
+  return next as T;
+}
+
+function normalizeBrandRows<T extends AdminRow>(table: AdminTableName, rows: T[]) {
+  return rows.map((row) => normalizeBrandRow(table, row));
+}
+
 function notifyPublicDataChanged(table: AdminTableName) {
   if (typeof window === 'undefined') return;
   if (!['bookings', 'trip_slots', 'rooms', 'availability_blocks'].includes(table)) return;
-  window.dispatchEvent(new Event('kuhelika-public-data-change'));
+  window.dispatchEvent(new Event('floatboat-public-data-change'));
 }
 
 async function getAdminAccessToken() {
@@ -136,20 +188,21 @@ export async function listRows<T extends AdminRow>(table: AdminTableName) {
   const supabase = getSupabaseBrowserClient();
 
   if (!supabase) {
-    return sortRows(getLocalRows<T>(table));
+    return sortRows(normalizeBrandRows(table, getLocalRows<T>(table)));
   }
 
   const result = await adminJsonRequest<{ rows: T[] }>(`/api/admin/data/${table}`);
-  return sortRows(result.rows || []);
+  return sortRows(normalizeBrandRows(table, result.rows || []));
 }
 
 export async function saveRow<T extends AdminRow>(table: AdminTableName, row: Partial<T> & { id?: string }) {
   assertWritableAdmin(table);
   const timestamp = now();
+  const normalizedRow = normalizeBrandRow(table, row);
   const payload = {
-    ...row,
+    ...normalizedRow,
     updated_at: timestamp,
-    created_at: row.created_at || timestamp,
+    created_at: normalizedRow.created_at || timestamp,
   };
   const supabase = getSupabaseBrowserClient();
 
@@ -196,7 +249,7 @@ export function generateBookingCode() {
   const date = new Date();
   const datePart = `${String(date.getFullYear()).slice(2)}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
   const suffix = Math.floor(100 + Math.random() * 900);
-  return `KHL-${datePart}-${suffix}`;
+  return `FLB-${datePart}-${suffix}`;
 }
 
 export { rangesOverlap };

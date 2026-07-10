@@ -24,6 +24,7 @@ export default function Header({ onBookNow }: HeaderProps) {
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -64,7 +65,7 @@ export default function Header({ onBookNow }: HeaderProps) {
           >
             <Logo
               priority
-              className="w-[102px] transition-all sm:w-[122px]"
+              className="w-[190px] transition-all sm:w-[240px] lg:w-[230px] xl:w-[300px]"
               imageClassName="drop-shadow-[0_4px_12px_rgba(0,0,0,0.55)]"
             />
           </button>

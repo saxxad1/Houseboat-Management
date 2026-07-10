@@ -105,6 +105,6 @@ export const foodMenuData = {
     description: "For family groups, corporate tours, or special dietary needs, you can discuss your preferred food plan with us before confirming your booking.",
     discussButton: "Discuss Food Plan",
     bookButton: "Book Now",
-    whatsappMessage: "Hello, I want to know about the food menu and custom food arrangement for Kuhelika houseboat tour."
+    whatsappMessage: "Hello, I want to know about the food menu and custom food arrangement for FloatBoat houseboat tour."
   }
 };

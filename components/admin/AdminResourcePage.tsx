@@ -344,7 +344,7 @@ export default function AdminResourcePage({
       await saveRow(table, normalizedForm);
       setOpen(false);
       await load();
-      window.dispatchEvent(new Event('kuhelika-public-data-change'));
+      window.dispatchEvent(new Event('floatboat-public-data-change'));
       toast.success('Saved successfully');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Save failed');
@@ -358,7 +358,7 @@ export default function AdminResourcePage({
     try {
       await deleteRow(table, id);
       await load();
-      window.dispatchEvent(new Event('kuhelika-public-data-change'));
+      window.dispatchEvent(new Event('floatboat-public-data-change'));
       toast.success('Deleted successfully');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Delete failed');

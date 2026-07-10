@@ -22,8 +22,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://kuhelika.com'),
-  title: 'Kuhelika - An Aesthetic Water Villa',
+  metadataBase: new URL('https://floatboat.com'),
+  title: 'FloatBoat - An Aesthetic Water Villa',
   description:
     'Welcome to the luxury houseboat in Tanguar Haor. Tanguar Haor houseboat booking Bangladesh. Ideal for family, friends, and corporate teams.',
   keywords: [
@@ -32,18 +32,18 @@ export const metadata: Metadata = {
     'Tanguar Haor Houseboat',
     'Tanguar Haor tour',
     'Houseboat booking Bangladesh',
-    'kuhelika',
-    'Kuhelika',
+    'floatboat',
+    'FloatBoat',
     'sunamganj tour',
     'tanguar haor travel',
   ],
   openGraph: {
-    title: 'Kuhelika - An Aesthetic Water Villa',
+    title: 'FloatBoat - An Aesthetic Water Villa',
     description:
       'An unforgettable experience on a luxury houseboat floating in the blue waters of Tanguar Haor.',
     type: 'website',
     locale: 'en_US',
-    images: ['/hero-kuhelika-houseboat.jpg'],
+    images: ['/hero-floatboat-houseboat.jpg'],
   },
 };
 
@@ -57,8 +57,8 @@ export default function RootLayout({
   const schemaData = {
     '@context': 'https://schema.org',
     '@type': 'LodgingBusiness',
-    name: 'Kuhelika Houseboat',
-    image: 'https://kuhelika.com/hero-kuhelika-houseboat.jpg',
+    name: 'FloatBoat Houseboat',
+    image: 'https://floatboat.com/hero-floatboat-houseboat.jpg',
     description: 'An unforgettable experience on a luxury houseboat floating in the blue waters of Tanguar Haor.',
     address: {
       '@type': 'PostalAddress',

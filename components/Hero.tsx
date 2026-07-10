@@ -36,8 +36,8 @@ export default function Hero({ onBookNow }: HeroProps) {
   }, [validGalleryImages]);
 
   const currentImage = validGalleryImages.length > 0 
-    ? validGalleryImages[currentImageIndex]?.src || "/hero-kuhelika-houseboat.jpg"
-    : "/hero-kuhelika-houseboat.jpg";
+    ? validGalleryImages[currentImageIndex]?.src || "/hero-floatboat-houseboat.jpg"
+    : "/hero-floatboat-houseboat.jpg";
     
   const { scrollYProgress } = useScroll({
     target: ref,

@@ -122,7 +122,7 @@ export default function VideoGallery() {
             Video Gallery
           </h2>
           <p className="text-slate-500 text-base sm:text-lg max-w-2xl mx-auto font-medium">
-            Watch beautiful moments and experiences from Kuhelika.
+            Watch beautiful moments and experiences from FloatBoat.
           </p>
           <div className="w-16 h-1 bg-gradient-to-r from-[hsl(197,80%,30%)] to-[hsl(173,58%,40%)] rounded-full mx-auto mt-6" />
         </div>

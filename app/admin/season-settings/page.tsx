@@ -38,16 +38,16 @@ export default function SeasonSettingsPage() {
     async function load() {
       const rows = await listRows<HouseboatSettings>('houseboat_settings');
       const row = rows[0] || null;
-      const storedSeason = normalizeSeason(row?.active_season || window.localStorage.getItem('kuhelika-active-season'));
+      const storedSeason = normalizeSeason(row?.active_season || window.localStorage.getItem('floatboat-active-season'));
       setSettings(row);
       setActiveSeason(storedSeason);
       setSavedSeason(storedSeason);
-      window.localStorage.setItem('kuhelika-active-season', storedSeason);
+      window.localStorage.setItem('floatboat-active-season', storedSeason);
       setLoading(false);
     }
 
     load().catch(() => {
-      const fallbackSeason = normalizeSeason(window.localStorage.getItem('kuhelika-active-season'));
+      const fallbackSeason = normalizeSeason(window.localStorage.getItem('floatboat-active-season'));
       setActiveSeason(fallbackSeason);
       setSavedSeason(fallbackSeason);
       setLoading(false);
@@ -66,7 +66,7 @@ export default function SeasonSettingsPage() {
     try {
       const saved = await saveRow<HouseboatSettings>('houseboat_settings', {
         id: settings?.id,
-        houseboat_name: settings?.houseboat_name || 'Kuhelika',
+        houseboat_name: settings?.houseboat_name || 'FloatBoat',
         tagline: settings?.tagline || data.site.tagline,
         description: settings?.description || data.site.description,
         phone: settings?.phone || data.site.phone,
@@ -80,19 +80,19 @@ export default function SeasonSettingsPage() {
         bank_info: settings?.bank_info || '',
         primary_color: settings?.primary_color || '#075985',
         secondary_color: settings?.secondary_color || '#f59e0b',
-        logo_url: settings?.logo_url || '/logo-kuhelika-clean.png',
+        logo_url: settings?.logo_url || '/logo-floatboat.svg',
         active_season: activeSeason,
         season_updated_at: timestamp,
       });
       setSettings(saved);
       setSavedSeason(activeSeason);
-      window.localStorage.setItem('kuhelika-active-season', activeSeason);
-      window.dispatchEvent(new Event('kuhelika-season-change'));
+      window.localStorage.setItem('floatboat-active-season', activeSeason);
+      window.dispatchEvent(new Event('floatboat-season-change'));
       setMessage('Season mode saved. Public website will now show content for this season.');
     } catch {
       setMessage('Save failed. Check Supabase connection/permission. In Demo mode, local switch will work.');
-      window.localStorage.setItem('kuhelika-active-season', activeSeason);
-      window.dispatchEvent(new Event('kuhelika-season-change'));
+      window.localStorage.setItem('floatboat-active-season', activeSeason);
+      window.dispatchEvent(new Event('floatboat-season-change'));
       setSavedSeason(activeSeason);
     } finally {
       setSaving(false);

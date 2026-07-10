@@ -105,7 +105,7 @@ export default function ReviewsAdminPage() {
       }
 
       toast.success(`Facebook sync complete. Imported ${result.imported || 0}, updated ${result.updated || 0}.`);
-      window.dispatchEvent(new Event('kuhelika-public-data-change'));
+      window.dispatchEvent(new Event('floatboat-public-data-change'));
       fetchReviews();
     } catch (error: any) {
       toast.error(error.message || 'Facebook sync failed');
@@ -126,7 +126,7 @@ export default function ReviewsAdminPage() {
         is_active: !checked,
       });
       setIsSectionVisible(checked);
-      window.dispatchEvent(new Event('kuhelika-public-data-change'));
+      window.dispatchEvent(new Event('floatboat-public-data-change'));
       toast.success(checked ? 'Reviews section is now visible on the website' : 'Reviews section is now hidden from the website');
     } catch (error: any) {
       toast.error(error.message || 'Failed to toggle section visibility');

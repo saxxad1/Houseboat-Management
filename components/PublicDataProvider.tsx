@@ -52,7 +52,7 @@ const initialSeason = getSeasonalData('haor');
 const fallbackValue: PublicDataContextValue = {
   activeSeason: 'haor',
   seasonData: initialSeason,
-  siteConfig: { ...fallbackSiteConfig, ...initialSeason.site, logoUrl: '/logo-kuhelika-clean.png' },
+  siteConfig: { ...fallbackSiteConfig, ...initialSeason.site, logoUrl: '/logo-floatboat.svg' },
   cabins: fallbackCabins,
   packages: [],
   galleryImages: fallbackGalleryImages,
@@ -70,7 +70,7 @@ const PublicDataContext = createContext<PublicDataContextValue>(fallbackValue);
 function getLocalSeason(): string | null {
   if (typeof window === 'undefined') return null;
   try {
-    return window.localStorage.getItem('kuhelika-active-season');
+    return window.localStorage.getItem('floatboat-active-season');
   } catch (e) {
     return null;
   }
@@ -79,7 +79,7 @@ function getLocalSeason(): string | null {
 function setLocalSeason(season: string) {
   if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem('kuhelika-active-season', season);
+    window.localStorage.setItem('floatboat-active-season', season);
   } catch (e) {
     // ignore
   }
@@ -131,7 +131,7 @@ export function PublicDataProvider({ children, initialData }: { children: React.
           whatsapp: current.siteConfig.whatsapp || fallbackSiteConfig.whatsapp,
           email: current.siteConfig.email || fallbackSiteConfig.email,
           facebook: current.siteConfig.facebook || fallbackSiteConfig.facebook,
-          logoUrl: current.siteConfig.logoUrl || '/logo-kuhelika-clean.png',
+          logoUrl: current.siteConfig.logoUrl || '/logo-floatboat.svg',
         },
         cabins: season === 'padma' ? [...seasonData.eventSpaces] as any as PublicCabin[] : [...fallbackCabins] as any as PublicCabin[],
         packages: [],
@@ -193,11 +193,11 @@ export function PublicDataProvider({ children, initialData }: { children: React.
       }
       load();
     };
-    window.addEventListener('kuhelika-public-data-change', handlePublicDataChange);
+    window.addEventListener('floatboat-public-data-change', handlePublicDataChange);
 
     return () => {
       mounted = false;
-      window.removeEventListener('kuhelika-public-data-change', handlePublicDataChange);
+      window.removeEventListener('floatboat-public-data-change', handlePublicDataChange);
     };
   }, []);
 
@@ -218,7 +218,7 @@ export function PublicDataProvider({ children, initialData }: { children: React.
             whatsapp: current.siteConfig.whatsapp || fallbackSiteConfig.whatsapp,
             email: current.siteConfig.email || fallbackSiteConfig.email,
             facebook: current.siteConfig.facebook || fallbackSiteConfig.facebook,
-            logoUrl: current.siteConfig.logoUrl || '/logo-kuhelika-clean.png',
+            logoUrl: current.siteConfig.logoUrl || '/logo-floatboat.svg',
           },
           galleryImages: [...seasonData.gallery.images] as PublicGalleryImage[],
           specialDates: current.specialDates,
@@ -229,10 +229,10 @@ export function PublicDataProvider({ children, initialData }: { children: React.
       });
     };
 
-    window.addEventListener('kuhelika-season-change', handleSeasonChange);
+    window.addEventListener('floatboat-season-change', handleSeasonChange);
     window.addEventListener('storage', handleSeasonChange);
     return () => {
-      window.removeEventListener('kuhelika-season-change', handleSeasonChange);
+      window.removeEventListener('floatboat-season-change', handleSeasonChange);
       window.removeEventListener('storage', handleSeasonChange);
     };
   }, []);

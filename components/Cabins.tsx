@@ -100,7 +100,7 @@ function CabinCard({
               {images.map((img: string, idx: number) => (
                 <div key={idx} className="relative flex-[0_0_100%] h-full min-w-0">
                   <Image
-                    src={img || '/images/kuhelika/cabins/cabin-01.jpg'}
+                    src={img || '/images/floatboat/cabins/cabin-01.jpg'}
                     alt={`${display.name} image ${idx + 1}`}
                     fill
                     sizes="(min-width: 768px) 50vw, 100vw"
@@ -113,7 +113,7 @@ function CabinCard({
           </div>
         ) : (
           <Image
-            src={images[0] || display.image || '/images/kuhelika/cabins/cabin-01.jpg'}
+            src={images[0] || display.image || '/images/floatboat/cabins/cabin-01.jpg'}
             alt={display.name}
             fill
             sizes="(min-width: 768px) 50vw, 100vw"

@@ -10,16 +10,16 @@ export const managerWritableTables: AdminTableName[] = [
 
 export function getCachedAdminRole() {
   if (typeof window === 'undefined') return '';
-  return window.localStorage.getItem('kuhelika-admin-role') || '';
+  return window.localStorage.getItem('floatboat-admin-role') || '';
 }
 
 export function setCachedAdminRole(role?: string | null) {
   if (typeof window === 'undefined') return;
   if (role) {
-    window.localStorage.setItem('kuhelika-admin-role', role);
+    window.localStorage.setItem('floatboat-admin-role', role);
     return;
   }
-  window.localStorage.removeItem('kuhelika-admin-role');
+  window.localStorage.removeItem('floatboat-admin-role');
 }
 
 export function isReadOnlyAdmin() {

@@ -22,7 +22,7 @@ export default function AdminTopbar({ email, onOpenMenu }: AdminTopbarProps) {
     if (isSupabaseConfigured()) {
       await getSupabaseBrowserClient()?.auth.signOut();
     }
-    window.localStorage.removeItem('kuhelika-demo-admin');
+    window.localStorage.removeItem('floatboat-demo-admin');
     setCachedAdminRole(null);
     router.replace('/admin/login');
   };

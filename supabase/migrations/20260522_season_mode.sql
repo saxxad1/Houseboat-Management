@@ -1,4 +1,4 @@
--- Season mode support for Kuhelika.
+-- Season mode support for FloatBoat.
 -- Adds Haor / Padma mode, Padma event booking fields, and slot-based availability fields.
 
 alter table public.houseboat_settings

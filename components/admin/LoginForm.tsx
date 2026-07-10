@@ -29,7 +29,7 @@ export default function LoginForm() {
       }
 
       if (!isSupabaseConfigured()) {
-        window.localStorage.setItem('kuhelika-demo-admin', email);
+        window.localStorage.setItem('floatboat-demo-admin', email);
         setCachedAdminRole('admin');
         router.replace('/admin/dashboard');
         return;
@@ -61,9 +61,9 @@ export default function LoginForm() {
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-md items-center">
         <div className="w-full rounded-lg border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
           <div className="mb-8 text-center">
-            <Logo className="mx-auto mb-4 w-40" imageClassName="drop-shadow-sm" priority />
+            <Logo className="mx-auto mb-4 w-64" imageClassName="drop-shadow-sm" priority />
             <h1 className="text-2xl font-bold text-slate-900">Admin Login</h1>
-            <p className="mt-2 text-sm text-slate-500">Kuhelika Houseboat Management Panel</p>
+            <p className="mt-2 text-sm text-slate-500">FloatBoat Houseboat Management Panel</p>
           </div>
 
           <form onSubmit={submit} className="space-y-4">

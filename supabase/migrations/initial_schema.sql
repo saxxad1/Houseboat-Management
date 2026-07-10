@@ -1,4 +1,4 @@
--- Kuhelika / single-houseboat admin schema
+-- FloatBoat / single-houseboat admin schema
 -- Run this in Supabase SQL editor or via `supabase db push`.
 
 create extension if not exists pgcrypto;
@@ -343,7 +343,7 @@ insert into public.houseboat_settings (
   address,
   logo_url
 ) values (
-  'কুহেলিকা',
+  'FloatBoat',
   'An Aesthetic Water Villa',
   'টাঙ্গুয়ার হাওরের বুকে এক নান্দনিক হাউসবোট অভিজ্ঞতা।',
   '+880 1700-000000',
@@ -352,7 +352,7 @@ insert into public.houseboat_settings (
   'https://facebook.com',
   'টাঙ্গুয়ার হাওর, সুনামগঞ্জ',
   'তাহিরপুর ঘাট, সুনামগঞ্জ',
-  '/logo-kuhelika-clean.png'
+  '/logo-floatboat.svg'
 ) on conflict do nothing;
 
 insert into storage.buckets (id, name, public)

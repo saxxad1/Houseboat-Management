@@ -81,7 +81,7 @@ export default function AvailabilityCalendar() {
     setCustomers(data.customers);
     setBlocks(data.availability);
     setTripSlots(data.trip_slots || []);
-    const season = normalizeSeason(data.settings[0]?.active_season || window.localStorage.getItem('kuhelika-active-season'));
+    const season = normalizeSeason(data.settings[0]?.active_season || window.localStorage.getItem('floatboat-active-season'));
     setActiveSeason(season);
   };
 

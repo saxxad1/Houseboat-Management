@@ -82,7 +82,7 @@ function MyBookingsContent() {
       {/* Hero Section for My Bookings to blend with the site */}
       <section className="relative pt-32 pb-16 lg:pt-40 lg:pb-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[hsl(197,80%,10%)] to-[hsl(197,80%,20%)] z-0" />
-        <div className="absolute inset-0 bg-[url('/hero-kuhelika-houseboat.jpg')] bg-cover bg-center opacity-20 mix-blend-overlay z-0" />
+        <div className="absolute inset-0 bg-[url('/hero-floatboat-houseboat.jpg')] bg-cover bg-center opacity-20 mix-blend-overlay z-0" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <ScrollReveal>
             <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 font-playfair tracking-tight">

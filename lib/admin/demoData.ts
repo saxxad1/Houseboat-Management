@@ -21,7 +21,7 @@ const id = (prefix: string, index: number) => `${prefix}-${String(index).padStar
 
 export const demoSettings: HouseboatSettings = {
   id: 'settings-001',
-  houseboat_name: 'Kuhelika',
+  houseboat_name: 'FloatBoat',
   tagline: 'An Aesthetic Water Villa',
   description: siteConfig.description,
   phone: siteConfig.phone,
@@ -36,7 +36,7 @@ export const demoSettings: HouseboatSettings = {
   padma_price_per_person: 0,
   primary_color: '#075985',
   secondary_color: '#f59e0b',
-  logo_url: '/logo-kuhelika-clean.png',
+  logo_url: '/logo-floatboat.svg',
   active_season: 'haor',
   season_updated_at: now,
   created_at: now,
@@ -110,7 +110,7 @@ export const demoCustomers: Customer[] = [
 export const demoBookings: Booking[] = [
   {
     id: 'booking-001',
-    booking_code: 'KHL-260521-001',
+    booking_code: 'FLB-260521-001',
     customer_id: 'customer-001',
     booking_type: 'cabin_wise',
     room_id: 'room-001',
@@ -131,7 +131,7 @@ export const demoBookings: Booking[] = [
   },
   {
     id: 'booking-002',
-    booking_code: 'KHL-260521-002',
+    booking_code: 'FLB-260521-002',
     customer_id: 'customer-002',
     booking_type: 'full_boat',
     room_id: null,
@@ -222,7 +222,7 @@ export const demoWebsiteContent: WebsiteContent[] = [
   {
     id: 'content-hero',
     section_key: 'hero',
-    title: 'Kuhelika',
+    title: 'FloatBoat',
     subtitle: 'An Aesthetic Water Villa',
     content: siteConfig.description,
     image_url: '',
@@ -235,7 +235,7 @@ export const demoWebsiteContent: WebsiteContent[] = [
   {
     id: 'content-about',
     section_key: 'about',
-    title: 'About Kuhelika',
+    title: 'About FloatBoat',
     subtitle: 'Welcome to Tanguar Haor',
     content: 'An aesthetic houseboat experience, perfect for family and group tours.',
     image_url: '',
