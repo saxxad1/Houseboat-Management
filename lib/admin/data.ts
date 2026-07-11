@@ -146,7 +146,17 @@ function normalizeBrandRows<T extends AdminRow>(table: AdminTableName, rows: T[]
 
 function notifyPublicDataChanged(table: AdminTableName) {
   if (typeof window === 'undefined') return;
-  if (!['bookings', 'trip_slots', 'rooms', 'availability_blocks'].includes(table)) return;
+  const dashboardTables: AdminTableName[] = [
+    'bookings',
+    'payments',
+    'income',
+    'expenses',
+    'trip_slots',
+    'customers',
+    'rooms',
+    'availability_blocks',
+  ];
+  if (!dashboardTables.includes(table)) return;
   window.dispatchEvent(new Event('floatboat-public-data-change'));
 }
 

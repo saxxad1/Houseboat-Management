@@ -9,6 +9,14 @@ import { normalizeSeason, seasonMeta } from '@/data/seasonalData';
 import { fetchAdminDataset } from '@/lib/admin/data';
 import type { Booking, Customer, Expense, HouseboatSettings, TripSlot, Income } from '@/types/database';
 
+function toLocalDateString(date: Date) {
+  return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+}
+
+function getDashboardBookingDate(booking: Booking) {
+  return booking.season_type === 'padma' && booking.event_date ? booking.event_date : booking.check_in_date;
+}
+
 export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -33,6 +41,18 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     load();
+    const handleDataChange = () => load();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') load();
+    };
+    window.addEventListener('floatboat-public-data-change', handleDataChange);
+    window.addEventListener('focus', handleDataChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('floatboat-public-data-change', handleDataChange);
+      window.removeEventListener('focus', handleDataChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const activeSeason = normalizeSeason(settings[0]?.active_season);
@@ -40,26 +60,25 @@ export default function AdminDashboard() {
 
   const { startDate, endDate } = useMemo(() => {
     const today = new Date();
-    // Use local time formatting to avoid timezone shifts
-    const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+    const todayStr = toLocalDateString(today);
     
     if (dateFilter === 'today') return { startDate: todayStr, endDate: todayStr };
     if (dateFilter === 'yesterday') {
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
-      const yStr = new Date(yesterday.getTime() - (yesterday.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      const yStr = toLocalDateString(yesterday);
       return { startDate: yStr, endDate: yStr };
     }
     if (dateFilter === 'last_7_days') {
       const last7 = new Date(today);
       last7.setDate(last7.getDate() - 6);
-      const l7Str = new Date(last7.getTime() - (last7.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      const l7Str = toLocalDateString(last7);
       return { startDate: l7Str, endDate: todayStr };
     }
     if (dateFilter === 'this_month') {
       const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const mStr = new Date(startOfMonth.getTime() - (startOfMonth.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
-      return { startDate: mStr, endDate: todayStr };
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      return { startDate: toLocalDateString(startOfMonth), endDate: toLocalDateString(endOfMonth) };
     }
     if (dateFilter === 'custom') {
       return { startDate: customFrom || '1970-01-01', endDate: customTo || '2100-01-01' };
@@ -69,7 +88,6 @@ export default function AdminDashboard() {
 
   const metrics = useMemo(() => {
     const validTrips = tripSlots.filter(t => t.start_date >= startDate && t.start_date <= endDate);
-    const totalTrips = validTrips.length;
     
     let manualGuests = 0;
     let manualRevenue = 0;
@@ -88,11 +106,13 @@ export default function AdminDashboard() {
       }
     });
     
-    const validBookings = bookings.filter(b => 
-      b.booking_status !== 'cancelled' && 
-      ((b.event_date || b.check_in_date) >= startDate) && 
-      ((b.event_date || b.check_in_date) <= endDate)
-    );
+    const validBookings = bookings.filter((booking) => {
+      if (booking.booking_status === 'cancelled') return false;
+      const bookingDate = getDashboardBookingDate(booking);
+      return bookingDate >= startDate && bookingDate <= endDate;
+    });
+    const bookingTripDates = new Set(validBookings.map(getDashboardBookingDate).filter(Boolean));
+    const totalTrips = Math.max(validTrips.length, bookingTripDates.size);
     const totalGuests = validBookings.reduce((sum, b) => sum + (Number(b.number_of_guests) || 0), 0) + manualGuests;
     
     const validIncome = income.filter(i => i.income_date >= startDate && i.income_date <= endDate);
@@ -103,8 +123,9 @@ export default function AdminDashboard() {
     const totalExpense = validExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0) + manualExpensesTotal;
     const totalProfit = totalBookingAmount - totalExpense;
     
-    const avgGuests = totalTrips ? Math.round(totalGuests / totalTrips) : 0;
-    const avgProfit = totalTrips ? (totalProfit / totalTrips) : 0;
+    const averageBase = totalTrips || validBookings.length;
+    const avgGuests = averageBase ? Math.round(totalGuests / averageBase) : 0;
+    const avgProfit = averageBase ? (totalProfit / averageBase) : 0;
     const profitMargin = totalBookingAmount ? Math.round((totalProfit / totalBookingAmount) * 100) : 0;
 
     const m = (val: number) => currencyFormatter.format(val).replace('BDT', '৳');
@@ -120,7 +141,7 @@ export default function AdminDashboard() {
       profitMargin,
       m
     };
-  }, [bookings, expenses, tripSlots, startDate, endDate]);
+  }, [bookings, expenses, income, tripSlots, startDate, endDate]);
 
   const recentBookings = useMemo(() => {
     return [...bookings].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);
@@ -182,7 +203,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="text-4xl font-black text-slate-800 tracking-tight">{metrics.trips}</div>
-          <p className="text-xs font-semibold text-slate-500 mt-2 bg-white/60 inline-block px-2 py-1 rounded-lg">Based on schedule</p>
+          <p className="text-xs font-semibold text-slate-500 mt-2 bg-white/60 inline-block px-2 py-1 rounded-lg">Schedule and bookings</p>
         </div>
 
         <div className="bg-gradient-to-br from-amber-500/5 to-orange-500/5 border border-orange-100/50 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
@@ -206,7 +227,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="text-4xl font-black text-slate-800 tracking-tight">{metrics.m(metrics.revenue)}</div>
-          <p className="text-xs font-semibold text-slate-500 mt-2 bg-white/60 inline-block px-2 py-1 rounded-lg">From bookings</p>
+          <p className="text-xs font-semibold text-slate-500 mt-2 bg-white/60 inline-block px-2 py-1 rounded-lg">Bookings + income</p>
         </div>
       </div>
 
