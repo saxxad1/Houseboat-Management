@@ -71,7 +71,7 @@ export default function Header({ onBookNow }: HeaderProps) {
           </button>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden xl:flex items-center gap-1">
             {navLinks.map((link) => (
               <button
                 key={link.href}
@@ -88,7 +88,7 @@ export default function Header({ onBookNow }: HeaderProps) {
           </nav>
 
           {/* CTA Buttons */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden xl:flex items-center gap-3">
             <a
               href={`tel:${siteConfig.phone}`}
               className={`flex items-center gap-1.5 text-sm font-semibold transition-colors ${
@@ -109,7 +109,7 @@ export default function Header({ onBookNow }: HeaderProps) {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`lg:hidden p-2 rounded-lg transition-colors ${
+            className={`xl:hidden p-2 rounded-lg transition-colors ${
               isScrolled ? 'text-slate-700 hover:bg-slate-100' : 'text-white hover:bg-white/20 text-shadow-soft'
             }`}
             aria-label="Toggle menu"
@@ -121,7 +121,7 @@ export default function Header({ onBookNow }: HeaderProps) {
 
       {/* Mobile Menu */}
       <div
-        className={`lg:hidden transition-all duration-300 overflow-hidden ${
+        className={`xl:hidden transition-all duration-300 overflow-hidden ${
           isMobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
         }`}
       >

@@ -131,12 +131,12 @@ export default function Hero({ onBookNow }: HeroProps) {
           </motion.div>
 
           {/* Title */}
-          <motion.h1 variants={itemVariants} className="flex w-[calc(100vw-2rem)] max-w-full min-w-0 flex-col gap-2 text-shadow-strong sm:w-full sm:flex-row sm:items-baseline sm:gap-4 mb-4">
-            <span className="min-w-0 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black font-serif italic text-white leading-[1.1] tracking-tight break-words">{seasonData.hero.title}</span>
-            <span className="min-w-0 text-2xl sm:text-3xl md:text-4xl text-white/90 italic font-serif font-medium tracking-wide break-words">- An Aesthetic Water Villa</span>
+          <motion.h1 variants={itemVariants} className="flex w-[calc(100vw-2rem)] max-w-full min-w-0 flex-col gap-2 text-shadow-strong sm:w-full xl:flex-row xl:items-baseline xl:gap-4 mb-4">
+            <span className="min-w-0 text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-black font-serif italic text-white leading-[1.1] tracking-tight break-words">{seasonData.hero.title}</span>
+            <span className="min-w-0 text-2xl sm:text-3xl md:text-4xl xl:text-4xl text-white/90 italic font-serif font-medium tracking-wide break-words">- An Aesthetic Water Villa</span>
           </motion.h1>
           
-          <motion.p variants={itemVariants} className="w-[calc(100vw-2rem)] max-w-full text-xl sm:text-3xl md:text-4xl text-[hsl(38,95%,65%)] font-bold mb-6 leading-snug text-shadow-strong drop-shadow-lg break-words [overflow-wrap:anywhere] sm:w-full sm:max-w-3xl">
+          <motion.p variants={itemVariants} className="w-[calc(100vw-2rem)] max-w-full text-xl sm:text-3xl lg:text-4xl text-[hsl(38,95%,65%)] font-bold mb-6 leading-snug text-shadow-strong drop-shadow-lg break-words [overflow-wrap:anywhere] sm:w-full sm:max-w-3xl">
             {seasonData.hero.subtitle}
           </motion.p>
           

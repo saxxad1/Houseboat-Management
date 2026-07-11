@@ -75,15 +75,7 @@ export function CustomersAdminPage() {
   );
 }
 
-import { usePublicData } from '@/components/PublicDataProvider';
-
 export function IncomeAdminPage() {
-  const { tripSlots } = usePublicData();
-  const tripOptions = [{ value: 'none', label: 'None (No Trip)' }, ...tripSlots.map(t => ({ 
-    value: t.id, 
-    label: `${new Date(t.start_date).toLocaleDateString('en-GB')} to ${new Date(t.end_date).toLocaleDateString('en-GB')}` 
-  }))];
-
   return (
     <AdminResourcePage
       table="income"
@@ -104,7 +96,6 @@ export function IncomeAdminPage() {
         { name: 'category', label: 'Category', type: 'select', options: incomeCategories.map((value) => ({ value, label: value })) },
         { name: 'amount', label: 'Amount', type: 'number', defaultValue: 0, min: 0 },
         { name: 'income_date', label: 'Income date', type: 'date' },
-        { name: 'trip_slot_id', label: 'Link to Trip (Optional)', type: 'select', options: tripOptions },
         { name: 'note', label: 'Note', type: 'textarea' },
       ]}
     />
@@ -115,12 +106,6 @@ import ExpensesChart from '@/components/admin/ExpensesChart';
 import type { Expense } from '@/types/database';
 
 export function ExpensesAdminPage() {
-  const { tripSlots } = usePublicData();
-  const tripOptions = [{ value: 'none', label: 'None (No Trip)' }, ...tripSlots.map(t => ({ 
-    value: t.id, 
-    label: `${new Date(t.start_date).toLocaleDateString('en-GB')} to ${new Date(t.end_date).toLocaleDateString('en-GB')}` 
-  }))];
-
   return (
     <AdminResourcePage
       table="expenses"
@@ -143,7 +128,6 @@ export function ExpensesAdminPage() {
         { name: 'amount', label: 'Amount', type: 'number', defaultValue: 0, min: 0 },
         { name: 'expense_date', label: 'Expense date', type: 'date' },
         { name: 'vendor_name', label: 'Vendor name' },
-        { name: 'trip_slot_id', label: 'Link to Trip (Optional)', type: 'select', options: tripOptions },
         { name: 'note', label: 'Note', type: 'textarea' },
       ]}
     />

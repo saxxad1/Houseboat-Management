@@ -3,7 +3,7 @@ const nextConfig = {
   poweredByHeader: false,
   allowedDevOrigins: ['192.168.0.114'],
   images: {
-    qualities: [75, 80],
+    qualities: [75, 80, 90],
     remotePatterns: [
       {
         protocol: 'https',

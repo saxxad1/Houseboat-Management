@@ -27,6 +27,19 @@ function withTimestamps(row: Partial<AdminRow> & { id?: string }) {
   };
 }
 
+function withoutUnsupportedLegacyColumns(table: AdminTableName, row: Record<string, unknown>) {
+  if (table !== 'income' && table !== 'expenses') return row;
+  const next = { ...row };
+  delete next.trip_slot_id;
+  return next;
+}
+
+function isMissingTripSlotColumnError(error: unknown) {
+  if (!error || typeof error !== 'object') return false;
+  const message = 'message' in error ? String((error as { message?: unknown }).message || '') : '';
+  return message.includes("'trip_slot_id'") && message.includes('schema cache');
+}
+
 async function getTable(context: RouteContext) {
   const { table } = await context.params;
   return table;
@@ -188,6 +201,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const row = (body.row || {}) as Partial<AdminRow> & { id?: string };
   const payload = withTimestamps(row);
   const db = admin.supabase as any;
+  const adminTable = table as AdminTableName;
 
   if (table === 'bookings') {
     const conflictError = await validateBookingSave(db, payload as Partial<Booking>);
@@ -217,12 +231,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   if (payload.id) {
     const { id, ...updatePayload } = payload;
-    const { data, error } = await db
+    let { data, error } = await db
       .from(table)
       .update(updatePayload)
       .eq('id', id)
       .select()
       .single();
+
+    if (isMissingTripSlotColumnError(error)) {
+      const retryPayload = withoutUnsupportedLegacyColumns(adminTable, updatePayload as Record<string, unknown>);
+      const retry = await db
+        .from(table)
+        .update(retryPayload)
+        .eq('id', id)
+        .select()
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -232,11 +258,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 
   const { id: _id, ...insertPayload } = payload;
-  const { data, error } = await db
+  let { data, error } = await db
     .from(table)
     .insert(insertPayload)
     .select()
     .single();
+
+  if (isMissingTripSlotColumnError(error)) {
+    const retryPayload = withoutUnsupportedLegacyColumns(adminTable, insertPayload as Record<string, unknown>);
+    const retry = await db
+      .from(table)
+      .insert(retryPayload)
+      .select()
+      .single();
+    data = retry.data;
+    error = retry.error;
+  }
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });

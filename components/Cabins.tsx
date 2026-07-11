@@ -18,6 +18,8 @@ const badgeStyles: Record<string, string> = {
   Family: 'bg-rose-500 text-white shadow-md shadow-rose-500/30',
 };
 
+const formatMoney = (value: number) => value.toLocaleString('en-US');
+
 type CabinDisplayFields = {
   id: string | number;
   image: string;
@@ -179,15 +181,15 @@ function CabinCard({
                   {isPromoActive && siteConfig.promoDiscountPercent ? (
                     <>
                       <span className="text-slate-400 font-semibold text-xs sm:text-sm leading-none line-through mr-1">
-                        ৳{display.rawPrice2Pax.toLocaleString()}
+                        ৳{formatMoney(display.rawPrice2Pax)}
                       </span>
                       <span className="text-[hsl(197,80%,30%)] font-black text-sm sm:text-base leading-none">
-                        ৳{Math.round(display.rawPrice2Pax * (1 - siteConfig.promoDiscountPercent / 100)).toLocaleString()}
+                        ৳{formatMoney(Math.round(display.rawPrice2Pax * (1 - siteConfig.promoDiscountPercent / 100)))}
                       </span>
                     </>
                   ) : (
                     <span className="text-[hsl(197,80%,30%)] font-black text-sm sm:text-base leading-none">
-                      ৳{display.rawPrice2Pax.toLocaleString()}
+                      ৳{formatMoney(display.rawPrice2Pax)}
                     </span>
                   )}
                   <span className="text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider">
@@ -200,15 +202,15 @@ function CabinCard({
                   {isPromoActive && siteConfig.promoDiscountPercent ? (
                     <>
                       <span className="text-slate-400 font-semibold text-xs sm:text-sm leading-none line-through mr-1">
-                        ৳{display.rawPrice3Pax.toLocaleString()}
+                        ৳{formatMoney(display.rawPrice3Pax)}
                       </span>
                       <span className="text-[hsl(197,80%,30%)] font-black text-sm sm:text-base leading-none">
-                        ৳{Math.round(display.rawPrice3Pax * (1 - siteConfig.promoDiscountPercent / 100)).toLocaleString()}
+                        ৳{formatMoney(Math.round(display.rawPrice3Pax * (1 - siteConfig.promoDiscountPercent / 100)))}
                       </span>
                     </>
                   ) : (
                     <span className="text-[hsl(197,80%,30%)] font-black text-sm sm:text-base leading-none">
-                      ৳{display.rawPrice3Pax.toLocaleString()}
+                      ৳{formatMoney(display.rawPrice3Pax)}
                     </span>
                   )}
                   <span className="text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider">
@@ -225,7 +227,7 @@ function CabinCard({
                     {display.mainPrice}
                   </span>
                   <span className="text-[hsl(197,80%,30%)] font-black text-lg sm:text-xl leading-none">
-                    ৳{Math.round(parseInt(display.mainPrice.replace(/\D/g, '')) * (1 - siteConfig.promoDiscountPercent / 100)).toLocaleString()}
+                    ৳{formatMoney(Math.round(parseInt(display.mainPrice.replace(/\D/g, '')) * (1 - siteConfig.promoDiscountPercent / 100)))}
                   </span>
                 </div>
               ) : (

@@ -388,7 +388,6 @@ export async function recordPayment(values: Partial<Payment>) {
         amount: Number(values.amount || 0),
         income_date: values.payment_date || new Date().toISOString().slice(0, 10),
         note: values.note || '',
-        trip_slot_id: booking.trip_slot_id || null,
       });
     }
   }
