@@ -62,7 +62,7 @@ def page(num: int, body: str, klass: str = "") -> str:
     return f"""
     <section class="page {klass}">
       {body}
-      <footer><span>FloatBoat স্মার্ট হাউসবোট সিস্টেম</span><span>পৃষ্ঠা {num:02d}</span></footer>
+      <footer><span>Floatbase স্মার্ট হাউসবোট সিস্টেম</span><span>পৃষ্ঠা {num:02d}</span></footer>
     </section>
     """
 
@@ -109,11 +109,11 @@ def grid(num: int, tag: str, title: str, subtitle: str, imgs: list[tuple[str, st
 
 
 def cover(num: int) -> str:
-    logo = (ROOT / "public" / "logo-floatboat.svg").resolve().as_uri()
+    logo = (ROOT / "public" / "logo-floatbase.svg").resolve().as_uri()
     body = f"""
     <div class="cover-graphic">
       <div class="waves"></div>
-      <img class="cover-logo" src="{logo}" alt="FloatBoat logo">
+      <img class="cover-logo" src="{logo}" alt="Floatbase logo">
       <div class="cover-copy">
         <span class="cover-pill">আপনার হাউসবোটের জন্য স্মার্ট ডিজিটাল সলিউশন</span>
         <h1>ওয়েবসাইট, বুকিং ও অ্যাডমিন ম্যানেজমেন্ট - সব এক সিস্টেমে</h1>
@@ -125,7 +125,7 @@ def cover(num: int) -> str:
         <div><b>অ্যাডমিন প্যানেল</b><span>বুকিং, রিপোর্ট, সিজন সুইচ</span></div>
       </div>
     </div>
-    <footer class="light"><span>FloatBoat স্মার্ট হাউসবোট সিস্টেম</span><span>পৃষ্ঠা {num:02d}</span></footer>
+    <footer class="light"><span>Floatbase স্মার্ট হাউসবোট সিস্টেম</span><span>পৃষ্ঠা {num:02d}</span></footer>
     """
     return f"<section class='page cover'>{body}</section>"
 

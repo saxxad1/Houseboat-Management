@@ -39,7 +39,7 @@ const padmaDetails = [
   {
     icon: Ship,
     title: 'Booking Flow',
-    desc: 'Guests select date and guest count only. FloatBoat team manages room allocation.',
+    desc: 'Guests select date and guest count only. Floatbase team manages room allocation.',
   },
 ];
 
@@ -75,7 +75,7 @@ export default function PadmaTripAdminPage() {
       const saved = await saveRow<HouseboatSettings>('houseboat_settings', {
         ...settings,
         id: settings?.id,
-        houseboat_name: settings?.houseboat_name || 'FloatBoat',
+        houseboat_name: settings?.houseboat_name || 'Floatbase',
         padma_price_per_person: Math.max(Number(price || 0), 0),
       });
       setSettings(saved);

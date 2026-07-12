@@ -15,7 +15,7 @@ export default function About() {
   const { seasonData, activeSeason } = usePublicData();
   const aboutContent = seasonData.about;
   const aboutImage = activeSeason === 'padma' ? '/images/padma/river-view.jpg' : '/images/floatboat/gallery/img-8749.jpg';
-  const aboutAlt = activeSeason === 'padma' ? 'FloatBoat Padma day long cruise' : 'Tanguar Haor houseboat';
+  const aboutAlt = activeSeason === 'padma' ? 'Floatbase Padma day long cruise' : 'Tanguar Haor houseboat';
 
   return (
     <section id="about" className="py-10 md:py-16 bg-white">

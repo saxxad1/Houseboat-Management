@@ -105,7 +105,7 @@ def login_admin(page: Page) -> None:
     page.goto(f"{BASE_URL}/admin/login", wait_until="domcontentloaded", timeout=60000)
     wait_ready(page)
     stabilize(page)
-    page.fill("#email", "demo@floatboat.local")
+    page.fill("#email", "demo@floatbase.local")
     page.fill("#password", "demo-password")
     page.get_by_role("button", name=re.compile("Login", re.I)).click()
     page.wait_for_url(re.compile(r"/admin/dashboard"), timeout=30000)

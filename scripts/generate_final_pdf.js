@@ -3,7 +3,7 @@ const path = require('path');
 
 const CHROME_PATH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const HTML_FILE = 'file:///Users/pc/Documents/Houseboat%20Management/tmp/5page_brochure.html';
-const OUTPUT_PDF = '/Users/pc/Downloads/FloatBoat_Pitch_Deck.pdf';
+const OUTPUT_PDF = '/Users/pc/Downloads/Floatbase_Pitch_Deck.pdf';
 
 async function generatePDF() {
   const browser = await puppeteer.launch({

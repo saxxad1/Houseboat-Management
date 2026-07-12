@@ -1,7 +1,7 @@
 export const guestGuidelinesData = {
   badge: "IMPORTANT NOTES",
   title: "Guest Guidelines",
-  subtitle: "Please follow these simple guidelines to make your FloatBoat houseboat journey safe, respectful, and enjoyable for everyone.",
+  subtitle: "Please follow these simple guidelines to make your Floatbase houseboat journey safe, respectful, and enjoyable for everyone.",
   guidelines: [
     {
       title: "Crew Support",
@@ -51,6 +51,6 @@ export const guestGuidelinesData = {
   ],
   note: {
     title: "Important Reminder",
-    description: "By confirming your booking, you agree to follow FloatBoat’s guest guidelines, safety instructions, and trip management policies. Our goal is to provide a safe, comfortable, and memorable Tanguar Haor experience for every guest."
+    description: "By confirming your booking, you agree to follow Floatbase’s guest guidelines, safety instructions, and trip management policies. Our goal is to provide a safe, comfortable, and memorable Tanguar Haor experience for every guest."
   }
 };

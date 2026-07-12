@@ -1,7 +1,7 @@
 'use client';
 
 import { isSupabaseConfigured } from '@/lib/supabase/client';
-import { FLOATBOAT_BRAND, normalizeBrandLogoUrl, normalizeBrandName, replaceLegacyBrandText } from '@/lib/branding';
+import { FLOATBASE_BRAND, normalizeBrandLogoUrl, normalizeBrandName, replaceLegacyBrandText } from '@/lib/branding';
 import { cabins as fallbackRooms, siteConfig } from '@/data/houseboatData';
 import type { SeasonType, SeasonalContent } from '@/data/seasonalData';
 import type { AvailabilityBlock, Booking, GalleryImage, HouseboatSettings, Review, Room, SpecialDate, TripSlot, WebsiteContent } from '@/types/database';
@@ -39,7 +39,7 @@ export function mapSettingsToSiteConfig(settings?: HouseboatSettings | null, sea
     nameEn: normalizeBrandName(baseSite.nameEn),
     email: replaceLegacyBrandText(baseSite.email),
     facebook: replaceLegacyBrandText(baseSite.facebook),
-    logoUrl: FLOATBOAT_BRAND.logoUrl,
+    logoUrl: FLOATBASE_BRAND.logoUrl,
   };
   return {
     ...baseSite,

@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next';
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
-      url: 'https://floatboat.com',
+      url: 'https://floatbase.com',
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1,

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { BadgePercent, PhoneCall, Ship } from 'lucide-react';
 import Image from 'next/image';
 import { usePublicData } from '@/components/PublicDataProvider';
-import { FLOATBOAT_BRAND } from '@/lib/branding';
+import { FLOATBASE_BRAND } from '@/lib/branding';
 
 interface PromoBannerProps {
   onBookNow: () => void;
@@ -25,7 +25,7 @@ export default function PromoBanner({ onBookNow }: PromoBannerProps) {
         onClick={onBookNow}
       >
         <Image
-          src={FLOATBOAT_BRAND.heroImage}
+          src={FLOATBASE_BRAND.heroImage}
           alt=""
           fill
           sizes="(min-width: 1280px) 1280px, 100vw"
@@ -42,7 +42,7 @@ export default function PromoBanner({ onBookNow }: PromoBannerProps) {
               30% Discount
             </h2>
             <p className="mt-4 max-w-xl text-base font-semibold leading-7 text-cyan-50 sm:text-lg">
-              Book your FloatBoat houseboat trip and enjoy a premium water villa experience with your family, friends, or team.
+              Book your Floatbase houseboat trip and enjoy a premium water villa experience with your family, friends, or team.
             </p>
           </div>
 

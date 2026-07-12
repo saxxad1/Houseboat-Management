@@ -66,7 +66,7 @@ export default function SeasonSettingsPage() {
     try {
       const saved = await saveRow<HouseboatSettings>('houseboat_settings', {
         id: settings?.id,
-        houseboat_name: settings?.houseboat_name || 'FloatBoat',
+        houseboat_name: settings?.houseboat_name || 'Floatbase',
         tagline: settings?.tagline || data.site.tagline,
         description: settings?.description || data.site.description,
         phone: settings?.phone || data.site.phone,
@@ -80,7 +80,7 @@ export default function SeasonSettingsPage() {
         bank_info: settings?.bank_info || '',
         primary_color: settings?.primary_color || '#075985',
         secondary_color: settings?.secondary_color || '#f59e0b',
-        logo_url: settings?.logo_url || '/logo-floatboat.svg',
+        logo_url: settings?.logo_url || '/logo-floatbase.svg',
         active_season: activeSeason,
         season_updated_at: timestamp,
       });

@@ -1,5 +1,5 @@
 -- File: initial_schema.sql
--- FloatBoat / single-houseboat admin schema
+-- Floatbase / single-houseboat admin schema
 -- Run this in Supabase SQL editor or via `supabase db push`.
 
 create extension if not exists pgcrypto;
@@ -344,7 +344,7 @@ insert into public.houseboat_settings (
   address,
   logo_url
 ) values (
-  'FloatBoat',
+  'Floatbase',
   'An Aesthetic Water Villa',
   'টাঙ্গুয়ার হাওরের বুকে এক নান্দনিক হাউসবোট অভিজ্ঞতা।',
   '+880 1700-000000',
@@ -353,7 +353,7 @@ insert into public.houseboat_settings (
   'https://facebook.com',
   'টাঙ্গুয়ার হাওর, সুনামগঞ্জ',
   'তাহিরপুর ঘাট, সুনামগঞ্জ',
-  '/logo-floatboat.svg'
+  '/logo-floatbase.svg'
 ) on conflict do nothing;
 
 insert into storage.buckets (id, name, public)
@@ -374,7 +374,7 @@ for delete using (bucket_id = 'houseboat-media' and public.is_admin());
 
 
 -- File: 20260522_season_mode.sql
--- Season mode support for FloatBoat.
+-- Season mode support for Floatbase.
 -- Adds Haor / Padma mode, Padma event booking fields, and slot-based availability fields.
 
 alter table public.houseboat_settings

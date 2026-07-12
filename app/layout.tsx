@@ -22,8 +22,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://floatboat.com'),
-  title: 'FloatBoat - An Aesthetic Water Villa',
+  metadataBase: new URL('https://floatbase.com'),
+  title: 'Floatbase - An Aesthetic Water Villa',
   description:
     'Welcome to the luxury houseboat in Tanguar Haor. Tanguar Haor houseboat booking Bangladesh. Ideal for family, friends, and corporate teams.',
   keywords: [
@@ -32,13 +32,13 @@ export const metadata: Metadata = {
     'Tanguar Haor Houseboat',
     'Tanguar Haor tour',
     'Houseboat booking Bangladesh',
-    'floatboat',
-    'FloatBoat',
+    'floatbase',
+    'Floatbase',
     'sunamganj tour',
     'tanguar haor travel',
   ],
   openGraph: {
-    title: 'FloatBoat - An Aesthetic Water Villa',
+    title: 'Floatbase - An Aesthetic Water Villa',
     description:
       'An unforgettable experience on a luxury houseboat floating in the blue waters of Tanguar Haor.',
     type: 'website',
@@ -57,8 +57,8 @@ export default function RootLayout({
   const schemaData = {
     '@context': 'https://schema.org',
     '@type': 'LodgingBusiness',
-    name: 'FloatBoat Houseboat',
-    image: 'https://floatboat.com/hero-floatboat-houseboat.jpg',
+    name: 'Floatbase Houseboat',
+    image: 'https://floatbase.com/hero-floatboat-houseboat.jpg',
     description: 'An unforgettable experience on a luxury houseboat floating in the blue waters of Tanguar Haor.',
     address: {
       '@type': 'PostalAddress',

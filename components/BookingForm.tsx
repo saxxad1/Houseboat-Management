@@ -748,7 +748,7 @@ Thank you.`;
                   <div className="text-xs sm:text-sm font-semibold text-[hsl(197,80%,30%)]">
                     {activeSeason === 'padma' ? 'Estimated Day Long Total:' : 'Estimated Booking Total:'}
                   </div>
-                  <div className="text-xs text-slate-500 mt-0.5">Final price and availability will be confirmed by FloatBoat team.</div>
+                  <div className="text-xs text-slate-500 mt-0.5">Final price and availability will be confirmed by Floatbase team.</div>
                 </div>
                 <div className="mt-3 space-y-1 text-sm">
                   {activeSeason === 'padma' && (
@@ -768,7 +768,7 @@ Thank you.`;
                   )}
                   {activeSeason === 'haor' && priceSummary.subtotalAmount <= 0 && (
                     <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
-                      Room price is loading or not configured. FloatBoat team will confirm the final amount.
+                      Room price is loading or not configured. Floatbase team will confirm the final amount.
                     </div>
                   )}
                   <div className="flex items-center justify-between gap-4 text-slate-600">

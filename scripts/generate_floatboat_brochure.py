@@ -139,7 +139,7 @@ def draw_image_fill(
         c.roundRect(x, y, w, h, 8, fill=1, stroke=0)
         c.setFillColor(TEAL)
         c.setFont("Helvetica-Bold", 11)
-        c.drawCentredString(x + w / 2, y + h / 2, "FloatBoat visual")
+        c.drawCentredString(x + w / 2, y + h / 2, "Floatbase visual")
         c.restoreState()
         return
     c.drawImage(ImageReader(str(img)), x, y, w, h, mask="auto")
@@ -304,7 +304,7 @@ def footer(c: canvas.Canvas, page_no: int, label: str = "") -> None:
     c.line(M, 24, W - M, 24)
     c.setFont("Helvetica-Bold", 8)
     c.setFillColor(MUTED)
-    c.drawString(M, 12, "FloatBoat demo system brochure")
+    c.drawString(M, 12, "Floatbase demo system brochure")
     if label:
         c.drawCentredString(W / 2, 12, label)
     c.drawRightString(W - M, 12, f"{page_no:02d}")
@@ -422,7 +422,7 @@ def pitch_page(c: canvas.Canvas) -> None:
 
     right_x = left_x + 340
     card(c, right_x, 70, W - right_x - M, 365, bg=colors.HexColor("#F0FCFE"), stroke=colors.HexColor("#BFEAF0"))
-    draw_text(c, "How FloatBoat solves it", right_x + 22, 398, 16, "Helvetica-Bold", DEEP)
+    draw_text(c, "How Floatbase solves it", right_x + 22, 398, 16, "Helvetica-Bold", DEEP)
     steps = [
         ("Discover", "A premium branded website presents the boat, route, food, cabins, gallery and FAQs."),
         ("Choose", "Visitors compare cabins, packages and available dates before they contact."),
@@ -453,7 +453,7 @@ def website_page(c: canvas.Canvas) -> None:
     page_bg(c)
     heading(c, "Frontend", "A premium guest-facing website", "The first screen feels like a real houseboat brand, then moves guests into practical booking decisions.")
     bx, by, bw, bh = M, 78, 488, 385
-    browser_frame(c, bx, by, bw, bh, "floatboat.com")
+    browser_frame(c, bx, by, bw, bh, "floatbase.com")
     inner_x, inner_y = bx + 14, by + 18
     draw_image_fill(c, ASSETS["hero"], inner_x, inner_y + 104, bw - 28, 225, "frontend_hero", darken=0.38, radius=6)
     logo(c, inner_x + 12, inner_y + 280, scale=0.34, light=True)
@@ -463,7 +463,7 @@ def website_page(c: canvas.Canvas) -> None:
         draw_text(c, item, nx, inner_y + 301, 6.8, "Helvetica-Bold", WHITE)
         nx += 39
     pill(c, inner_x + 24, inner_y + 242, "TANGUAR HAOR, SUNAMGANJ", bg=colors.HexColor("#FFFFFF"), fg=TEAL, size=7)
-    draw_wrapped(c, "FloatBoat", inner_x + 24, inner_y + 198, 220, 32, 36, "Helvetica-Bold", WHITE, max_lines=1)
+    draw_wrapped(c, "Floatbase", inner_x + 24, inner_y + 198, 220, 32, 36, "Helvetica-Bold", WHITE, max_lines=1)
     draw_wrapped(c, "A Dream Night in Tanguar Haor", inner_x + 25, inner_y + 176, 250, 13, 16, "Helvetica-Bold", colors.HexColor("#DFF7FA"), max_lines=2)
     pill(c, inner_x + 24, inner_y + 137, "BOOK NOW", bg=AMBER, fg=DEEP, size=8)
     pill(c, inner_x + 122, inner_y + 137, "VIEW CABINS", bg=colors.HexColor("#ECFEFF"), fg=TEAL, size=8)
@@ -596,7 +596,7 @@ def conversion_page(c: canvas.Canvas) -> None:
     page_bg(c)
     heading(c, "Conversion", "Trust signals and direct contact stay visible", "Gallery, reviews, FAQ and WhatsApp reduce friction for guests who are almost ready to book.")
     left_w = 468
-    browser_frame(c, M, 90, left_w, 354, "floatboat.com/#gallery")
+    browser_frame(c, M, 90, left_w, 354, "floatbase.com/#gallery")
     ix, iy = M + 14, 108
     imgs = [ASSETS["gallery_1"], ASSETS["gallery_2"], ASSETS["gallery_3"], ASSETS["gallery_4"], ASSETS["spot_2"], ASSETS["spot_3"]]
     for i, img in enumerate(imgs):
@@ -780,7 +780,7 @@ def season_page(c: canvas.Canvas) -> None:
 
     card(c, M, 80, 370, 150, bg=colors.HexColor("#F0FCFE"), stroke=colors.HexColor("#BFEAF0"), radius=8)
     draw_text(c, "Brandable for every owner", M + 20, 194, 15, "Helvetica-Bold", DEEP)
-    draw_wrapped(c, "Replace FloatBoat with the owner's houseboat name, logo, images, colors, contact numbers, room details and pricing. The demo becomes their own sales system.", M + 20, 165, 318, 10.5, 14, "Helvetica", SLATE, max_lines=5)
+    draw_wrapped(c, "Replace Floatbase with the owner's houseboat name, logo, images, colors, contact numbers, room details and pricing. The demo becomes their own sales system.", M + 20, 165, 318, 10.5, 14, "Helvetica", SLATE, max_lines=5)
     card(c, M + 400, 80, W - 2 * M - 400, 150, bg=colors.HexColor("#FFF7E6"), stroke=colors.HexColor("#FBD58B"), radius=8)
     draw_text(c, "One platform, multiple offers", M + 420, 194, 15, "Helvetica-Bold", DEEP)
     draw_wrapped(c, "Haor overnight tours, Padma day-long cruises, family trips, corporate events, birthday decoration and custom food menus can all be packaged as separate sales angles.", M + 420, 165, W - 2 * M - 450, 10.5, 14, "Helvetica", SLATE, max_lines=5)
@@ -823,11 +823,11 @@ def closing_page(c: canvas.Canvas) -> None:
     c.restoreState()
     logo(c, M, H - 125, scale=0.72, light=True)
     draw_wrapped(c, "Ready to turn guest inquiries into confirmed trips.", M, H - 250, 560, 40, 46, "Helvetica-Bold", WHITE, max_lines=2)
-    draw_wrapped(c, "FloatBoat is a pitch-ready demo for houseboat owners: a premium public website, booking funnel, admin panel, finance reports and brand customization in one system.", M, H - 330, 560, 13, 18, "Helvetica", colors.HexColor("#DFF7FA"), max_lines=4)
+    draw_wrapped(c, "Floatbase is a pitch-ready demo for houseboat owners: a premium public website, booking funnel, admin panel, finance reports and brand customization in one system.", M, H - 330, 560, 13, 18, "Helvetica", colors.HexColor("#DFF7FA"), max_lines=4)
     card(c, M, 92, 420, 92, bg=colors.HexColor("#F8FAFC"), stroke=colors.HexColor("#BFE5EA"), radius=8, shadow=False)
     draw_text(c, "Send this PDF to a client and they can understand:", M + 18, 151, 11, "Helvetica-Bold", DEEP)
     draw_wrapped(c, "what the website shows, what the admin controls, how bookings flow, and why the system helps them sell more professionally.", M + 18, 130, 370, 10, 13, "Helvetica", SLATE, max_lines=3)
-    pill(c, W - 250, 112, "FLOATBOAT DEMO SYSTEM", bg=AMBER, fg=DEEP, size=9)
+    pill(c, W - 250, 112, "FLOATBASE DEMO SYSTEM", bg=AMBER, fg=DEEP, size=9)
     draw_text(c, "Website + Booking + Admin + Reports", W - 266, 92, 10, "Helvetica-Bold", colors.HexColor("#DFF7FA"))
 
 
@@ -844,8 +844,8 @@ def render_previews(pdf_path: Path) -> None:
 def build_pdf() -> None:
     ensure_dirs()
     c = canvas.Canvas(str(PDF_PATH), pagesize=PAGE, pageCompression=1)
-    c.setTitle("FloatBoat Demo System Brochure")
-    c.setAuthor("FloatBoat")
+    c.setTitle("Floatbase Demo System Brochure")
+    c.setAuthor("Floatbase")
     cover(c)
     c.showPage()
     pitch_page(c)

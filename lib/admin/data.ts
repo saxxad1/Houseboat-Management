@@ -3,7 +3,7 @@
 import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { assertWritableAdmin } from '@/lib/admin/permissions';
 import { demoTableData } from '@/lib/admin/demoData';
-import { FLOATBOAT_BRAND, normalizeBrandLogoUrl, normalizeBrandName, replaceLegacyBrandText } from '@/lib/branding';
+import { FLOATBASE_BRAND, normalizeBrandLogoUrl, normalizeBrandName, replaceLegacyBrandText } from '@/lib/branding';
 import {
   activeBookingStatuses,
   getBookingRoomIds,
@@ -47,7 +47,7 @@ export type AdminRow =
   | WebsiteContent
   | (BaseRow & Record<string, unknown>);
 
-const localKey = (table: AdminTableName) => `${FLOATBOAT_BRAND.adminStoragePrefix}-${table}`;
+const localKey = (table: AdminTableName) => `${FLOATBASE_BRAND.adminStoragePrefix}-${table}`;
 
 const now = () => new Date().toISOString();
 

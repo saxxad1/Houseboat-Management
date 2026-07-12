@@ -438,7 +438,7 @@ const padmaFoodMenu = {
     description: 'For corporate groups, family gatherings, birthdays, or private day-long trips, you can discuss your preferred food plan before confirming.',
     discussButton: 'Discuss Food Plan',
     bookButton: 'Book Now',
-    whatsappMessage: 'Hello, I want to know about the Padma Day Long food menu and custom food arrangement for FloatBoat.',
+    whatsappMessage: 'Hello, I want to know about the Padma Day Long food menu and custom food arrangement for Floatbase.',
   },
 };
 
@@ -450,7 +450,7 @@ const padmaTestimonials = [
     name: 'Rafsan Ahmed',
     location: 'Dhaka',
     rating: 5,
-    review: 'Had a small corporate event at FloatBoat. The Padma view, food and overall arrangement were very nice.',
+    review: 'Had a small corporate event at Floatbase. The Padma view, food and overall arrangement were very nice.',
     date: '2026',
     avatar: 'RA',
   },
@@ -477,7 +477,7 @@ const padmaTestimonials = [
     name: 'Nawshin Karim',
     location: 'Gulshan',
     rating: 5,
-    review: 'FloatBoat arrangement was very classy as an anniversary dinner cruise. Liked the staff support and food.',
+    review: 'Floatbase arrangement was very classy as an anniversary dinner cruise. Liked the staff support and food.',
     date: '2026',
     avatar: 'NK',
   },
@@ -485,7 +485,7 @@ const padmaTestimonials = [
 
 const padmaFaqs = [
   { question: 'Is Padma season an overnight trip?', answer: 'No. Padma season is planned as a Day Long trip starting from Louhajang ghat beside Mawa around 9:30 AM and ending the same evening.' },
-  { question: 'How are rooms used in Padma season?', answer: 'FloatBoat has 8 rooms for Padma Day Long trips. Rooms are shared fresh-up/rest facilities, usually for 4-6 guests. Male and female guests are allocated separate rooms, and mixed male/female sharing in the same room is not allowed.' },
+  { question: 'How are rooms used in Padma season?', answer: 'Floatbase has 8 rooms for Padma Day Long trips. Rooms are shared fresh-up/rest facilities, usually for 4-6 guests. Male and female guests are allocated separate rooms, and mixed male/female sharing in the same room is not allowed.' },
   { question: 'Can we book the full boat for a private group?', answer: 'Yes. Full boat booking can be arranged for corporate trips, family get-togethers, birthdays, photoshoots, and private day-long groups.' },
   { question: 'Can corporate day trips be held?', answer: 'Yes, office outings, team refreshment trips, and corporate Day Long sessions can be arranged.' },
   { question: 'Is food included with the booking?', answer: 'The Day Long food plan can include welcome drink, breakfast, lunch, tea-biscuits, and live BBQ. Final food details are confirmed based on booking type and guest count.' },
@@ -563,7 +563,7 @@ export const seasonalData = {
     facilities,
     gallery: {
       title: 'Photo Gallery',
-      subtitle: 'Experience the wonderful beauty of FloatBoat.',
+      subtitle: 'Experience the wonderful beauty of Floatbase.',
       categories: ['All', 'Exterior', 'Interior', 'Landscape', 'Food', 'Rooftop', 'Night', 'Group'],
       images: galleryImages,
     },
@@ -611,7 +611,7 @@ export const seasonalData = {
     site: {
       ...siteConfig,
       tagline: 'Padma Day Long Cruise from Mawa Louhajang',
-      description: 'FloatBoat is ready for Padma Day Long trips with Padma river cruising, Padma Bridge view, white char activities, room sharing, music, fresh food, live BBQ, and family or corporate group arrangements.',
+      description: 'Floatbase is ready for Padma Day Long trips with Padma river cruising, Padma Bridge view, white char activities, room sharing, music, fresh food, live BBQ, and family or corporate group arrangements.',
       location: 'Padma River, Mawa Louhajang Area',
       locationEn: 'Padma River, Mawa Louhajang',
       totalCabins: 8,
@@ -621,7 +621,7 @@ export const seasonalData = {
     },
     hero: {
       locationBadge: 'Padma River, Mawa Louhajang',
-      title: 'FloatBoat',
+      title: 'Floatbase',
       subtitle: 'Padma Day Long Cruise from Mawa Louhajang',
       description: 'A refreshing one-day Padma cruise with Padma Bridge view, white char games, mustard field photo moments, room sharing, music, fresh food, unlimited tea-biscuits, and live BBQ.',
       primaryCta: 'Book Day Trip',
@@ -635,9 +635,9 @@ export const seasonalData = {
       ],
     },
     about: {
-      title: 'About FloatBoat Padma Day Long',
+      title: 'About Floatbase Padma Day Long',
       subtitle: 'Padma Day Long Cruise',
-      story: 'FloatBoat Padma Day Long is planned for guests who want a refreshing one-day trip near Dhaka. From Louhajang beside Mawa, the cruise brings together Padma river air, Padma Bridge view, white char games, music, food, live BBQ, and comfortable 4-6 person room sharing across 8 attached rooms.',
+      story: 'Floatbase Padma Day Long is planned for guests who want a refreshing one-day trip near Dhaka. From Louhajang beside Mawa, the cruise brings together Padma river air, Padma Bridge view, white char games, music, food, live BBQ, and comfortable 4-6 person room sharing across 8 attached rooms.',
       highlights: [
         { icon: 'Users', title: 'Family & Corporate Groups', desc: 'Suitable for family gatherings, friends trips, office outings, birthdays, and day-long picnics.' },
         { icon: 'Star', title: 'Padma Char Activities', desc: 'Cricket, football, volleyball, badminton, fun games, bathing opportunity, and photo sessions.' },
@@ -656,7 +656,7 @@ export const seasonalData = {
       ],
       itemType: 'cabin',
       fullBoatTitle: 'Book Your Padma Day Long Trip',
-      fullBoatDescription: 'Select your trip date and guest count. FloatBoat team will manage room allocation for fresh-up/rest facilities, with separate rooms for male and female guests.',
+      fullBoatDescription: 'Select your trip date and guest count. Floatbase team will manage room allocation for fresh-up/rest facilities, with separate rooms for male and female guests.',
       fullBoatButton: 'Book Padma Day Trip',
     },
     cabins: [],
@@ -689,13 +689,13 @@ export const seasonalData = {
       title: 'Padma Day Long Facilities',
       subtitle: 'Everything needed for a comfortable, safe, and refreshing one-day Padma cruise.',
       bannerTitle: 'Every arrangement for your Padma day trip',
-      bannerDescription: 'FloatBoat Padma facilities are arranged for room sharing, food, music, char activities, group games, safety, and full-day refreshment.',
+      bannerDescription: 'Floatbase Padma facilities are arranged for room sharing, food, music, char activities, group games, safety, and full-day refreshment.',
       bannerImage: '/images/padma/event-deck.jpg',
     },
     facilities: padmaFacilities,
     gallery: {
       title: 'Photo Gallery',
-      subtitle: 'Moments from FloatBoat gallery, shown for Padma season as well.',
+      subtitle: 'Moments from Floatbase gallery, shown for Padma season as well.',
       categories: ['All', 'Exterior', 'Interior', 'Landscape', 'Food', 'Rooftop', 'Night', 'Group'],
       images: padmaGallery,
     },
@@ -728,7 +728,7 @@ export const seasonalData = {
     bookingForm: {
       mode: 'padma',
       title: 'Padma Day Long Booking Request',
-      subtitle: 'FloatBoat · Padma River Day Long Cruise',
+      subtitle: 'Floatbase · Padma River Day Long Cruise',
       submit: 'Send Day Long Booking Request',
       success: 'Day Long Booking Request Sent!',
       successDescription: 'Your Padma Day Long booking request has been sent successfully. Our team will contact you quickly.',

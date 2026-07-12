@@ -73,7 +73,7 @@ def page(title: str, subtitle: str, body: str, number: int) -> str:
     return f"""
     <section class="page">
       {body}
-      <footer><span>FloatBoat ক্লায়েন্ট ব্রোশার</span><span>পৃষ্ঠা {number:02d}</span></footer>
+      <footer><span>Floatbase ক্লায়েন্ট ব্রোশার</span><span>পৃষ্ঠা {number:02d}</span></footer>
     </section>
     """
 
@@ -81,11 +81,11 @@ def page(title: str, subtitle: str, body: str, number: int) -> str:
 def cover(number: int) -> str:
     return f"""
     <section class="page cover">
-      <img class="cover-bg" src="{prepare_image('public-hero')}" alt="FloatBoat homepage screenshot">
+      <img class="cover-bg" src="{prepare_image('public-hero')}" alt="Floatbase homepage screenshot">
       <div class="cover-shade"></div>
       <div class="cover-content">
         <div class="badge">লাইভ ডেমো স্ক্রিনশট দিয়ে তৈরি</div>
-        <h1>FloatBoat ওয়েবসাইট ও অ্যাডমিন ম্যানেজমেন্ট সিস্টেম</h1>
+        <h1>Floatbase ওয়েবসাইট ও অ্যাডমিন ম্যানেজমেন্ট সিস্টেম</h1>
         <p>টাঙ্গুয়ার হাওরের হাউসবোট মালিকদের কাছে প্রফেশনালভাবে পিচ করার জন্য একটি বাংলা ব্রোশার।</p>
         <div class="cover-grid">
           <div><b>ফ্রন্টএন্ড ওয়েবসাইট</b><span>হিরো, কেবিন, গ্যালারি, প্রশ্নোত্তর, যোগাযোগ</span></div>
@@ -93,7 +93,7 @@ def cover(number: int) -> str:
           <div><b>অ্যাডমিন প্যানেল</b><span>বুকিং, রুম, ট্রিপ, রিপোর্ট, সেটিংস</span></div>
         </div>
       </div>
-      <footer class="light"><span>FloatBoat ক্লায়েন্ট ব্রোশার</span><span>পৃষ্ঠা {number:02d}</span></footer>
+      <footer class="light"><span>Floatbase ক্লায়েন্ট ব্রোশার</span><span>পৃষ্ঠা {number:02d}</span></footer>
     </section>
     """
 
@@ -147,7 +147,7 @@ def build_html() -> str:
     <div class="page-head">
       <div class="eyebrow">ওভারভিউ</div>
       <h1>একটি হাউসবোটের জন্য সম্পূর্ণ ডিজিটাল সেলস ও অপারেশন সিস্টেম</h1>
-      <p>এই ব্রোশারের প্রতিটি ভিজ্যুয়াল FloatBoat ডেমো ওয়েবসাইট ও অ্যাডমিন প্যানেল থেকে নেওয়া বাস্তব স্ক্রিনশট।</p>
+      <p>এই ব্রোশারের প্রতিটি ভিজ্যুয়াল Floatbase ডেমো ওয়েবসাইট ও অ্যাডমিন প্যানেল থেকে নেওয়া বাস্তব স্ক্রিনশট।</p>
     </div>
     <div class="overview-grid">
       {shot('public-hero', 'ওয়েবসাইটের প্রথম impression')}
@@ -184,7 +184,7 @@ def build_html() -> str:
         "পরিচিতি সেকশন",
         "এই অংশে হাউসবোটের গল্প, অভিজ্ঞতা, সেফটি, ফ্যামিলি বা কর্পোরেট suitability তুলে ধরা হয়।",
         "public-about",
-        "FloatBoat সম্পর্কে লাইভ সেকশন",
+        "Floatbase সম্পর্কে লাইভ সেকশন",
         [
             "ব্র্যান্ডের গল্প এবং destination context এক জায়গায় থাকে।",
             "Happy tourists, safety, dining, comfort, scenic view - এগুলো trust signal হিসেবে কাজ করে।",
@@ -313,7 +313,7 @@ def build_html() -> str:
         "ড্যাশবোর্ড ওভারভিউ",
         "অ্যাডমিন dashboard থেকে মালিক booking, guest, revenue, expense, profit এবং recent activity এক নজরে দেখতে পারে।",
         "admin-dashboard",
-        "FloatBoat অ্যাডমিন dashboard live screenshot",
+        "Floatbase অ্যাডমিন dashboard live screenshot",
         [
             "Date filter দিয়ে নির্দিষ্ট সময়ের performance দেখা যায়।",
             "Total trips, guests, revenue, expense এবং profit summary থাকে।",

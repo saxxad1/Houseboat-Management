@@ -38,7 +38,7 @@ export default function GuestGuidelines({ onBookNow }: GuestGuidelinesProps) {
   const { siteConfig } = usePublicData();
 
   const whatsappMessage = encodeURIComponent(
-    `Hello, I want to know more about FloatBoat houseboat guest guidelines and booking policy.`
+    `Hello, I want to know more about Floatbase houseboat guest guidelines and booking policy.`
   );
 
   return (

@@ -67,7 +67,7 @@ export default function AdminSidebar({ open = true, onClose }: AdminSidebarProps
             </div>
             <div>
               <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Houseboat Admin</div>
-              <div className="font-black text-slate-800 text-sm">FloatBoat</div>
+              <div className="font-black text-slate-800 text-sm">Floatbase</div>
             </div>
           </div>
         </div>

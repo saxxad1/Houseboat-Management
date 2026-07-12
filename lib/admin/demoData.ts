@@ -21,7 +21,7 @@ const id = (prefix: string, index: number) => `${prefix}-${String(index).padStar
 
 export const demoSettings: HouseboatSettings = {
   id: 'settings-001',
-  houseboat_name: 'FloatBoat',
+  houseboat_name: 'Floatbase',
   tagline: 'An Aesthetic Water Villa',
   description: siteConfig.description,
   phone: siteConfig.phone,
@@ -36,7 +36,7 @@ export const demoSettings: HouseboatSettings = {
   padma_price_per_person: 0,
   primary_color: '#075985',
   secondary_color: '#f59e0b',
-  logo_url: '/logo-floatboat.svg',
+  logo_url: '/logo-floatbase.svg',
   active_season: 'haor',
   season_updated_at: now,
   created_at: now,
@@ -222,7 +222,7 @@ export const demoWebsiteContent: WebsiteContent[] = [
   {
     id: 'content-hero',
     section_key: 'hero',
-    title: 'FloatBoat',
+    title: 'Floatbase',
     subtitle: 'An Aesthetic Water Villa',
     content: siteConfig.description,
     image_url: '',
@@ -235,7 +235,7 @@ export const demoWebsiteContent: WebsiteContent[] = [
   {
     id: 'content-about',
     section_key: 'about',
-    title: 'About FloatBoat',
+    title: 'About Floatbase',
     subtitle: 'Welcome to Tanguar Haor',
     content: 'An aesthetic houseboat experience, perfect for family and group tours.',
     image_url: '',

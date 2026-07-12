@@ -5,8 +5,8 @@
 // ============================================================
 
 export const siteConfig = {
-  name: "FloatBoat",
-  nameEn: "FloatBoat",
+  name: "Floatbase",
+  nameEn: "Floatbase",
   tagline: "A Dream Night in Tanguar Haor",
   description:
     "Experience the magnificent beauty of nature on a luxury houseboat floating in the blue waters of Tanguar Haor. An unforgettable experience ideal for families, friends, or corporate groups.",
@@ -14,7 +14,7 @@ export const siteConfig = {
   locationEn: "Tanguar Haor, Sunamganj, Sylhet",
   phone: "01343-411792",
   whatsapp: "8801343411792",
-  email: "info@floatboat.com",
+  email: "info@floatbase.com",
   facebook: "https://www.facebook.com/profile.php?id=61560989236688",
   totalCabins: 8,
   totalCapacity: 24,
@@ -34,10 +34,10 @@ export const navLinks = [
 ];
 
 export const aboutContent = {
-  title: "About FloatBoat",
+  title: "About Floatbase",
   subtitle: "Welcome to Tanguar Haor",
   story:
-    "FloatBoat is a luxury houseboat ready to provide you with an unforgettable experience amidst the unparalleled beauty of Tanguar Haor. Established in 2024, this houseboat has created joyful memories for thousands of tourists to date.",
+    "Floatbase is a luxury houseboat ready to provide you with an unforgettable experience amidst the unparalleled beauty of Tanguar Haor. Established in 2024, this houseboat has created joyful memories for thousands of tourists to date.",
   highlights: [
     {
       icon: "Users",
@@ -398,7 +398,7 @@ export const itinerary = [
     day: 1,
     title: "Day 1 - Arrival, Haor Cruise & Tekerghat Night Stay",
     timeline: [
-      { time: "8:00 AM", event: "Check-in at Anwarpur Ghat", description: "Guests will check in to FloatBoat houseboat from Anwarpur Ghat and get ready for the Tanguar Haor journey.", icon: "MapPin" },
+      { time: "8:00 AM", event: "Check-in at Anwarpur Ghat", description: "Guests will check in to Floatbase houseboat from Anwarpur Ghat and get ready for the Tanguar Haor journey.", icon: "MapPin" },
       { time: "After Check-in", event: "Breakfast on Board", description: "After boarding, breakfast will be served on the houseboat before starting the haor cruise.", icon: "Coffee" },
       { time: "Morning", event: "Tanguar Haor Cruise Begins", description: "After breakfast, the journey through the beautiful blue waters of Tanguar Haor will begin.", icon: "Ship" },
       { time: "Late Morning", event: "Visit Watch Tower", description: "Guests will visit the Watch Tower area. Small local boat cost for Watch Tower visit will be paid by guests separately if needed.", icon: "Eye" },
@@ -451,7 +451,7 @@ export const galleryImages = [
   {
     id: 2,
     src: "/images/floatboat/gallery/img-8745.jpg",
-    alt: "Wooden interior of FloatBoat",
+    alt: "Wooden interior of Floatbase",
     category: "Interior",
   },
   {
@@ -469,13 +469,13 @@ export const galleryImages = [
   {
     id: 5,
     src: "/images/floatboat/gallery/img-8748.jpg",
-    alt: "Exterior view of FloatBoat houseboat",
+    alt: "Exterior view of Floatbase houseboat",
     category: "Exterior",
   },
   {
     id: 6,
     src: "/images/floatboat/gallery/img-8749.jpg",
-    alt: "FloatBoat in Haor waters",
+    alt: "Floatbase in Haor waters",
     category: "Exterior",
   },
   {
@@ -517,7 +517,7 @@ export const galleryImages = [
   {
     id: 13,
     src: "/images/floatboat/gallery/img-8756.jpg",
-    alt: "FloatBoat cabin bed",
+    alt: "Floatbase cabin bed",
     category: "Interior",
   },
   {
@@ -553,7 +553,7 @@ export const galleryImages = [
   {
     id: 19,
     src: "/images/floatboat/gallery/img-8762.jpg",
-    alt: "FloatBoat under cloudy sky",
+    alt: "Floatbase under cloudy sky",
     category: "Exterior",
   },
   {
@@ -607,7 +607,7 @@ export const galleryImages = [
   {
     id: 28,
     src: "/images/floatboat/gallery/img-8771.jpg",
-    alt: "Lounge area of FloatBoat",
+    alt: "Lounge area of Floatbase",
     category: "Interior",
   },
   {
@@ -619,7 +619,7 @@ export const galleryImages = [
   {
     id: 30,
     src: "/images/floatboat/gallery/img-8773.jpg",
-    alt: "FloatBoat logo corner",
+    alt: "Floatbase logo corner",
     category: "Interior",
   },
   {
@@ -653,7 +653,7 @@ export const testimonials = [
     location: "Chattogram",
     rating: 5,
     review:
-      "It was a perfect tour for our corporate team. Everything was organized, clean cabins, great food. FloatBoat team is really professional. Highly recommended.",
+      "It was a perfect tour for our corporate team. Everything was organized, clean cabins, great food. Floatbase team is really professional. Highly recommended.",
     date: "November 2023",
     avatar: "SK",
   },

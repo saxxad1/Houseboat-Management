@@ -86,7 +86,7 @@ export default function Contact() {
             </div>
             <div className="min-w-0">
               <div className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mb-0.5">Facebook</div>
-              <div className="font-extrabold text-slate-800 text-base">fb.com/floatboat</div>
+              <div className="font-extrabold text-slate-800 text-base">fb.com/floatbase</div>
             </div>
           </a>
 

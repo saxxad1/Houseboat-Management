@@ -1,4 +1,4 @@
-# FloatBoat Admin Setup
+# Floatbase Admin Setup
 
 ## Environment
 

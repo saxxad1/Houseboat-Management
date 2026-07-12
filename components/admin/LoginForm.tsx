@@ -63,7 +63,7 @@ export default function LoginForm() {
           <div className="mb-8 text-center">
             <Logo className="mx-auto mb-4 w-64" imageClassName="drop-shadow-sm" priority />
             <h1 className="text-2xl font-bold text-slate-900">Admin Login</h1>
-            <p className="mt-2 text-sm text-slate-500">FloatBoat Houseboat Management Panel</p>
+            <p className="mt-2 text-sm text-slate-500">Floatbase Houseboat Management Panel</p>
           </div>
 
           <form onSubmit={submit} className="space-y-4">
