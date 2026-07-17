@@ -25,7 +25,7 @@ export default function AdminSidebar({ open = true, onClose }: AdminSidebarProps
       <div className="flex h-full flex-col">
         <div className="flex h-20 items-center justify-between border-b border-slate-100 px-5">
           <Link href="/admin/dashboard" className="flex items-center" onClick={onClose}>
-            <AdminLogo className="w-40 lg:w-48" imageClassName="drop-shadow-sm" />
+            <AdminLogo className="h-16 w-16" imageClassName="drop-shadow-sm" />
           </Link>
           <button
             type="button"

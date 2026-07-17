@@ -61,7 +61,7 @@ export default function LoginForm() {
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-md items-center">
         <div className="w-full rounded-lg border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
           <div className="mb-8 text-center">
-            <AdminLogo variant="stacked" className="mx-auto mb-4 w-72 max-w-full" imageClassName="drop-shadow-sm" priority />
+            <AdminLogo className="mx-auto mb-4 w-72 max-w-full" imageClassName="drop-shadow-sm" priority />
             <h1 className="text-2xl font-bold text-slate-900">Admin Login</h1>
             <p className="mt-2 text-sm text-slate-500">Floatbase Houseboat Management Panel</p>
           </div>
