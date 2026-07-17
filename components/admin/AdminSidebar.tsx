@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { X } from 'lucide-react';
-import Logo from '@/components/Logo';
+import AdminLogo from '@/components/admin/AdminLogo';
 import { adminNavItems } from '@/lib/admin/constants';
 import { cn } from '@/lib/utils';
 
@@ -25,7 +25,7 @@ export default function AdminSidebar({ open = true, onClose }: AdminSidebarProps
       <div className="flex h-full flex-col">
         <div className="flex h-20 items-center justify-between border-b border-slate-100 px-5">
           <Link href="/admin/dashboard" className="flex items-center" onClick={onClose}>
-            <Logo className="w-48" imageClassName="drop-shadow-sm" />
+            <AdminLogo className="w-40 lg:w-48" imageClassName="drop-shadow-sm" />
           </Link>
           <button
             type="button"

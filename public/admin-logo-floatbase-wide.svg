@@ -1,0 +1,53 @@
+<svg width="1120" height="360" viewBox="0 0 1120 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Floatbase admin logo</title>
+  <desc id="desc">A wide Floatbase houseboat mark with the Smart Management tagline.</desc>
+  <defs>
+    <linearGradient id="navyDepth" x1="61" y1="67" x2="333" y2="268" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#123E61"/>
+      <stop offset="1" stop-color="#06223B"/>
+    </linearGradient>
+    <linearGradient id="tealFace" x1="146" y1="157" x2="304" y2="235" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#229A9D"/>
+      <stop offset="1" stop-color="#0F6F78"/>
+    </linearGradient>
+    <linearGradient id="tealSail" x1="72" y1="80" x2="162" y2="163" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#24B4BA"/>
+      <stop offset="1" stop-color="#0B6175"/>
+    </linearGradient>
+    <linearGradient id="goldSail" x1="298" y1="80" x2="206" y2="163" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DEC06F"/>
+      <stop offset="1" stop-color="#A98835"/>
+    </linearGradient>
+    <filter id="softShadow" x="14" y="13" width="398" height="272" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#06223B" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <path d="M88 146C100 94 146 55 202 55C258 55 304 94 316 146" stroke="#123E61" stroke-width="16" stroke-linecap="round"/>
+    <path d="M108 148C119 107 156 77 201 77C246 77 284 107 294 148" stroke="#C4A154" stroke-width="9" stroke-linecap="round"/>
+    <path d="M202 36L229 155H176L202 36Z" fill="url(#navyDepth)" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M104 77L178 154L137 164L104 77Z" fill="url(#tealSail)" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M327 76L252 154L294 164L327 76Z" fill="url(#goldSail)" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round"/>
+
+    <path d="M131 138L213 123L315 138L319 157H143L131 138Z" fill="#FFFFFF" stroke="#123E61" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M68 161L153 146V183H68L124 173L68 161Z" fill="#FFFFFF" stroke="#123E61" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M152 157H337L387 168V183H152V157Z" fill="#FFFFFF" stroke="#123E61" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M154 178H304L356 186V229H150L154 178Z" fill="url(#tealFace)" stroke="#123E61" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M191 132L244 138L260 157H197L191 132Z" fill="#FFFFFF" stroke="#123E61" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M130 229H387L372 251C362 266 345 275 326 275H137L130 229Z" fill="url(#navyDepth)" stroke="#123E61" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M128 220H402" stroke="#BCA05D" stroke-width="9" stroke-linecap="round"/>
+    <path d="M308 194H405" stroke="#123E61" stroke-width="7" stroke-linecap="round"/>
+    <path d="M328 177V220M356 181V220M384 187V220" stroke="#123E61" stroke-width="5" stroke-linecap="round"/>
+    <rect x="170" y="192" width="23" height="22" rx="2" fill="#F9FCFD"/>
+    <rect x="205" y="190" width="23" height="24" rx="2" fill="#F9FCFD"/>
+    <rect x="258" y="182" width="26" height="39" rx="2" fill="#F9FCFD"/>
+    <rect x="298" y="182" width="26" height="39" rx="2" fill="#F9FCFD"/>
+    <path d="M45 266C94 244 142 244 190 264C239 284 292 284 399 262" stroke="#123E61" stroke-width="11" stroke-linecap="round"/>
+    <path d="M37 284C84 263 130 263 176 281C221 300 279 299 381 280" stroke="#158B96" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <text x="436" y="171" fill="#0B2D4D" font-family="Arial, Helvetica, sans-serif" font-size="104" font-weight="900" letter-spacing="0">FLOATBASE</text>
+  <text x="440" y="225" fill="#10263C" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="500" letter-spacing="0">Smart Management For your life on water</text>
+  <path d="M441 250H1033" stroke="#C4A154" stroke-width="8" stroke-linecap="round"/>
+</svg>
