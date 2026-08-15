@@ -2,15 +2,15 @@ import type { Metadata } from 'next';
 import SalesPage from './SalesPage';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Floatbase Systems | হাউসবোট ম্যানেজমেন্ট সফটওয়্যার' },
+  title: { absolute: 'Floatbase | হাউসবোট ম্যানেজমেন্ট সিস্টেম' },
   description:
-    'হাউসবোটের জন্য নিজস্ব বুকিং ওয়েবসাইট, শক্তিশালী অ্যাডমিন প্যানেল, হিসাব-রিপোর্ট ও সিজন ম্যানেজমেন্ট—এককালীন মূল্যে সম্পূর্ণ ডিজিটাল সিস্টেম।',
+    'বুকিং, কেবিন, অতিথি, আয়–ব্যয়, রিপোর্ট ও সিজন ম্যানেজমেন্ট—হাউসবোট ব্যবসার জন্য একটি সম্পূর্ণ ডিজিটাল সিস্টেম।',
 };
 
 const schemaData = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  name: 'Floatbase Systems',
+  name: 'Floatbase',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
   description: 'বাংলাদেশের হাউসবোট ব্যবসার জন্য বুকিং ও ম্যানেজমেন্ট সফটওয়্যার।',
