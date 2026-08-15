@@ -23,27 +23,38 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://floatbase.com'),
-  title: 'Floatbase - An Aesthetic Water Villa',
+  title: {
+    default: 'Floatbase Systems | হাউসবোট ম্যানেজমেন্ট সফটওয়্যার',
+    template: '%s | Floatbase Systems',
+  },
   description:
-    'Welcome to the luxury houseboat in Tanguar Haor. Tanguar Haor houseboat booking Bangladesh. Ideal for family, friends, and corporate teams.',
+    'হাউসবোটের জন্য নিজস্ব বুকিং ওয়েবসাইট, শক্তিশালী অ্যাডমিন প্যানেল, হিসাব-রিপোর্ট ও সিজন ম্যানেজমেন্ট।',
   keywords: [
-    'Tanguar Haor houseboat',
-    'Sunamganj houseboat booking',
-    'Tanguar Haor Houseboat',
-    'Tanguar Haor tour',
-    'Houseboat booking Bangladesh',
-    'floatbase',
-    'Floatbase',
-    'sunamganj tour',
-    'tanguar haor travel',
+    'হাউসবোট ম্যানেজমেন্ট সফটওয়্যার',
+    'হাউসবোট বুকিং সিস্টেম',
+    'Houseboat management software Bangladesh',
+    'Houseboat booking website',
+    'Floatbase Systems',
   ],
   openGraph: {
-    title: 'Floatbase - An Aesthetic Water Villa',
-    description:
-      'An unforgettable experience on a luxury houseboat floating in the blue waters of Tanguar Haor.',
+    title: 'Floatbase Systems | হাউসবোট ম্যানেজমেন্ট সফটওয়্যার',
+    description: 'বুকিং থেকে লাভ—আপনার হাউসবোট ব্যবসার সবকিছু এক জায়গায়।',
     type: 'website',
-    locale: 'en_US',
-    images: ['/hero-floatboat-houseboat.jpg'],
+    locale: 'bn_BD',
+    images: [
+      {
+        url: 'https://floatbase.com/og.png',
+        width: 1200,
+        height: 630,
+        alt: 'Floatbase হাউসবোট ম্যানেজমেন্ট সিস্টেম',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Floatbase Systems | হাউসবোট ম্যানেজমেন্ট সফটওয়্যার',
+    description: 'বুকিং থেকে লাভ—আপনার হাউসবোট ব্যবসার সবকিছু এক জায়গায়।',
+    images: ['https://floatbase.com/og.png'],
   },
 };
 
@@ -54,30 +65,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const schemaData = {
-    '@context': 'https://schema.org',
-    '@type': 'LodgingBusiness',
-    name: 'Floatbase Houseboat',
-    image: 'https://floatbase.com/hero-floatboat-houseboat.jpg',
-    description: 'An unforgettable experience on a luxury houseboat floating in the blue waters of Tanguar Haor.',
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: 'Sunamganj',
-      addressRegion: 'Sylhet',
-      addressCountry: 'BD',
-    },
-    telephone: '+8801736625982',
-    priceRange: '$$$',
-  };
-
   return (
-    <html lang="en" className="scroll-smooth">
-      <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
-        />
-      </head>
+    <html lang="bn" className="scroll-smooth">
       <body className={`${outfit.variable} ${hindSiliguri.variable} ${playfair.variable} font-sans antialiased`}>
         {children}
         <Toaster />

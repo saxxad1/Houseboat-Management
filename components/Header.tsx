@@ -32,8 +32,8 @@ export default function Header({ onBookNow }: HeaderProps) {
     setIsMobileMenuOpen(false);
     
     if (href.startsWith('#')) {
-      if (pathname !== '/') {
-        router.push(`/${href}`);
+      if (pathname !== '/demo') {
+        router.push(`/demo${href}`);
         return;
       }
       const el = document.querySelector(href);

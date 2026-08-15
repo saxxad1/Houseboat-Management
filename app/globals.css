@@ -168,3 +168,69 @@ a, button, input, textarea, select,
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+
+/* Sales page */
+.sales-shell {
+  --sales-ink: #17383d;
+  --sales-deep: #0b3037;
+  --sales-green: #0d7169;
+  --sales-gold: #e9b949;
+}
+
+.sales-shell .sales-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(13, 113, 105, 0.16);
+  border-radius: 999px;
+  background: #eef6f2;
+  padding: 0.45rem 0.8rem;
+  color: #0d7169;
+  font-size: 0.69rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sales-shell .sales-title {
+  color: var(--sales-ink);
+  font-size: clamp(2rem, 4vw, 3.65rem);
+  font-weight: 900;
+  line-height: 1.13;
+  letter-spacing: -0.042em;
+  text-wrap: balance;
+}
+
+.sales-shell .sales-subtitle {
+  max-width: 42rem;
+  color: #687e82;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.85;
+}
+
+.sales-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+}
+
+@keyframes sales-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+
+@keyframes sales-float-slow {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(8px) rotate(-2deg); }
+}
+
+.sales-float { animation: sales-float 4.8s ease-in-out infinite; }
+.sales-float-slow { animation: sales-float-slow 5.8s ease-in-out infinite; }
+.sales-tilt { transform: rotate(2deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sales-float,
+  .sales-float-slow { animation: none; }
+}
