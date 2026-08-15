@@ -184,8 +184,16 @@ a, button, input, textarea, select,
 
 .sales-hero-photo-overlay {
   background:
-    linear-gradient(90deg, rgba(2, 35, 33, 0.98) 0%, rgba(3, 47, 45, 0.92) 29%, rgba(3, 47, 45, 0.58) 48%, rgba(3, 47, 45, 0.08) 72%),
-    linear-gradient(0deg, rgba(2, 35, 33, 0.42) 0%, transparent 35%, rgba(2, 35, 33, 0.12) 100%);
+    linear-gradient(180deg, rgba(2, 35, 33, 0.48) 0%, rgba(2, 35, 33, 0.72) 42%, rgba(2, 35, 33, 0.96) 100%),
+    linear-gradient(90deg, rgba(2, 35, 33, 0.76) 0%, rgba(3, 47, 45, 0.42) 100%);
+}
+
+@media (min-width: 1024px) {
+  .sales-hero-photo-overlay {
+    background:
+      linear-gradient(90deg, rgba(2, 35, 33, 0.98) 0%, rgba(3, 47, 45, 0.92) 29%, rgba(3, 47, 45, 0.58) 48%, rgba(3, 47, 45, 0.08) 72%),
+      linear-gradient(0deg, rgba(2, 35, 33, 0.42) 0%, transparent 35%, rgba(2, 35, 33, 0.12) 100%);
+  }
 }
 
 .sales-water-lines {

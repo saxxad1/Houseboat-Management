@@ -266,14 +266,14 @@ export default function SalesPage() {
       </header>
 
       <section id="top" className="sales-hero relative overflow-hidden bg-[#032f2d] pt-[82px]">
-        <div className="pointer-events-none absolute inset-0 hidden lg:block">
+        <div className="pointer-events-none absolute inset-0">
           <Image
             src="/og.png"
             alt=""
             fill
             priority
             sizes="100vw"
-            className="object-cover object-center"
+            className="object-cover object-[67%_center] lg:object-center"
           />
           <div className="sales-hero-photo-overlay absolute inset-0" />
         </div>
@@ -302,11 +302,6 @@ export default function SalesPage() {
                   <span><b className="block text-xs text-white">{title}</b><span className="mt-0.5 block text-[10px] font-bold text-white/45">{label}</span></span>
                 </div>
               ))}
-            </div>
-
-            <div className="relative -mx-5 mt-10 aspect-[16/10] overflow-hidden border-y border-[#f4c65e]/20 sm:mx-0 sm:rounded-[26px] sm:border lg:hidden">
-              <Image src="/og.png" alt="জলের বুকে আধুনিক হাউজবোট" fill priority sizes="(max-width: 1023px) 100vw" className="object-cover object-[62%_center]" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#032f2d]/45 via-transparent to-transparent" />
             </div>
           </div>
         </div>
