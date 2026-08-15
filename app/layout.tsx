@@ -24,20 +24,20 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   metadataBase: new URL('https://floatbase.com'),
   title: {
-    default: 'Floatbase | হাউসবোট ম্যানেজমেন্ট সিস্টেম',
+    default: 'Floatbase | হাউজবোট ম্যানেজমেন্ট সিস্টেম',
     template: '%s | Floatbase',
   },
   description:
-    'হাউসবোটের জন্য নিজস্ব বুকিং ওয়েবসাইট, শক্তিশালী অ্যাডমিন প্যানেল, হিসাব-রিপোর্ট ও সিজন ম্যানেজমেন্ট।',
+    'হাউজবোটের জন্য নিজস্ব বুকিং ওয়েবসাইট, শক্তিশালী অ্যাডমিন প্যানেল, হিসাব-রিপোর্ট ও সিজন ম্যানেজমেন্ট।',
   keywords: [
-    'হাউসবোট ম্যানেজমেন্ট সফটওয়্যার',
-    'হাউসবোট বুকিং সিস্টেম',
+    'হাউজবোট ম্যানেজমেন্ট সফটওয়্যার',
+    'হাউজবোট বুকিং সিস্টেম',
     'Houseboat management software Bangladesh',
     'Houseboat booking website',
     'Floatbase',
   ],
   openGraph: {
-    title: 'Floatbase | হাউসবোট ম্যানেজমেন্ট সিস্টেম',
+    title: 'Floatbase | হাউজবোট ম্যানেজমেন্ট সিস্টেম',
     description: 'বুকিং কোথায়, বকেয়া কত, লাভ হলো কি না—এক জায়গায় জানুন।',
     type: 'website',
     locale: 'bn_BD',
@@ -46,13 +46,13 @@ export const metadata: Metadata = {
         url: 'https://floatbase.com/og.png',
         width: 1200,
         height: 630,
-        alt: 'জলের বুকে আধুনিক হাউসবোট',
+        alt: 'জলের বুকে আধুনিক হাউজবোট',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Floatbase | হাউসবোট ম্যানেজমেন্ট সিস্টেম',
+    title: 'Floatbase | হাউজবোট ম্যানেজমেন্ট সিস্টেম',
     description: 'বুকিং কোথায়, বকেয়া কত, লাভ হলো কি না—এক জায়গায় জানুন।',
     images: ['https://floatbase.com/og.png'],
   },

@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import SalesPage from './SalesPage';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Floatbase | হাউসবোট ম্যানেজমেন্ট সিস্টেম' },
+  title: { absolute: 'Floatbase | হাউজবোট ম্যানেজমেন্ট সিস্টেম' },
   description:
-    'বুকিং, কেবিন, অতিথি, আয়–ব্যয়, রিপোর্ট ও সিজন ম্যানেজমেন্ট—হাউসবোট ব্যবসার জন্য একটি সম্পূর্ণ ডিজিটাল সিস্টেম।',
+    'বুকিং, কেবিন, অতিথি, আয়–ব্যয়, রিপোর্ট ও সিজন ম্যানেজমেন্ট—হাউজবোট ব্যবসার জন্য একটি সম্পূর্ণ ডিজিটাল সিস্টেম।',
 };
 
 const schemaData = {
@@ -13,7 +13,7 @@ const schemaData = {
   name: 'Floatbase',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
-  description: 'বাংলাদেশের হাউসবোট ব্যবসার জন্য বুকিং ও ম্যানেজমেন্ট সফটওয়্যার।',
+  description: 'বাংলাদেশের হাউজবোট ব্যবসার জন্য বুকিং ও ম্যানেজমেন্ট সফটওয়্যার।',
   offers: {
     '@type': 'Offer',
     price: '40000',
