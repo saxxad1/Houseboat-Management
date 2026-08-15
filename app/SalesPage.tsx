@@ -265,26 +265,50 @@ export default function SalesPage() {
         )}
       </header>
 
-      <section id="top" className="sales-hero relative overflow-hidden pb-20 pt-36 sm:pt-40 lg:pb-28 lg:pt-48">
-        <div className="sales-water-lines pointer-events-none absolute inset-0 opacity-35" />
-        <div className="sales-gold-curve pointer-events-none absolute -left-[12%] top-12 h-52 w-[125%] rounded-[50%] border-b-2 border-[#f4b93e]/70" />
-        <div className="pointer-events-none absolute -left-32 top-48 h-[430px] w-[430px] rounded-full bg-[#1aa99b]/10 blur-[100px]" />
-        <div className="pointer-events-none absolute -right-32 bottom-10 h-[420px] w-[420px] rounded-full bg-[#f3b52f]/10 blur-[110px]" />
+      <section id="top" className="sales-hero relative overflow-hidden bg-[#032f2d] pt-[82px]">
+        <div className="pointer-events-none absolute inset-0 hidden lg:block">
+          <Image
+            src="/og.png"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+          <div className="sales-hero-photo-overlay absolute inset-0" />
+        </div>
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:px-8">
-          <div className="max-w-2xl">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#f4c65e]/25 bg-[#0d4c48]/75 px-3.5 py-2 text-xs font-extrabold text-[#f9dea0]"><Ship className="h-3.5 w-3.5 text-[#43d1df]" /> হাউজবোট মালিকদের দৈনন্দিন কাজের জন্য তৈরি</div>
-            <h1 className="text-balance text-[43px] font-black leading-[1.12] tracking-[-0.045em] text-white sm:text-6xl lg:text-[66px]">
-              বুকিং কোথায়, বকেয়া কত, <span className="sales-gold-text">লাভ হলো কি না—</span>এক জায়গায় জানুন।
+        <div className="relative mx-auto flex min-h-[690px] max-w-7xl items-center px-5 py-16 sm:py-20 lg:min-h-[760px] lg:px-8 lg:py-24">
+          <div className="max-w-[670px]">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#f4c65e]/30 bg-[#073f3c]/75 px-3.5 py-2 text-xs font-extrabold text-[#f9dea0] backdrop-blur-md"><Ship className="h-3.5 w-3.5 text-[#43d1df]" /> বাংলাদেশের হাউজবোট ব্যবসার জন্য তৈরি</div>
+            <h1 className="text-balance text-[42px] font-black leading-[1.1] tracking-[-0.045em] text-white sm:text-6xl lg:text-[68px]">
+              হাউজবোট ব্যবসা পরিচালনার <span className="sales-gold-text">সম্পূর্ণ ডিজিটাল সিস্টেম।</span>
             </h1>
-            <p className="mt-6 max-w-xl text-base font-medium leading-8 text-white/[0.66] sm:text-lg">ফোন, ইনবক্স আর খাতায় ছড়িয়ে থাকা তথ্য গুছিয়ে আনুন একটি সহজ সিস্টেমে। অতিথি বুকিং দেবে আপনার ওয়েবসাইটে; আপনি পুরো ব্যবসা দেখবেন একটি ড্যাশবোর্ডে।</p>
+            <p className="mt-6 max-w-[630px] text-base font-medium leading-8 text-white/70 sm:text-lg">নিজস্ব বুকিং ওয়েবসাইটে অতিথির অনুরোধ নিন। অ্যাডমিন প্যানেল থেকে কেবিন, ট্রিপ, অতিথি, অগ্রিম–বকেয়া, আয়–ব্যয় ও রিপোর্ট—সবকিছু এক জায়গা থেকে পরিচালনা করুন।</p>
+
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/demo" className="group flex items-center justify-center gap-2 rounded-full bg-[#f3b52f] px-6 py-4 text-sm font-black text-[#073f3c] shadow-[0_16px_45px_rgba(243,181,47,0.18)] hover:bg-[#ffd067]">লাইভ ওয়েবসাইট দেখুন <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></Link>
-              <a href={whatsappUrl} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.05] px-6 py-4 text-sm font-black text-white hover:bg-white/10"><MessageCircle className="h-4 w-4 text-[#51d4dd]" /> বিস্তারিত জানতে কথা বলুন</a>
+              <Link href="/demo" className="group flex items-center justify-center gap-2 rounded-full bg-[#f3b52f] px-6 py-4 text-sm font-black text-[#073f3c] shadow-[0_16px_45px_rgba(243,181,47,0.2)] hover:bg-[#ffd067]">সম্পূর্ণ ডেমো দেখুন <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></Link>
+              <a href={whatsappUrl} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-full border border-white/20 bg-[#073f3c]/55 px-6 py-4 text-sm font-black text-white backdrop-blur-md hover:bg-[#0b5550]/80"><MessageCircle className="h-4 w-4 text-[#51d4dd]" /> বিস্তারিত জানতে কথা বলুন</a>
             </div>
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-xs font-bold text-white/[0.52]"><span className="flex items-center gap-2"><Check className="h-4 w-4 text-[#f3bd45]" /> আপনার নিজস্ব ডোমেইন</span><span className="flex items-center gap-2"><Check className="h-4 w-4 text-[#f3bd45]" /> মোবাইল থেকেই নিয়ন্ত্রণ</span><span className="flex items-center gap-2"><Check className="h-4 w-4 text-[#f3bd45]" /> এককালীন মূল্য</span></div>
+
+            <div className="mt-9 grid max-w-[650px] gap-2.5 sm:grid-cols-3">
+              {[
+                ['বুকিং ওয়েবসাইট', 'অতিথির জন্য'],
+                ['অ্যাডমিন প্যানেল', 'পরিচালনার জন্য'],
+                ['হিসাব ও রিপোর্ট', 'সিদ্ধান্তের জন্য'],
+              ].map(([title, label]) => (
+                <div key={title} className="flex items-center gap-3 rounded-2xl border border-white/[0.12] bg-[#032f2d]/55 px-4 py-3 backdrop-blur-md">
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#f3b52f] text-[#073f3c]"><Check className="h-3.5 w-3.5" /></span>
+                  <span><b className="block text-xs text-white">{title}</b><span className="mt-0.5 block text-[10px] font-bold text-white/45">{label}</span></span>
+                </div>
+              ))}
+            </div>
+
+            <div className="relative -mx-5 mt-10 aspect-[16/10] overflow-hidden border-y border-[#f4c65e]/20 sm:mx-0 sm:rounded-[26px] sm:border lg:hidden">
+              <Image src="/og.png" alt="জলের বুকে আধুনিক হাউজবোট" fill priority sizes="(max-width: 1023px) 100vw" className="object-cover object-[62%_center]" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#032f2d]/45 via-transparent to-transparent" />
+            </div>
           </div>
-          <DashboardPreview />
         </div>
       </section>
 
@@ -294,7 +318,22 @@ export default function SalesPage() {
         </div>
       </section>
 
-      <section id="system" className="bg-[#f5f0e4] px-5 py-20 text-[#123f3c] sm:py-28 lg:px-8">
+      <section id="system" className="relative overflow-hidden bg-[#f5f0e4] px-5 py-20 text-[#123f3c] sm:py-28 lg:px-8">
+        <div className="sales-cream-lines pointer-events-none absolute inset-0 opacity-30" />
+        <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
+          <div className="max-w-xl">
+            <div className="sales-kicker-dark">আপনার ডিজিটাল নিয়ন্ত্রণকক্ষ</div>
+            <h2 className="sales-title-dark mt-5">ব্যবসার পুরো চিত্র, একটি ড্যাশবোর্ডে</h2>
+            <p className="mt-5 text-base font-medium leading-8 text-[#5f756f]">আজকের বুকিং, খালি কেবিন, পরবর্তী ট্রিপ, অগ্রিম ও বকেয়া, মোট আয়–ব্যয় এবং নিট লাভ—প্রয়োজনীয় তথ্যগুলো আলাদা খাতা বা ইনবক্সে খুঁজতে হবে না।</p>
+            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              {['রিয়েল-টাইম বুকিং অবস্থা', 'তারিখভিত্তিক কেবিন খোঁজ', 'অগ্রিম ও বকেয়া হিসাব', 'আয়–ব্যয় ও লাভের রিপোর্ট'].map((item) => <div key={item} className="flex items-center gap-2.5 text-sm font-black text-[#315b55]"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#dfeee9] text-[#0b6f66]"><Check className="h-3.5 w-3.5" /></span>{item}</div>)}
+            </div>
+          </div>
+          <DashboardPreview />
+        </div>
+      </section>
+
+      <section className="bg-[#f5f0e4] px-5 pb-20 text-[#123f3c] sm:pb-28 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="grid items-end gap-8 lg:grid-cols-[1fr_0.72fr]">
             <div><div className="sales-kicker-dark">বাস্তব কাজ, সহজ সমাধান</div><h2 className="sales-title-dark mt-5 max-w-3xl">অতিথির সামনে সুন্দর ওয়েবসাইট। ভেতরে শক্তিশালী নিয়ন্ত্রণ।</h2></div>

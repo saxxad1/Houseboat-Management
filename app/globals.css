@@ -179,10 +179,13 @@ a, button, input, textarea, select,
 }
 
 .sales-hero {
+  background: #032f2d;
+}
+
+.sales-hero-photo-overlay {
   background:
-    radial-gradient(circle at 18% 38%, rgba(29, 159, 145, 0.11), transparent 28%),
-    radial-gradient(circle at 88% 72%, rgba(243, 181, 47, 0.1), transparent 30%),
-    #063b38;
+    linear-gradient(90deg, rgba(2, 35, 33, 0.98) 0%, rgba(3, 47, 45, 0.92) 29%, rgba(3, 47, 45, 0.58) 48%, rgba(3, 47, 45, 0.08) 72%),
+    linear-gradient(0deg, rgba(2, 35, 33, 0.42) 0%, transparent 35%, rgba(2, 35, 33, 0.12) 100%);
 }
 
 .sales-water-lines {
