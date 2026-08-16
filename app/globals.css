@@ -264,3 +264,21 @@ a, button, input, textarea, select,
   .sales-float,
   .sales-float-slow { animation: none; }
 }
+
+.sales-badge-glow {
+  box-shadow: 0 0 25px rgba(243, 181, 47, 0.25);
+}
+
+.sales-card-gradient {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.sales-glass-panel {
+  background: rgba(7, 63, 60, 0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(244, 198, 94, 0.2);
+}
+
+.sales-glow-gold {
+  box-shadow: 0 10px 40px -10px rgba(243, 181, 47, 0.4);
+}

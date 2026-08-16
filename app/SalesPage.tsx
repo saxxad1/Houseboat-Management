@@ -4,14 +4,18 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import {
+  AlertTriangle,
   ArrowRight,
   BadgeCheck,
   BarChart3,
   BedDouble,
   CalendarCheck2,
   Check,
+  CheckCircle2,
   ChevronDown,
+  ChevronRight,
   CircleDollarSign,
+  Clock,
   Clock3,
   CreditCard,
   ExternalLink,
@@ -19,20 +23,29 @@ import {
   Globe2,
   Images,
   LayoutDashboard,
+  Lock,
   Menu,
   MessageCircle,
+  Moon,
   PackageCheck,
-  Palette,
+  PhoneCall,
   ReceiptText,
+  RefreshCw,
+  Search,
   Settings2,
+  ShieldAlert,
   ShieldCheck,
   Ship,
+  Smartphone,
+  Sparkles,
   Star,
-  ToggleLeft,
   TrendingUp,
+  UserCheck,
   Users,
   Wallet,
+  Waves,
   X,
+  Zap,
 } from 'lucide-react';
 
 const whatsappUrl = `https://wa.me/8801343411792?text=${encodeURIComponent(
@@ -40,394 +53,1488 @@ const whatsappUrl = `https://wa.me/8801343411792?text=${encodeURIComponent(
 )}`;
 
 const navItems = [
-  { label: 'সিস্টেমটি দেখুন', href: '#system' },
-  { label: 'সুবিধাসমূহ', href: '#features' },
-  { label: 'সিজন ম্যানেজমেন্ট', href: '#seasons' },
+  { label: 'ড্যাশবোর্ড', href: '#system' },
+  { label: 'সিজন সুইচ', href: '#season-switch' },
+  { label: 'সুবিধাসমূহ', href: '#core-features' },
+  { label: 'কেন ওয়েবসাইট?', href: '#why-website' },
+  { label: 'ফিচার তালিকা', href: '#all-features' },
   { label: 'মূল্য', href: '#pricing' },
   { label: 'জিজ্ঞাসা', href: '#faq' },
 ];
 
-const dailyQuestions = [
-  { number: '০১', question: 'আগামী শুক্রবার কোন কেবিনটি খালি?', answer: 'ক্যালেন্ডার খুললেই উত্তর পাবেন।' },
-  { number: '০২', question: 'আজ কত টাকা অগ্রিম এসেছে, বকেয়া কত?', answer: 'প্রতিটি বুকিংয়ের পাশে হিসাব থাকবে।' },
-  { number: '০৩', question: 'শেষ ট্রিপে আসলে লাভ হলো কত?', answer: 'আয় থেকে সব খরচ বাদ দিয়ে রিপোর্ট তৈরি হবে।' },
-];
-
-const featureGroups = [
+const painPoints = [
   {
-    icon: CalendarCheck2,
-    kicker: 'বুকিং ডেস্ক',
-    title: 'ফোনে বুকিং এলো? দুই মিনিটে নথিভুক্ত করুন।',
-    text: 'অতিথির নাম, ফোন, তারিখ, কেবিন, অতিথির সংখ্যা, মোট বিল, অগ্রিম ও বকেয়া—একবার লিখলেই পুরো টিম একই তথ্য দেখবে।',
-    items: ['কেবিন ও ফুল-বোট বুকিং', 'Pending থেকে Completed স্ট্যাটাস', 'তারিখ ও পেমেন্ট অনুযায়ী ফিল্টার'],
+    icon: ShieldAlert,
+    before: 'খাতা বা নোটে বুকিং',
+    after: 'একই কেবিনের ডাবল বুকিং বা তারিখ মিস হওয়ার ঝুঁকি শূন্য।',
   },
   {
     icon: Wallet,
-    kicker: 'হিসাব বিভাগ',
-    title: 'টাকা কোথায় যাচ্ছে, মাস শেষে আর খুঁজতে হবে না।',
-    text: 'খাবার, জ্বালানি, স্টাফ, পরিবহন বা মেইনটেন্যান্স—খরচের খাত ঠিক করে লিখুন। ড্যাশবোর্ড নিজেই আয়, ব্যয় ও নিট লাভ মিলিয়ে দেখাবে।',
-    items: ['অগ্রিম ও বকেয়ার হিসাব', 'খাতভিত্তিক আয়–ব্যয়', 'ট্রিপ ও সময়ভিত্তিক লাভের রিপোর্ট'],
+    before: 'কার কত বকেয়া অজানা',
+    after: 'অগ্রিম এসেছে কত, বকেয়া কত—সব ট্রানজ্যাকশন আইডি সহ স্পষ্ট।',
   },
   {
-    icon: Globe2,
-    kicker: 'অতিথির ওয়েবসাইট',
-    title: 'যে ওয়েবসাইট দেখে অতিথি নিশ্চিন্তে বুকিং দিতে পারে।',
-    text: 'কেবিনের ছবি থেকে ভ্রমণসূচি, খাবার, সুবিধা, গ্যালারি ও খালি তারিখ—সিদ্ধান্ত নেওয়ার সব তথ্য আপনার নিজস্ব ডোমেইনেই থাকবে।',
-    items: ['মোবাইল–বান্ধব বুকিং অভিজ্ঞতা', 'আপনার নাম, লোগো ও রঙ', 'ওয়েবসাইট থেকেই বুকিং অনুরোধ'],
+    icon: RefreshCw,
+    before: 'সিজন শেষে সাইট বেকার',
+    after: 'বর্ষায় হাওর আর শীতে পদ্মা—১ ক্লিকে পুরো সাইট অটো রিব্র্যান্ড।',
+  },
+  {
+    icon: FileBarChart,
+    before: 'ট্রিপ শেষে নিট লাভ অজানা',
+    after: 'তেল, বাজার ও স্টাফ বাদ দিয়ে ট্রিপের এক্সাক্ট নিট প্রফিট বের হয়।',
   },
 ];
 
-const compactFeatures = [
-  { icon: LayoutDashboard, title: 'ব্যবসার সারসংক্ষেপ', text: 'ট্রিপ, অতিথি, আয়, ব্যয় ও লাভ এক স্ক্রিনে।' },
-  { icon: CalendarCheck2, title: 'বুকিং ক্যালেন্ডার', text: 'কোন তারিখে কোন কেবিন ফাঁকা বা বুকড দেখুন।' },
-  { icon: BedDouble, title: 'কেবিন নিয়ন্ত্রণ', text: 'ছবি, ধারণক্ষমতা, মূল্য ও সুবিধা হালনাগাদ করুন।' },
-  { icon: PackageCheck, title: 'ট্রিপ ও প্যাকেজ', text: 'রুট, সময়সূচি, খাবার ও প্যাকেজ সাজিয়ে প্রকাশ করুন।' },
-  { icon: Users, title: 'অতিথির তথ্য', text: 'যোগাযোগ, বিশেষ অনুরোধ ও আগের বুকিং সংরক্ষণ করুন।' },
-  { icon: CreditCard, title: 'পেমেন্ট হিসাব', text: 'অগ্রিম, বকেয়া, মাধ্যম ও ট্রানজ্যাকশন নম্বর রাখুন।' },
-  { icon: ReceiptText, title: 'খরচের খাতা', text: 'খাবার থেকে জ্বালানি—প্রতিটি খরচ আলাদা খাতে লিখুন।' },
-  { icon: FileBarChart, title: 'ব্যবসার রিপোর্ট', text: 'তারিখ বা ট্রিপ ধরে আয়–ব্যয় ও লাভ বুঝুন।' },
-  { icon: CircleDollarSign, title: 'অফার নিয়ন্ত্রণ', text: 'উইকডে ছাড় ও বিশেষ দিনের ব্যতিক্রম ঠিক করুন।' },
-  { icon: Images, title: 'গ্যালারি ও রিভিউ', text: 'ছবি সাজান, অতিথির মতামত প্রকাশ করুন।' },
-  { icon: Palette, title: 'নিজস্ব ব্র্যান্ড', text: 'নাম, লোগো, রঙ, ফোন ও হোয়াটসঅ্যাপ বদলান।' },
-  { icon: Settings2, title: 'সব সেটিংস এক জায়গায়', text: 'যোগাযোগ, পেমেন্ট ও সিজনের তথ্য নিয়ন্ত্রণ করুন।' },
+const allFeaturesList = [
+  {
+    icon: LayoutDashboard,
+    title: 'সেন্ট্রাল ড্যাশবোর্ড',
+    desc: 'আজকের ট্রিপ, বুকড কেবিন, মাসের মোট আয়, মোট খরচ ও নিট লাভ এক স্ক্রিনে।',
+    tag: 'কন্ট্রোল',
+  },
+  {
+    icon: CalendarCheck2,
+    title: 'স্মার্ট বুকিং ও ক্যালেন্ডার',
+    desc: 'তারিখভিত্তিক ফাঁকা বা বুকড কেবিনের রঙ-বেরঙের ক্যালেন্ডার। ওভারবুকিং বন্ধ।',
+    tag: 'অপারেশন',
+  },
+  {
+    icon: Waves,
+    title: 'হাওর ও পদ্মা সিজন সুইচ',
+    desc: 'বর্ষা ও শীতের জন্য আলাদা কনটেন্ট, রুট, খাবার ও বুকিং ফরম্যাট ১ ক্লিকে চেঞ্জ।',
+    tag: 'ইউনিক',
+  },
+  {
+    icon: BedDouble,
+    title: 'কেবিন ও বোট ম্যানেজমেন্ট',
+    desc: 'প্যানোরামা, কাপল, ফ্যামিলি কেবিন বা পুরো বোট চার্টারের আলাদা রেট ও ক্যাপাসিটি।',
+    tag: 'কেবিন',
+  },
+  {
+    icon: ReceiptText,
+    title: 'ট্রিপ-ভিত্তিক খরচের খাতা',
+    desc: 'ডিজেল/ফুয়েল, বাজার, বাবুর্চি-ক্রু বেতন, ঘাট খরচ—প্রতিটি খরচের নির্ভুল হিসাব।',
+    tag: 'হিসাব',
+  },
+  {
+    icon: TrendingUp,
+    title: 'স্বয়ংক্রিয় নিট লাভ রিপোর্ট',
+    desc: 'আয় থেকে সব খরচ বিয়োগ করে প্রতিটি ট্রিপ ও মাসের সঠিক নিট লাভ তৈরি।',
+    tag: 'অ্যানালিটিক্স',
+  },
+  {
+    icon: CreditCard,
+    title: 'পেমেন্ট ও ভাউচার রসিদ',
+    desc: 'বিকাশ, নগদ বা ব্যাংকের ট্রানজ্যাকশন আইডি ও অতিথির বুকিং ভাউচার তৈরি।',
+    tag: 'পেমেন্ট',
+  },
+  {
+    icon: Users,
+    title: 'কাস্টমার CRM ডাটাবেজ',
+    desc: 'অতিথির নাম, মোবাইল, পূর্বের ভ্রমণের ইতিহাস ও পছন্দ সংরক্ষিত থাকে।',
+    tag: 'কাস্টমার',
+  },
+  {
+    icon: CircleDollarSign,
+    title: 'উইকডে ডিসকাউন্ট ও অফার',
+    desc: 'অফ-পিক দিনে (রবি-বুধ) বুকিং বাড়াতে স্বয়ংক্রিয় ছাড় ও প্রমো কোড সুবিধা।',
+    tag: 'মার্কেটিং',
+  },
+  {
+    icon: PackageCheck,
+    title: 'প্যাকেজ ও ফুড মেনু আপডেট',
+    desc: 'হাঁসের মাংস, হাওরের মাছ, পদ্মার ইলিশ বা লাইভ বারবিকিউ মেনু ১ মিনিটে আপডেট।',
+    tag: 'কন্টেন্ট',
+  },
+  {
+    icon: Images,
+    title: 'গ্যালারি ও রিভিউ কন্ট্রোল',
+    desc: 'নৌকার প্রিমিয়াম ছবি ও হ্যাপি গেস্টদের রিয়েল রিভিউ সহজেই যুক্ত করুন।',
+    tag: 'ব্র্যান্ডিং',
+  },
+  {
+    icon: Settings2,
+    title: 'ব্র্যান্ড ও সেটিংস কন্ট্রোল',
+    desc: 'হাউজবোটের নাম, লোগো, ব্র্যান্ড কালার, হোয়াটসঅ্যাপ ও পেমেন্ট নম্বর পরিবর্তন।',
+    tag: 'সেটিংস',
+  },
 ];
 
-const setupSteps = [
-  { step: '০১', title: 'আপনার তথ্য বুঝে নিই', text: 'কেবিন, প্যাকেজ, ছবি, রুট, মূল্য ও বুকিংয়ের নিয়মগুলো সংগ্রহ করি।' },
-  { step: '০২', title: 'আপনার নামে সাজিয়ে দিই', text: 'নিজস্ব ডোমেইনে ওয়েবসাইট, ডাটাবেজ ও অ্যাডমিন প্যানেল প্রস্তুত করি।' },
-  { step: '০৩', title: 'ব্যবহার বুঝিয়ে দিই', text: 'আপনি ও আপনার টিম যেন প্রথম দিন থেকেই আত্মবিশ্বাসের সঙ্গে চালাতে পারেন।' },
-];
-
-const includedItems = [
-  'আপনার ডোমেইনে পূর্ণাঙ্গ বুকিং ওয়েবসাইট',
-  'মোবাইল ও কম্পিউটারের জন্য অ্যাডমিন প্যানেল',
-  'হাওর ও পদ্মার আলাদা সিজন ব্যবস্থা',
-  'বুকিং, কাস্টমার ও কেবিন ম্যানেজমেন্ট',
-  'পেমেন্ট, অগ্রিম ও বকেয়ার হিসাব',
-  'আয়, ব্যয় ও নিট লাভের রিপোর্ট',
-  'প্যাকেজ, গ্যালারি, রিভিউ ও অফার নিয়ন্ত্রণ',
-  'নিজস্ব লোগো, রঙ ও যোগাযোগের তথ্য',
-  'সফটওয়্যার ব্যবহারের প্রাথমিক প্রশিক্ষণ',
-  'এককালীন পেমেন্টে আজীবন সফটওয়্যার লাইসেন্স',
+const comparisonData = [
+  {
+    feature: 'বুকিং নেওয়ার মাধ্যম',
+    traditional: 'খাতা, ডায়েরি বা মেসেঞ্জারের এলোমেলো চ্যাট',
+    floatbase: 'অত্যাধুনিক বুকিং ওয়েবসাইট ও সেন্ট্রাল অ্যাডমিন ডেস্ক',
+  },
+  {
+    feature: 'কেবিন ডাবল বুকিং ঝুঁকি',
+    traditional: 'উচ্চ ঝুঁকি—একই তারিখ দুজন স্টাফ আলাদা বুক করতে পারে',
+    floatbase: 'শূন্য ঝুঁকি—লাইভ ক্যালেন্ডার রিয়েল-টাইমে লক হয়ে যায়',
+  },
+  {
+    feature: 'সিজনাল ট্রানজিশন (হাওর ↔ পদ্মা)',
+    traditional: 'নতুন সাইট বানাতে হয় বা ডেভেলপারকে বারবার টাকা দিতে হয়',
+    floatbase: '১ ক্লিকে পুরো সাইট ও বুকিং লজিক অটোমেটিক বদলে যায়',
+  },
+  {
+    feature: 'ট্রিপের সঠিক লাভ-ক্ষতি',
+    traditional: 'মাস শেষে তেল-বাজারের খাতা হারিয়ে লাভ আন্দাজে হিসাব',
+    floatbase: 'ট্রিপ প্রতি তেল, বাজার, স্টাফ বাদ দিয়ে নিট প্রফিট এক ক্লিকে',
+  },
+  {
+    feature: 'বকেয়া টাকা কালেকশন',
+    traditional: 'মনে রাখা কঠিন, অনেক টাকা বকেয়া পড়ে থাকে',
+    floatbase: 'প্রতিটি বুকিংয়ের পাশে লাল বকেয়া অ্যালার্ট ও পেমেন্ট হিস্ট্রি',
+  },
+  {
+    feature: 'অতিথির কাছে বিশ্বাসযোগ্যতা',
+    traditional: 'সাধারণ মেসেঞ্জার টেক্সট ও ছবি পাঠিয়ে বোঝানো কঠিন',
+    floatbase: 'প্রিমিয়াম ব্র্যান্ডেড ওয়েবসাইট, লাইভ ফটো, মেনু ও ভাউচার',
+  },
 ];
 
 const faqs = [
   {
-    question: '৳৪০,০০০ কি এককালীন মূল্য?',
-    answer: 'হ্যাঁ। সফটওয়্যার লাইসেন্সের মূল্য এককালীন ৳৪০,০০০। এটি নেওয়ার পর সফটওয়্যার ব্যবহারের জন্য আলাদা মাসিক বা বার্ষিক লাইসেন্স ফি দিতে হবে না।',
+    question: '৳৪০,০০০ কি এককালীন মূল্য, নাকি কোনো মাসিক চার্জ আছে?',
+    answer:
+      'সম্পূর্ণ এককালীন মূল্য ৳৪০,০০০। এটি নেওয়ার পর সফটওয়্যার ব্যবহারের জন্য কোনো মাসিক বা বার্ষিক লাইসেন্স ফি নেই। আপনি আজীবন নিশ্চিন্তে এই সিস্টেমটি আপনার হাউজবোটের জন্য ব্যবহার করতে পারবেন।',
   },
   {
-    question: 'ওয়েবসাইটে কি আমার হাউজবোটের নাম ও লোগো থাকবে?',
-    answer: 'অবশ্যই। নাম, লোগো, ব্র্যান্ডের রঙ, কেবিনের ছবি, প্যাকেজ, ফোন, হোয়াটসঅ্যাপ ও ঠিকানা—সবকিছু আপনার ব্যবসা অনুযায়ী সাজানো হবে।',
+    question: 'টাংগুয়ার হাওর এবং পদ্মা নদীর ট্রিপ কি একই সিস্টেমে চালানো সম্ভব?',
+    answer:
+      'হ্যাঁ, এটাই Floatbase-এর সবচেয়ে বড় ইউএসপি (USP)! অ্যাডমিন প্যানেলে সিজন সেটিংস থেকে মাত্র ১ ক্লিকে "হাওর মোড" অথবা "পদ্মা মোড" সিলেক্ট করলেই গেস্ট বুকিং সাইটের সব রুট, ছবি, খাবারের মেনু, প্যাকেজ এবং বুকিং ফর্মের ধরন অটোমেটিক পরিবর্তিত হয়ে যাবে। কোনো ডেভেলপার ডাকতে হবে না।',
   },
   {
-    question: 'টাংগুয়ার হাওর ও পদ্মা নদীর ট্রিপ কি একই সিস্টেমে চালাতে পারব?',
-    answer: 'পারবেন। অ্যাডমিন প্যানেল থেকে সিজন বদলালে ওয়েবসাইটের গন্তব্য, বার্তা, বুকিংয়ের ধরন ও প্রাসঙ্গিক তথ্য নির্বাচিত সিজন অনুযায়ী বদলে যাবে।',
+    question: 'ওয়েবসাইট ও অ্যাডমিনে কি আমার নিজস্ব হাউজবোটের নাম ও লোগো থাকবে?',
+    answer:
+      'অবশ্যই! আপনার হাউজবোটের নিজস্ব নাম, লোগো, ব্র্যান্ড কালার, কেবিনের আসল ছবি, প্যাকেজ, যোগাযোগের ফোন ও হোয়াটসঅ্যাপ নম্বর—সবকিছু আপনার ব্যবসা অনুযায়ী কাস্টমাইজ করে সম্পূর্ণ লাইভ করে দেওয়া হবে।',
   },
   {
-    question: 'মোবাইল থেকেই কি দৈনন্দিন কাজ করা যাবে?',
-    answer: 'হ্যাঁ। বুকিং দেখা, কাস্টমারের তথ্য খোঁজা, পেমেন্ট হালনাগাদ বা আয়–ব্যয় দেখা—এসব কাজ মোবাইল, ট্যাব ও কম্পিউটার থেকে করা যাবে।',
+    question: 'মোবাইল ফোন থেকেই কি সব হিসাব ও বুকিং পরিচালনা করা যাবে?',
+    answer:
+      'হ্যাঁ। অ্যাডমিন প্যানেলটি ১০০% মোবাইল-রেসপনসিভ। আপনি বা আপনার ম্যানেজার লঞ্চে/বোটে থাকা অবস্থায়ও মোবাইল দিয়ে নতুন বুকিং যোগ করতে পারবেন, খরচের ভাউচার এন্ট্রি দিতে পারবেন এবং আয়-ব্যয়ের লাভ দেখতে পারবেন।',
   },
   {
-    question: 'কেনার আগে সম্পূর্ণ ডেমো দেখা যাবে?',
-    answer: 'হ্যাঁ। “লাইভ ডেমো” বাটনে ক্লিক করে অতিথির বুকিং ওয়েবসাইট দেখা যাবে। নিচের ডেমো লিংক থেকে অ্যাডমিন প্যানেলও দেখা যাবে।',
+    question: 'কেনার আগে কি লাইভ ডেমো দেখে পরখ করা যাবে?',
+    answer:
+      'অবশ্যই! উপরের "লাইভ ডেমো" বাটনে ক্লিক করে গেস্টদের বুকিং ওয়েবসাইট এবং অ্যাডমিন প্যানেল দুটোই আপনি নিজ চোখে সম্পূর্ণ দেখতে ও টেস্ট করতে পারবেন।',
+  },
+  {
+    question: 'অর্ডারের পর কত দিনে সিস্টেমটি আমার নামে সম্পূর্ণ রেডি হবে?',
+    answer:
+      'আপনার হাউজবোটের নাম, লোগো, কেবিনের ছবি এবং মূল্য পাওয়ার পর সাধারণত ৭ থেকে ১০ দিনের মধ্যে আপনার ডোমেইনে সম্পূর্ণ সিস্টেম লাইভ ও ব্যবহারের জন্য প্রস্তুত করে দেওয়া হয়।',
   },
 ];
 
 function SalesLogo({ light = false }: { light?: boolean }) {
   return (
-    <span className="inline-flex flex-col">
+    <span className="inline-flex flex-col justify-center">
       <Image
         src="/logo-floatbase-system.svg"
         alt="Floatbase"
         width={930}
         height={235}
         priority
-        className="h-auto w-[174px] sm:w-[210px]"
+        className="h-auto w-[150px] sm:w-[185px]"
       />
-      <span className={`ml-[72px] mt-[-5px] text-[8px] font-extrabold tracking-[0.12em] sm:ml-[87px] sm:text-[9px] ${light ? 'text-[#f8e4b1]' : 'text-[#315f5a]'}`}>
+      <span
+        className={`whitespace-nowrap pl-[56px] -mt-1 text-[8px] font-extrabold tracking-[0.06em] sm:pl-[70px] sm:text-[9px] ${
+          light ? 'text-[#f8e4b1]' : 'text-[#315f5a]'
+        }`}
+      >
         হাউজবোট ম্যানেজমেন্ট সিস্টেম
       </span>
     </span>
   );
 }
 
-function DashboardPreview() {
-  const nav = [
-    ['ড্যাশবোর্ড', LayoutDashboard],
-    ['বুকিং', CalendarCheck2],
-    ['ট্রিপ', Ship],
-    ['কাস্টমার', Users],
-    ['আয়–ব্যয়', Wallet],
-    ['রিপোর্ট', BarChart3],
-  ] as const;
-
-  return (
-    <div className="relative mx-auto w-full max-w-[670px]">
-      <div className="sales-float-slow absolute -left-6 top-24 z-20 hidden rounded-2xl border border-[#f6c453]/20 bg-[#0b4b47]/90 px-4 py-3 text-[#fff5d9] shadow-2xl backdrop-blur-xl lg:block">
-        <div className="flex items-center gap-2 text-xs font-bold"><BadgeCheck className="h-4 w-4 text-[#f6c453]" /> আজকের হিসাব মিলেছে</div>
-      </div>
-      <div className="sales-float absolute -right-5 bottom-20 z-20 hidden rounded-2xl border border-[#eed18a] bg-[#fffaf0] px-4 py-3 text-[#123f3c] shadow-2xl lg:block">
-        <div className="text-[10px] font-bold text-[#6c827e]">পরবর্তী ট্রিপ</div>
-        <div className="mt-1 text-sm font-black">২৩ আগস্ট · নিশ্চিত</div>
-      </div>
-
-      <div className="overflow-hidden rounded-[30px] border border-[#f4c75e]/35 bg-[#f7f2e7] p-2 shadow-[0_36px_100px_rgba(0,22,20,0.48)]">
-        <div className="overflow-hidden rounded-[23px] border border-[#123f3c]/10 bg-[#f7f3e9]">
-          <div className="flex h-10 items-center justify-between border-b border-[#123f3c]/10 bg-[#fffdf8] px-4">
-            <div className="flex gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-[#e86f57]" /><span className="h-2.5 w-2.5 rounded-full bg-[#efb53e]" /><span className="h-2.5 w-2.5 rounded-full bg-[#55b883]" /></div>
-            <div className="rounded-full bg-[#e9eee8] px-8 py-1 text-[8px] font-bold text-[#6d807c] sm:px-14">admin.floatbase.com</div>
-            <span className="h-4 w-4 rounded-full bg-[#0b4b47]" />
-          </div>
-
-          <div className="flex min-h-[415px] sm:min-h-[470px]">
-            <aside className="hidden w-[145px] shrink-0 bg-[#073f3c] p-4 text-white sm:block">
-              <div className="mb-7 flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-lg bg-[#f3b52f] text-[#073f3c]"><Ship className="h-3.5 w-3.5" /></span><span className="text-[10px] font-black">Floatbase</span></div>
-              {nav.map(([label, Icon], index) => (
-                <div key={label} className={`mb-1.5 flex items-center gap-2 rounded-lg px-2.5 py-2 text-[9px] font-semibold ${index === 0 ? 'bg-[#f4b72f] text-[#073f3c]' : 'text-white/55'}`}><Icon className="h-3 w-3" />{label}</div>
-              ))}
-            </aside>
-
-            <div className="min-w-0 flex-1 p-3.5 sm:p-5">
-              <div className="mb-4 flex items-center justify-between">
-                <div><div className="text-[9px] font-bold text-[#7b8f8a]">রবিবার, ১৬ আগস্ট</div><h3 className="mt-1 text-base font-black text-[#123f3c] sm:text-lg">ব্যবসার সারসংক্ষেপ</h3></div>
-                <div className="rounded-lg border border-[#123f3c]/10 bg-[#fffdf8] px-3 py-1.5 text-[8px] font-bold text-[#0b625c]">এই মাস</div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                {[
-                  ['ট্রিপ', '২৪', Ship, 'bg-[#e8f4f0] text-[#0b6b62]'],
-                  ['অতিথি', '৪৮৬', Users, 'bg-[#fff1cd] text-[#9a6811]'],
-                  ['মোট আয়', '৳৮.৪ লাখ', TrendingUp, 'bg-[#e7f3ef] text-[#08715e]'],
-                ].map(([label, value, Icon, tone]) => {
-                  const StatIcon = Icon as typeof Ship;
-                  return (
-                    <div key={label as string} className="rounded-xl border border-[#123f3c]/[0.08] bg-[#fffdf8] p-2.5 sm:rounded-2xl sm:p-3.5">
-                      <span className={`mb-2 grid h-7 w-7 place-items-center rounded-lg ${tone}`}><StatIcon className="h-3.5 w-3.5" /></span>
-                      <div className="text-[8px] font-bold text-[#83928f] sm:text-[9px]">{label as string}</div>
-                      <div className="mt-1 whitespace-nowrap text-xs font-black text-[#123f3c] sm:text-base">{value as string}</div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="mt-3 grid gap-3 sm:grid-cols-[1.45fr_1fr]">
-                <div className="rounded-2xl border border-[#123f3c]/[0.08] bg-[#fffdf8] p-3.5">
-                  <div className="flex items-center justify-between"><span className="text-[10px] font-black text-[#123f3c]">আয় ও ব্যয়</span><span className="text-[8px] font-bold text-[#82918e]">শেষ ৬ মাস</span></div>
-                  <div className="mt-5 flex h-[105px] items-end gap-2 sm:h-[130px] sm:gap-3">
-                    {[40, 56, 49, 73, 64, 90].map((height, index) => (
-                      <div key={height} className="flex h-full flex-1 items-end justify-center gap-0.5"><span className="w-2 rounded-t-sm bg-[#0c746a] sm:w-3" style={{ height: `${height}%` }} /><span className="w-2 rounded-t-sm bg-[#efb43b] sm:w-3" style={{ height: `${Math.max(height - 23 + (index % 2) * 6, 18)}%` }} /></div>
-                    ))}
-                  </div>
-                  <div className="mt-2 flex justify-center gap-4 text-[8px] font-bold text-[#82918e]"><span className="flex items-center gap-1"><i className="h-1.5 w-1.5 rounded-full bg-[#0c746a]" /> আয়</span><span className="flex items-center gap-1"><i className="h-1.5 w-1.5 rounded-full bg-[#efb43b]" /> ব্যয়</span></div>
-                </div>
-                <div className="hidden rounded-2xl bg-[#0b4b47] p-4 text-white sm:block">
-                  <div className="text-[9px] font-bold text-white/50">নিট লাভ</div><div className="mt-2 text-xl font-black text-[#f7cc69]">৳৩.২ লাখ</div><div className="mt-1 flex items-center gap-1 text-[9px] font-bold text-[#91ded1]"><TrendingUp className="h-3 w-3" /> ১৮% বৃদ্ধি</div>
-                  <div className="mt-6 border-t border-white/10 pt-3 text-[8px]"><div className="flex justify-between"><span className="text-white/45">বকেয়া</span><b>৳৪৮,০০০</b></div><div className="mt-2 flex justify-between"><span className="text-white/45">অগ্রিম</span><b>৳১.৭ লাখ</b></div></div>
-                </div>
-              </div>
-
-              <div className="mt-3 flex items-center justify-between rounded-xl border border-[#0c746a]/15 bg-[#eaf5f1] px-3 py-2.5">
-                <div className="flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-lg bg-white text-[#0c746a]"><CalendarCheck2 className="h-3.5 w-3.5" /></span><div><div className="text-[9px] font-black text-[#123f3c]">আগামী ট্রিপ</div><div className="text-[8px] text-[#6d817d]">টাংগুয়ার হাওর · ২৩ আগস্ট</div></div></div>
-                <span className="rounded-full bg-[#0c746a] px-2 py-1 text-[7px] font-bold text-white">নিশ্চিত</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function SalesPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
+  const [activeSeasonDemo, setActiveSeasonDemo] = useState<'haor' | 'padma'>('haor');
 
   return (
     <main className="sales-shell min-h-screen overflow-hidden bg-[#063b38] text-[#fffaf0]">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-[#f5c65f]/15 bg-[#063b38]/92 backdrop-blur-xl">
-        <div className="mx-auto flex h-[82px] max-w-7xl items-center justify-between px-5 lg:px-8">
-          <Link href="#top" aria-label="Floatbase হোম"><SalesLogo light /></Link>
-          <nav className="hidden items-center gap-7 lg:flex" aria-label="প্রধান মেনু">
-            {navItems.map((item) => <Link key={item.href} href={item.href} className="text-sm font-bold text-white/65 hover:text-[#f6c453]">{item.label}</Link>)}
+      {/* 1. Header Navigation */}
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-[#f5c65f]/15 bg-[#063b38]/95 backdrop-blur-xl">
+        <div className="mx-auto flex h-[74px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <Link href="#top" aria-label="Floatbase হোম" className="shrink-0">
+            <SalesLogo light />
+          </Link>
+
+          <nav className="hidden items-center gap-1 md:flex lg:gap-2.5 xl:gap-4" aria-label="প্রধান মেনু">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-bold text-white/75 transition hover:bg-white/[0.06] hover:text-[#f6c453] lg:text-[13px]"
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
-          <div className="hidden items-center gap-3 lg:flex">
-          <Link href="/demo" className="flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-extrabold text-[#f9e4b1] hover:bg-white/[0.05]">লাইভ ডেমো <ExternalLink className="h-3.5 w-3.5" /></Link>
-            <a href={whatsappUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-full bg-[#f3b52f] px-5 py-3 text-sm font-black text-[#073f3c] shadow-lg shadow-black/15 hover:bg-[#ffd067]"><MessageCircle className="h-4 w-4" /> কথা বলুন</a>
+
+          <div className="hidden shrink-0 items-center gap-2.5 sm:flex">
+            <Link
+              href="/demo"
+              className="flex whitespace-nowrap items-center gap-1.5 rounded-full border border-[#f5c65f]/30 bg-white/[0.06] px-3.5 py-2 text-xs font-extrabold text-[#f9e4b1] transition hover:bg-white/[0.12] lg:px-4 lg:py-2.5 lg:text-sm"
+            >
+              লাইভ ডেমো <ExternalLink className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+            </Link>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex whitespace-nowrap items-center gap-1.5 rounded-full bg-[#f3b52f] px-4 py-2 text-xs font-black text-[#073f3c] shadow-lg shadow-black/15 transition hover:bg-[#ffd067] lg:px-5 lg:py-2.5 lg:text-sm"
+            >
+              <MessageCircle className="h-3.5 w-3.5 lg:h-4 lg:w-4" /> কথা বলুন
+            </a>
           </div>
-          <button type="button" onClick={() => setMenuOpen((value) => !value)} className="grid h-11 w-11 place-items-center rounded-xl border border-[#f5c65f]/20 bg-white/5 text-white lg:hidden" aria-label={menuOpen ? 'মেনু বন্ধ করুন' : 'মেনু খুলুন'} aria-expanded={menuOpen}>{menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}</button>
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen((value) => !value)}
+            className="grid h-10 w-10 place-items-center rounded-xl border border-[#f5c65f]/20 bg-white/5 text-white md:hidden"
+            aria-label={menuOpen ? 'মেনু বন্ধ করুন' : 'মেনু খুলুন'}
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
+
         {menuOpen && (
-          <div className="border-t border-[#f5c65f]/15 bg-[#063b38] px-5 pb-5 pt-3 lg:hidden"><nav className="mx-auto grid max-w-7xl gap-1" aria-label="মোবাইল মেনু">
-            {navItems.map((item) => <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 text-sm font-bold text-white/70 hover:bg-white/[0.05]">{item.label}</Link>)}
-            <div className="mt-3 grid grid-cols-2 gap-2"><Link href="/demo" onClick={() => setMenuOpen(false)} className="rounded-xl border border-[#f5c65f]/20 px-3 py-3 text-center text-sm font-black text-[#f8dda0]">লাইভ ডেমো</Link><a href={whatsappUrl} target="_blank" rel="noreferrer" className="rounded-xl bg-[#f3b52f] px-3 py-3 text-center text-sm font-black text-[#073f3c]">কথা বলুন</a></div>
-          </nav></div>
+          <div className="border-t border-[#f5c65f]/15 bg-[#063b38] px-5 pb-6 pt-3 md:hidden">
+            <nav className="mx-auto grid max-w-7xl gap-1" aria-label="মোবাইল মেনু">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-xl px-3 py-3 text-sm font-bold text-white/75 hover:bg-white/[0.08]"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <Link
+                  href="/demo"
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-xl border border-[#f5c65f]/30 bg-white/5 px-3 py-3 text-center text-sm font-black text-[#f8dda0]"
+                >
+                  লাইভ ডেমো
+                </Link>
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl bg-[#f3b52f] px-3 py-3 text-center text-sm font-black text-[#073f3c]"
+                >
+                  কথা বলুন
+                </a>
+              </div>
+            </nav>
+          </div>
         )}
       </header>
 
-      <section id="top" className="sales-hero relative overflow-hidden bg-[#032f2d] pt-[82px]">
+      {/* 2. Hero Section */}
+      <section id="top" className="sales-hero relative overflow-hidden bg-[#032f2d] pt-[74px]">
         <div className="pointer-events-none absolute inset-0">
           <Image
             src="/og.png"
-            alt=""
+            alt="Floatbase Houseboat Management"
             fill
             priority
             sizes="100vw"
-            className="object-cover object-[67%_center] lg:object-center"
+            className="object-cover object-[67%_center] opacity-45 lg:object-center"
           />
           <div className="sales-hero-photo-overlay absolute inset-0" />
         </div>
 
-        <div className="relative mx-auto flex min-h-[690px] max-w-7xl items-center px-5 py-16 sm:py-20 lg:min-h-[760px] lg:px-8 lg:py-24">
-          <div className="max-w-[670px]">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#f4c65e]/30 bg-[#073f3c]/75 px-3.5 py-2 text-xs font-extrabold text-[#f9dea0] backdrop-blur-md"><Ship className="h-3.5 w-3.5 text-[#43d1df]" /> বাংলাদেশের হাউজবোট ব্যবসার জন্য তৈরি</div>
-            <h1 className="text-balance text-[42px] font-black leading-[1.1] tracking-[-0.045em] text-white sm:text-6xl lg:text-[68px]">
-              হাউজবোট ব্যবসা পরিচালনার <span className="sales-gold-text">সম্পূর্ণ ডিজিটাল সিস্টেম।</span>
+        <div className="relative mx-auto flex min-h-[700px] max-w-7xl items-center px-5 py-16 sm:py-20 lg:min-h-[760px] lg:px-8 lg:py-24">
+          <div className="max-w-[760px]">
+            {/* Top Pill */}
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#f4c65e]/35 bg-[#073f3c]/85 px-4 py-2 text-xs font-extrabold text-[#f9dea0] backdrop-blur-md shadow-lg">
+              <Sparkles className="h-3.5 w-3.5 text-[#f3b52f]" />
+              বাংলাদেশের হাউজবোট ব্যবসার জন্য ১ নম্বর ডিজিটাল অপারেটিং সিস্টেম
+            </div>
+
+            {/* Headline */}
+            <h1 className="text-balance text-[38px] font-black leading-[1.12] tracking-[-0.04em] text-white sm:text-6xl lg:text-[66px]">
+              হাউজবোট ব্যবসার হিসাব, বুকিং ও সিজন পরিচালনার{' '}
+              <span className="sales-gold-text">সম্পূর্ণ ডিজিটাল সিস্টেম।</span>
             </h1>
-            <p className="mt-6 max-w-[630px] text-base font-medium leading-8 text-white/70 sm:text-lg">নিজস্ব বুকিং ওয়েবসাইটে অতিথির অনুরোধ নিন। অ্যাডমিন প্যানেল থেকে কেবিন, ট্রিপ, অতিথি, অগ্রিম–বকেয়া, আয়–ব্যয় ও রিপোর্ট—সবকিছু এক জায়গা থেকে পরিচালনা করুন।</p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/demo" className="group flex items-center justify-center gap-2 rounded-full bg-[#f3b52f] px-6 py-4 text-sm font-black text-[#073f3c] shadow-[0_16px_45px_rgba(243,181,47,0.2)] hover:bg-[#ffd067]">সম্পূর্ণ ডেমো দেখুন <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></Link>
-              <a href={whatsappUrl} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-full border border-white/20 bg-[#073f3c]/55 px-6 py-4 text-sm font-black text-white backdrop-blur-md hover:bg-[#0b5550]/80"><MessageCircle className="h-4 w-4 text-[#51d4dd]" /> বিস্তারিত জানতে কথা বলুন</a>
+            {/* Subheadline */}
+            <p className="mt-6 max-w-[680px] text-base font-medium leading-8 text-white/80 sm:text-lg">
+              খাতার এলোমেলো হিসাব, ডাবল বুকিংয়ের ভয় আর সিজনাল গ্যাপকে বিদায় দিন। বর্ষায়{' '}
+              <strong className="text-[#43d1df]">টাংগুয়ার হাওর</strong> আর শীতে{' '}
+              <strong className="text-[#f3b52f]">পদ্মা নদী</strong>—এক প্ল্যাটফর্মেই নিয়ন্ত্রণ
+              করুন বুকিং, কেবিন, খরচ, অগ্রিম-বকেয়া এবং প্রতিটি ট্রিপের নিট লাভ।
+            </p>
+
+            {/* CTAs */}
+            <div className="mt-8 flex flex-col gap-3.5 sm:flex-row">
+              <Link
+                href="/demo"
+                className="group flex items-center justify-center gap-2.5 rounded-full bg-[#f3b52f] px-7 py-4 text-sm font-black text-[#073f3c] shadow-[0_16px_45px_rgba(243,181,47,0.25)] transition hover:bg-[#ffd067]"
+              >
+                সম্পূর্ণ লাইভ ডেমো দেখুন{' '}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 rounded-full border border-white/20 bg-[#073f3c]/70 px-7 py-4 text-sm font-black text-white backdrop-blur-md transition hover:bg-[#0b5550]"
+              >
+                <MessageCircle className="h-4 w-4 text-[#51d4dd]" /> হোয়াটসঅ্যাপে সরাসরি কথা বলুন
+              </a>
             </div>
 
-            <div className="mt-9 grid max-w-[650px] gap-2.5 sm:grid-cols-3">
+            {/* 3 Core Highlights */}
+            <div className="mt-10 grid gap-3 sm:grid-cols-3">
               {[
-                ['বুকিং ওয়েবসাইট', 'অতিথির জন্য'],
-                ['অ্যাডমিন প্যানেল', 'পরিচালনার জন্য'],
-                ['হিসাব ও রিপোর্ট', 'সিদ্ধান্তের জন্য'],
-              ].map(([title, label]) => (
-                <div key={title} className="flex items-center gap-3 rounded-2xl border border-white/[0.12] bg-[#032f2d]/55 px-4 py-3 backdrop-blur-md">
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#f3b52f] text-[#073f3c]"><Check className="h-3.5 w-3.5" /></span>
-                  <span><b className="block text-xs text-white">{title}</b><span className="mt-0.5 block text-[10px] font-bold text-white/45">{label}</span></span>
-                </div>
-              ))}
+                {
+                  title: 'ডুয়াল-সিজন সুইচ',
+                  label: 'বর্ষায় হাওর ↔ শীতে পদ্মা',
+                  icon: RefreshCw,
+                },
+                {
+                  title: 'ট্রিপের নিট লাভ খাতা',
+                  label: 'তেল, বাজার ও স্টাফ বাদ দিয়ে',
+                  icon: TrendingUp,
+                },
+                {
+                  title: 'স্মার্ট বুকিং ডেস্ক',
+                  label: 'কেবিন ব্লক ও লাইভ ক্যালেন্ডার',
+                  icon: CalendarCheck2,
+                },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.title}
+                    className="flex items-center gap-3 rounded-2xl border border-white/[0.14] bg-[#032f2d]/65 px-4 py-3.5 backdrop-blur-md"
+                  >
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#f3b52f] text-[#073f3c]">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <div className="text-xs font-black text-white">{item.title}</div>
+                      <div className="mt-0.5 text-[10px] font-bold text-white/55">{item.label}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
       </section>
 
+      {/* 3. Pain Points vs Solutions Banner */}
       <section className="border-y border-[#f4c65e]/[0.18] bg-[#043431] px-5 py-12 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-7 md:grid-cols-3 md:divide-x md:divide-[#f4c65e]/15">
-          {dailyQuestions.map((item) => <article key={item.number} className="flex gap-4 md:px-7 first:md:pl-0 last:md:pr-0"><span className="text-xs font-black text-[#f3bd45]">{item.number}</span><div><h2 className="text-base font-black leading-6 text-white">{item.question}</h2><p className="mt-1.5 text-sm font-medium text-white/[0.48]">{item.answer}</p></div></article>)}
-        </div>
-      </section>
-
-      <section id="system" className="relative overflow-hidden bg-[#f5f0e4] px-5 py-20 text-[#123f3c] sm:py-28 lg:px-8">
-        <div className="sales-cream-lines pointer-events-none absolute inset-0 opacity-30" />
-        <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
-          <div className="max-w-xl">
-            <div className="sales-kicker-dark">আপনার ডিজিটাল নিয়ন্ত্রণকক্ষ</div>
-            <h2 className="sales-title-dark mt-5">ব্যবসার পুরো চিত্র, একটি ড্যাশবোর্ডে</h2>
-            <p className="mt-5 text-base font-medium leading-8 text-[#5f756f]">আজকের বুকিং, খালি কেবিন, পরবর্তী ট্রিপ, অগ্রিম ও বকেয়া, মোট আয়–ব্যয় এবং নিট লাভ—প্রয়োজনীয় তথ্যগুলো আলাদা খাতা বা ইনবক্সে খুঁজতে হবে না।</p>
-            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-              {['রিয়েল-টাইম বুকিং অবস্থা', 'তারিখভিত্তিক কেবিন খোঁজ', 'অগ্রিম ও বকেয়া হিসাব', 'আয়–ব্যয় ও লাভের রিপোর্ট'].map((item) => <div key={item} className="flex items-center gap-2.5 text-sm font-black text-[#315b55]"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#dfeee9] text-[#0b6f66]"><Check className="h-3.5 w-3.5" /></span>{item}</div>)}
-            </div>
-          </div>
-          <DashboardPreview />
-        </div>
-      </section>
-
-      <section className="bg-[#f5f0e4] px-5 pb-20 text-[#123f3c] sm:pb-28 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="grid items-end gap-8 lg:grid-cols-[1fr_0.72fr]">
-            <div><div className="sales-kicker-dark">বাস্তব কাজ, সহজ সমাধান</div><h2 className="sales-title-dark mt-5 max-w-3xl">অতিথির সামনে সুন্দর ওয়েবসাইট। ভেতরে শক্তিশালী নিয়ন্ত্রণ।</h2></div>
-            <p className="text-base font-medium leading-8 text-[#58716c] lg:text-right">ভালো সফটওয়্যার শুধু ফিচারের তালিকা নয়—ব্যস্ত দিনে দ্রুত সঠিক সিদ্ধান্ত নেওয়ার একটি পরিষ্কার উপায়।</p>
+          <div className="mb-8 text-center">
+            <span className="text-xs font-extrabold tracking-[0.14em] text-[#f3bd45]">
+              বাস্তব সমস্যা ও আধুনিক সমাধান
+            </span>
+            <h2 className="mt-2 text-xl font-black text-white sm:text-2xl">
+              হাউজবোট ব্যবসার চিরচেনা ৪টি বড় জটিলতার নিশ্চিত সমাধান
+            </h2>
           </div>
-
-          <div className="mt-14 space-y-5">
-            {featureGroups.map((feature, index) => {
-              const Icon = feature.icon;
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {painPoints.map((item, idx) => {
+              const Icon = item.icon;
               return (
-                <article key={feature.title} className="grid overflow-hidden rounded-[30px] border border-[#123f3c]/10 bg-[#fffdf8] shadow-[0_18px_60px_rgba(7,63,60,0.07)] lg:grid-cols-[0.8fr_1.2fr]">
-                  <div className={`relative min-h-[300px] overflow-hidden ${index === 2 ? 'lg:order-2' : ''}`}>
-                    {index === 2 ? (
-                      <Image src="/hero-floatboat-houseboat.jpg" alt="হাউজবোটের বুকিং ওয়েবসাইট" fill sizes="(max-width: 1024px) 100vw, 40vw" className="object-cover" />
-                    ) : (
-                      <div className={`absolute inset-0 ${index === 0 ? 'bg-[#073f3c]' : 'bg-[#0b4b47]'}`}>
-                        <div className="sales-water-lines absolute inset-0 opacity-20" />
-                        <div className="relative flex h-full items-center justify-center p-8">
-                          {index === 0 ? (
-                            <div className="w-full max-w-sm rounded-[24px] border border-[#f4c65e]/25 bg-[#f7f2e7] p-5 text-[#123f3c] shadow-2xl">
-                              <div className="flex items-center justify-between border-b border-[#123f3c]/10 pb-4"><div><div className="text-[9px] font-bold text-[#78908a]">নতুন বুকিং</div><div className="mt-1 font-black">FB-260816-018</div></div><span className="rounded-full bg-[#fff0c9] px-2.5 py-1 text-[9px] font-black text-[#8e5e06]">অপেক্ষমাণ</span></div>
-                              <div className="mt-4 grid grid-cols-2 gap-3 text-xs"><div className="rounded-xl bg-white p-3"><span className="block text-[9px] text-[#78908a]">অতিথি</span><b className="mt-1 block">আরিফ হাসান</b></div><div className="rounded-xl bg-white p-3"><span className="block text-[9px] text-[#78908a]">যাত্রার তারিখ</span><b className="mt-1 block">২৩ আগস্ট</b></div><div className="rounded-xl bg-white p-3"><span className="block text-[9px] text-[#78908a]">মোট</span><b className="mt-1 block">৳২৪,০০০</b></div><div className="rounded-xl bg-white p-3"><span className="block text-[9px] text-[#78908a]">বকেয়া</span><b className="mt-1 block text-[#a66a00]">৳১২,০০০</b></div></div>
-                            </div>
-                          ) : (
-                            <div className="grid w-full max-w-sm grid-cols-2 gap-3"><div className="col-span-2 rounded-2xl border border-white/10 bg-white/[0.07] p-5"><span className="text-[10px] font-bold text-white/50">এই ট্রিপের নিট লাভ</span><div className="mt-2 text-3xl font-black text-[#f5c75f]">৳৪৮,৫০০</div></div>{[['মোট আয়','৳১,৪০,০০০'],['মোট খরচ','৳৯১,৫০০']].map(([label,value]) => <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.07] p-4"><span className="text-[9px] font-bold text-white/45">{label}</span><b className="mt-2 block text-base text-white">{value}</b></div>)}</div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    {index === 2 && <div className="absolute inset-0 bg-gradient-to-t from-[#052f2d]/80 via-transparent to-transparent" />}
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-white/[0.08] bg-[#073f3c]/60 p-5 transition hover:border-[#f3b52f]/30"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 text-[#f3bd45]">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="text-xs font-extrabold text-[#e8705b] line-through decoration-1">
+                      {item.before}
+                    </span>
                   </div>
-                  <div className={`p-7 sm:p-10 lg:p-12 ${index === 2 ? 'lg:order-1' : ''}`}>
-                    <div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#e7f1ed] text-[#0b6f66]"><Icon className="h-5 w-5" /></span><span className="text-xs font-black tracking-[0.12em] text-[#9a6b16]">{feature.kicker}</span></div>
-                    <h3 className="mt-6 text-2xl font-black leading-tight tracking-[-0.025em] sm:text-3xl">{feature.title}</h3>
-                    <p className="mt-4 text-sm font-medium leading-7 text-[#637a75] sm:text-base">{feature.text}</p>
-                    <ul className="mt-7 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">{feature.items.map((item) => <li key={item} className="flex items-start gap-2 text-xs font-bold leading-5 text-[#315b55]"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#e7f1ed] text-[#0b6f66]"><Check className="h-3 w-3" /></span>{item}</li>)}</ul>
-                  </div>
-                </article>
+                  <p className="mt-3.5 text-xs font-semibold leading-6 text-white/80">
+                    <strong className="text-[#47d1dd]">Floatbase সমাধান: </strong>
+                    {item.after}
+                  </p>
+                </div>
               );
             })}
           </div>
         </div>
       </section>
 
-      <section id="seasons" className="relative overflow-hidden bg-[#073f3c] px-5 py-20 sm:py-28 lg:px-8">
+      {/* 4. Live Dashboard Preview Section */}
+      <section id="system" className="relative overflow-hidden bg-[#f5f0e4] px-5 py-20 text-[#123f3c] sm:py-28 lg:px-8">
+        <div className="sales-cream-lines pointer-events-none absolute inset-0 opacity-35" />
+        <div className="relative mx-auto max-w-7xl">
+          <div className="grid items-end gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <div className="sales-kicker-dark">ডিজিটাল নিয়ন্ত্রণকক্ষ</div>
+              <h2 className="sales-title-dark mt-4">
+                সম্পূর্ণ ব্যবসার রিয়েল-টাইম তথ্য, এক সেন্ট্রাল ড্যাশবোর্ডে
+              </h2>
+            </div>
+            <p className="text-base font-medium leading-8 text-[#58716c] lg:text-right">
+              আজকের বুকিং, কেবিন ফাঁকা আছে কিনা, কে কত টাকা অগ্রিম দিলো, শেষ ট্রিপে মোট খরচ ও লাভ কত হলো—সবকিছু চোখের পলকে চোখের সামনে।
+            </p>
+          </div>
+
+          {/* Interactive Simulation Container */}
+          <div className="mt-14 overflow-hidden rounded-[32px] border border-[#123f3c]/15 bg-[#fffdf8] shadow-[0_36px_100px_rgba(0,22,20,0.18)]">
+            {/* Browser chrome */}
+            <div className="flex h-11 items-center justify-between border-b border-[#123f3c]/10 bg-[#f7f3e9] px-5">
+              <div className="flex gap-2">
+                <span className="h-3 w-3 rounded-full bg-[#e86f57]" />
+                <span className="h-3 w-3 rounded-full bg-[#efb53e]" />
+                <span className="h-3 w-3 rounded-full bg-[#55b883]" />
+              </div>
+              <div className="flex items-center gap-2 rounded-full border border-[#123f3c]/10 bg-white px-5 py-1 text-[10px] font-bold text-[#556d68]">
+                <Lock className="h-3 w-3 text-[#0b6f66]" /> admin.yourhouseboat.com/dashboard
+              </div>
+              <span className="rounded-full bg-[#0b4b47] px-2.5 py-0.5 text-[9px] font-bold text-white">
+                ম্যানেজার প্যানেল
+              </span>
+            </div>
+
+            {/* Dashboard Content */}
+            <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[240px_1fr]">
+              {/* Left Sidebar Mock */}
+              <div className="hidden flex-col gap-1 rounded-2xl bg-[#073f3c] p-4 text-white lg:flex">
+                <div className="mb-5 flex items-center gap-2.5 px-2">
+                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#f3b52f] text-[#073f3c]">
+                    <Ship className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <div className="text-xs font-black">Floatbase OS</div>
+                    <div className="text-[9px] text-white/50">আপনার হাউজবোট</div>
+                  </div>
+                </div>
+                {[
+                  ['ড্যাশবোর্ড', LayoutDashboard, true],
+                  ['বুকিং ডেস্ক', CalendarCheck2, false],
+                  ['ট্রিপ স্লট', Ship, false],
+                  ['হিসাব ও খাতা', Wallet, false],
+                  ['সিজন সেটিংস', Waves, false],
+                  ['রিপোর্ট ও লাভ', BarChart3, false],
+                  ['কাস্টমার CRM', Users, false],
+                ].map(([label, Icon, active]) => {
+                  const NavIcon = Icon as typeof LayoutDashboard;
+                  return (
+                    <div
+                      key={label as string}
+                      className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-bold transition ${
+                        active
+                          ? 'bg-[#f3b52f] text-[#073f3c]'
+                          : 'text-white/65 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <NavIcon className="h-3.5 w-3.5" />
+                      {label as string}
+                    </div>
+                  );
+                })}
+                <div className="mt-auto rounded-xl border border-white/10 bg-white/5 p-3 text-[10px]">
+                  <div className="text-white/40">অ্যাক্টিভ মোড</div>
+                  <div className="mt-0.5 font-bold text-[#47d1dd]">🌊 টাংগুয়ার হাওর সিজন</div>
+                </div>
+              </div>
+
+              {/* Main Dashboard Stats */}
+              <div className="space-y-6">
+                {/* Header Stats Bar */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="text-xs font-bold text-[#718883]">রবিবার, আগস্ট ২০২৬</div>
+                    <h3 className="text-xl font-black text-[#123f3c]">চলতি মাসের পারফর্মেন্স সামারি</h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-lg border border-[#0b6f66]/20 bg-[#eaf4f1] px-3 py-1.5 text-xs font-black text-[#0b6f66]">
+                      সিজন: বর্ষা পিক-মৌসুম
+                    </span>
+                  </div>
+                </div>
+
+                {/* 4 Core Stat Cards */}
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {[
+                    {
+                      label: 'মোট কনফার্মড ট্রিপ',
+                      val: '২৮ টি',
+                      sub: 'এই মাসে ৯৩% অকুপেন্সি',
+                      icon: Ship,
+                      tone: 'bg-[#e8f4f0] text-[#0b6b62]',
+                    },
+                    {
+                      label: 'মোট অতিথি',
+                      val: '৬১২ জন',
+                      sub: 'গড় ২২ জন/ট্রিপ',
+                      icon: Users,
+                      tone: 'bg-[#fff2d2] text-[#9b6a12]',
+                    },
+                    {
+                      label: 'মোট বুকিং আয়',
+                      val: '৳১০,৮০,০০০',
+                      sub: 'অগ্রিম ৳৩.৮ লাখ গৃহীত',
+                      icon: TrendingUp,
+                      tone: 'bg-[#e8f7f0] text-[#09774d]',
+                    },
+                    {
+                      label: 'নিট লাভ (P&L)',
+                      val: '৳৪,২৫,০০০',
+                      sub: 'তেল ও বাজার বাদে',
+                      icon: Wallet,
+                      tone: 'bg-[#0b4b47] text-[#f7cc69]',
+                      highlight: true,
+                    },
+                  ].map((stat, i) => {
+                    const Icon = stat.icon;
+                    return (
+                      <div
+                        key={i}
+                        className={`rounded-2xl p-4 transition ${
+                          stat.highlight
+                            ? 'bg-[#073f3c] text-white shadow-xl'
+                            : 'border border-[#123f3c]/[0.08] bg-[#fffdf8]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={`grid h-8 w-8 place-items-center rounded-xl text-xs font-bold ${
+                              stat.highlight ? 'bg-[#f3b52f] text-[#073f3c]' : stat.tone
+                            }`}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          <span
+                            className={`text-[10px] font-bold ${
+                              stat.highlight ? 'text-[#47d1dd]' : 'text-[#718883]'
+                            }`}
+                          >
+                            লাইভ
+                          </span>
+                        </div>
+                        <div
+                          className={`mt-3 text-xs font-bold ${
+                            stat.highlight ? 'text-white/60' : 'text-[#718883]'
+                          }`}
+                        >
+                          {stat.label}
+                        </div>
+                        <div
+                          className={`mt-1 text-xl font-black ${
+                            stat.highlight ? 'text-[#f4c65e]' : 'text-[#123f3c]'
+                          }`}
+                        >
+                          {stat.val}
+                        </div>
+                        <div
+                          className={`mt-1.5 text-[10px] font-semibold ${
+                            stat.highlight ? 'text-white/70' : 'text-[#879b97]'
+                          }`}
+                        >
+                          {stat.sub}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Split View: Live Trip Card & Recent Bookings Table */}
+                <div className="grid gap-5 lg:grid-cols-[1.3fr_1fr]">
+                  {/* Trip Details & P&L Mock */}
+                  <div className="rounded-2xl border border-[#123f3c]/[0.09] bg-[#fffdf8] p-5">
+                    <div className="flex items-center justify-between border-b border-[#123f3c]/[0.08] pb-3">
+                      <div>
+                        <span className="text-[10px] font-bold text-[#829692]">পরবর্তী রানিং ট্রিপ</span>
+                        <div className="text-sm font-black text-[#123f3c]">
+                          টাংগুয়ার হাওর ২ দিন ১ রাত · ২৩ আগস্ট
+                        </div>
+                      </div>
+                      <span className="rounded-full bg-[#0c746a] px-2.5 py-1 text-[10px] font-bold text-white">
+                        ফুল বোট কনফার্মড
+                      </span>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-3 gap-2.5 text-center">
+                      <div className="rounded-xl bg-[#f7f3e9] p-3">
+                        <div className="text-[10px] text-[#718883]">ট্রিপ থেকে আয়</div>
+                        <div className="mt-1 text-sm font-black text-[#0b6f66]">৳১,৫০,০০০</div>
+                      </div>
+                      <div className="rounded-xl bg-[#f7f3e9] p-3">
+                        <div className="text-[10px] text-[#718883]">তেল ও বাজার খরচ</div>
+                        <div className="mt-1 text-sm font-black text-[#cf3d28]">৳৫৮,৫০০</div>
+                      </div>
+                      <div className="rounded-xl bg-[#e7f4f0] p-3">
+                        <div className="text-[10px] font-bold text-[#0b6f66]">নিট লাভ</div>
+                        <div className="mt-1 text-sm font-black text-[#073f3c]">৳৯১,৫০০</div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 space-y-2 text-xs">
+                      <div className="flex items-center justify-between text-[#5c726e]">
+                        <span>ফুয়েল / ডিজেল বিল (১৮০ লিটার)</span>
+                        <b className="text-[#123f3c]">৳১৯,৮০০</b>
+                      </div>
+                      <div className="flex items-center justify-between text-[#5c726e]">
+                        <span>খাবার বাজার ও দেশি হাঁস</span>
+                        <b className="text-[#123f3c]">৳২৬,৭০০</b>
+                      </div>
+                      <div className="flex items-center justify-between text-[#5c726e]">
+                        <span>বাবুর্চি, ক্রু ও হেল্পার মজুরি</span>
+                        <b className="text-[#123f3c]">৳১২,০০০</b>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Booking Slots & Status Mock */}
+                  <div className="rounded-2xl border border-[#123f3c]/[0.09] bg-[#fffdf8] p-5">
+                    <div className="flex items-center justify-between border-b border-[#123f3c]/[0.08] pb-3">
+                      <span className="text-xs font-black text-[#123f3c]">আজকের নতুন বুকিং</span>
+                      <span className="text-[10px] font-bold text-[#0c746a]">৩টি অপেক্ষমাণ</span>
+                    </div>
+
+                    <div className="mt-3 space-y-2.5">
+                      {[
+                        {
+                          id: 'FB-260823-01',
+                          guest: 'তানভীর আহমেদ (৮ জন)',
+                          cabin: 'প্যানোরামা + কাপল কেবিন',
+                          due: 'বকেয়া: ৳১৪,০০০',
+                          status: 'অগ্রিম প্রাপ্ত',
+                        },
+                        {
+                          id: 'FB-260825-02',
+                          guest: 'ফারহান চৌধুরী (কর্পোরেট)',
+                          cabin: 'সম্পূর্ণ বোট চার্টার',
+                          due: 'বকেয়া: ৳৫০,০০০',
+                          status: 'অপেক্ষমাণ',
+                        },
+                        {
+                          id: 'FB-260828-03',
+                          guest: 'ডা. সায়মা করিম (২ জন)',
+                          cabin: 'প্রিমিয়াম এসি কাপল',
+                          due: 'পরিশোধিত',
+                          status: 'কনফার্মড',
+                        },
+                      ].map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between rounded-xl border border-[#123f3c]/[0.06] bg-[#fdfaf3] p-2.5 text-xs"
+                        >
+                          <div>
+                            <div className="font-black text-[#123f3c]">{item.guest}</div>
+                            <div className="text-[10px] text-[#718883]">{item.cabin}</div>
+                          </div>
+                          <div className="text-right">
+                            <span className="rounded-md bg-[#e7f1ed] px-2 py-0.5 text-[9px] font-extrabold text-[#0b6f66]">
+                              {item.status}
+                            </span>
+                            <div className="mt-0.5 text-[9px] font-bold text-[#9b6a12]">
+                              {item.due}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Interactive Season Switcher Showcase (USP Spotlight) */}
+      <section
+        id="season-switch"
+        className="relative overflow-hidden bg-[#073f3c] px-5 py-20 sm:py-28 lg:px-8"
+      >
+        <div className="sales-water-lines pointer-events-none absolute inset-0 opacity-25" />
+        <div className="relative mx-auto max-w-7xl">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="sales-kicker-light">
+              <Sparkles className="mr-1.5 h-3.5 w-3.5 text-[#f3b52f]" /> গেম-চেঞ্জার ফিচার
+            </div>
+            <h2 className="sales-title-light mt-4">
+              বর্ষায় টাংগুয়ার হাওর, শীতে পদ্মা নদী—১ ক্লিকে সম্পূর্ণ ওয়েবসাইট রূপান্তর
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base font-medium leading-8 text-white/75">
+              সিজন পরিবর্তনের পর কোনো ওয়েব ডিজাইনার বা ডেভেলপার ডাকতে হবে না। অ্যাডমিন প্যানেল থেকে সিজন সিলেক্ট করলেই গেস্টদের ওয়েবসাইট, বুকিং ফর্ম, রুট ও খাবারের তালিকা স্বয়ংক্রিয়ভাবে বদলে যায়।
+            </p>
+
+            {/* Interactive Toggle Switcher */}
+            <div className="mt-10 inline-flex rounded-full border border-[#f4c65e]/30 bg-[#042d2a] p-1.5 shadow-2xl">
+              <button
+                type="button"
+                onClick={() => setActiveSeasonDemo('haor')}
+                className={`flex items-center gap-2 rounded-full px-6 py-3 text-xs font-black transition-all ${
+                  activeSeasonDemo === 'haor'
+                    ? 'bg-[#f3b52f] text-[#073f3c] shadow-lg shadow-black/25'
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                <Waves className="h-4 w-4" /> 🌊 টাংগুয়ার হাওর মোড (জুন – অক্টোবর)
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSeasonDemo('padma')}
+                className={`flex items-center gap-2 rounded-full px-6 py-3 text-xs font-black transition-all ${
+                  activeSeasonDemo === 'padma'
+                    ? 'bg-[#43d1df] text-[#073f3c] shadow-lg shadow-black/25'
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                <Ship className="h-4 w-4" /> ⛵ পদ্মা নদী মোড (নভেম্বর – মে)
+              </button>
+            </div>
+          </div>
+
+          {/* Dynamic Preview Card based on selected season */}
+          <div className="mt-14 overflow-hidden rounded-[32px] border border-[#f4c65e]/25 bg-[#052f2d] shadow-2xl">
+            <div className="grid lg:grid-cols-[1.1fr_0.9fr]">
+              {/* Left Image & High-Contrast Tag */}
+              <div className="relative min-h-[340px] overflow-hidden lg:min-h-[460px]">
+                <Image
+                  key={activeSeasonDemo}
+                  src={
+                    activeSeasonDemo === 'haor'
+                      ? '/hero-floatboat-houseboat.jpg'
+                      : '/images/padma/padma-bridge.jpg'
+                  }
+                  alt={activeSeasonDemo === 'haor' ? 'টাংগুয়ার হাওর হাউজবোট' : 'পদ্মা নদী ডে-লং ক্রুজ'}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover transition-all duration-700 hover:scale-105"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#052f2d] via-transparent to-transparent" />
+                
+                {/* High Contrast Badges */}
+                <div className="absolute left-6 top-6 flex flex-wrap gap-2.5">
+                  <span className="flex items-center gap-2 rounded-full border border-[#f3bd45]/60 bg-[#021f1d]/95 px-4 py-2 text-xs font-black text-white shadow-2xl backdrop-blur-md">
+                    <span className="h-2 w-2 rounded-full bg-[#f3bd45] animate-pulse" />
+                    <span>{activeSeasonDemo === 'haor' ? 'মৌসুম: জুন – অক্টোবর' : 'মৌসুম: নভেম্বর – মে'}</span>
+                  </span>
+                  <span className="flex items-center gap-1.5 rounded-full border border-[#47d1dd]/40 bg-[#073f3c]/95 px-4 py-2 text-xs font-black text-[#47d1dd] shadow-2xl backdrop-blur-md">
+                    <Ship className="h-3.5 w-3.5" />
+                    <span>{activeSeasonDemo === 'haor' ? '২ দিন ১ রাত নাইটস্টে' : 'সকাল থেকে সন্ধ্যা ডে-লং ক্রুজ'}</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Content */}
+              <div className="flex flex-col justify-center p-8 sm:p-12">
+                <div className="text-xs font-black tracking-[0.14em] text-[#47d1dd]">
+                  {activeSeasonDemo === 'haor'
+                    ? 'TANGUAR HAOR OVERNIGHT CRUISE'
+                    : 'PADMA RIVER DAY-LONG EVENT'}
+                </div>
+                <h3 className="mt-3 text-2xl font-black leading-tight text-white sm:text-3xl">
+                  {activeSeasonDemo === 'haor'
+                    ? 'টাংগুয়ার হাওরের নীল জল ও মেঘালয় পাহাড়ের কোলে রাতযাপন'
+                    : 'পদ্মা সেতু ভিউ, সাদা চরে খেলাধুলা ও লাইভ বারবিকিউ উৎসব'}
+                </h3>
+                <p className="mt-4 text-sm font-medium leading-7 text-white/75 sm:text-base">
+                  {activeSeasonDemo === 'haor'
+                    ? 'গেস্টরা কেবিনভিত্তিক বা পুরো বোট বুকিং দিয়ে নীলাদ্রি লেক, যাদুকাটা নদী, শিমুল বাগান ও ওয়াচ টাওয়ার ভ্রমণ করবে। মেনুতে থাকবে ঐতিহ্যবাহী হাঁসের মাংস ও হাওরের তাজা মাছ।'
+                    : 'পরিবার, বন্ধু বা অফিসের কর্পোরেট ডে-আউটের জন্য পদ্মা নদীতে সকাল থেকে সন্ধ্যা ডে-লং ক্রুজ। মেনুতে থাকবে পদ্মার খাঁটি ইলিশ, ফ্রেশ উপ রুম শেয়ারিং ও সন্ধ্যায় লাইভ BBQ।'}
+                </p>
+
+                {/* Key specs for this season */}
+                <div className="mt-6 grid grid-cols-2 gap-3 text-xs">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-3.5">
+                    <span className="block text-[10px] text-white/45">বুকিং মডেল</span>
+                    <b className="mt-1 block text-sm font-black text-[#f3bd45]">
+                      {activeSeasonDemo === 'haor' ? 'কেবিন ও ফুল বোট' : 'গ্রুপ / পার-পারসন ডে-লং'}
+                    </b>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-3.5">
+                    <span className="block text-[10px] text-white/45">প্রধান আকর্ষণ</span>
+                    <b className="mt-1 block text-sm font-black text-[#47d1dd]">
+                      {activeSeasonDemo === 'haor' ? 'নীলাদ্রি + যাদুকাটা' : 'পদ্মা ব্রিজ + সাদা চর'}
+                    </b>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex items-center gap-3">
+                  <Link
+                    href="/demo"
+                    className="flex items-center gap-2 rounded-full bg-[#f3b52f] px-6 py-3.5 text-xs font-black text-[#073f3c] transition hover:bg-[#ffd067] shadow-lg"
+                  >
+                    ডেমো সাইটে এই মোডটি দেখুন <ExternalLink className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mx-auto mt-8 flex max-w-2xl items-center justify-center gap-2.5 rounded-2xl border border-[#f4c65e]/20 bg-[#042d2a] px-5 py-3.5 text-center text-xs font-bold text-[#f8dfa6]">
+            <Check className="h-4 w-4 text-[#47d1dd]" /> সিজন সুইচ করার সাথে সাথে বুকিং ফর্মের অপশনগুলোও হাওর থেকে পদ্মায় স্বয়ংক্রিয়ভাবে রূপান্তর হয়ে যায়।
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Core Pillars Deep Dive */}
+      <section id="core-features" className="bg-[#f5f0e4] px-5 py-20 text-[#123f3c] sm:py-28 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="sales-kicker-dark">মূল স্তম্ভসমূহ</div>
+            <h2 className="sales-title-dark mt-4">
+              হাউজবোট ব্যবসায়িক সাফল্যের ৬টি প্রধান ডিজিটাল শক্তি
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base font-medium leading-8 text-[#58716c]">
+              সাধারণ কোনো রেডিমেড হোটেল সফটওয়্যার নয়—বাংলাদেশের হাউজবোট ব্যবসার বাস্তব সমস্যা ও চ্যালেঞ্জ বিবেচনা করে তৈরি।
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                icon: CalendarCheck2,
+                title: 'স্মার্ট বুকিং ডেস্ক ও স্লট',
+                text: 'কেবিন ফাঁকা বা বুকড অবস্থা ক্যালেন্ডারে লাইভ দেখা যায়। এক ক্লিকে বুকিং পেন্ডিং থেকে কনফার্ম করা যায়।',
+                points: ['ডাবল বুকিং প্রতিরোধ', 'ফুল বোট ও কেবিন আলাদা চয়েস', 'স্বয়ংক্রিয় বুকিং কোড'],
+                color: 'bg-[#e8f4f0] text-[#0b6b62]',
+              },
+              {
+                icon: ReceiptText,
+                title: 'ট্রিপ অনুযায়ী নিট লাভ খাতা',
+                text: 'প্রতিটি ট্রিপের খাবার বাজার, ডিজেল, স্টাফ ও ঘাট খরচ এন্ট্রি করলেই ঐ ট্রিপের প্রকৃত নিট লাভ চোখের সামনে আসবে।',
+                points: ['খাতভিত্তিক খরচের হিসাব', 'আয়-ব্যয় স্বয়ংক্রিয় রিকনসিল', 'মাসিক আর্থিক রিপোর্ট'],
+                color: 'bg-[#fff1cd] text-[#9a6811]',
+              },
+              {
+                icon: Waves,
+                title: 'হাওর ↔ পদ্মা সিজন রিব্র্যান্ডিং',
+                text: 'বর্ষা শেষ হতেই পদ্মা নদীর ডে-লং ও কর্পোরেট ইভেন্ট মোড অ্যাক্টিভ করে ১২ মাসই ব্যবসা চালু রাখার সুযোগ।',
+                points: ['১ ক্লিকে সাইট রূপান্তর', 'পদ্মা ব্রিজের ডে-লং প্যাকেজ', 'সম্পূর্ণ আলাদা খাবারের মেনু'],
+                color: 'bg-[#e0f4f7] text-[#08718a]',
+              },
+              {
+                icon: CreditCard,
+                title: 'অগ্রিম ও বকেয়া ট্র্যাকিং',
+                text: 'বিকাশ, নগদ বা ব্যাংকে কে কত টাকা অগ্রিম দিলো আর ভ্রমণের দিন কার কাছে কত টাকা বকেয়া তা নিখুঁতভাবে সংরক্ষণ।',
+                points: ['ট্রানজ্যাকশন আইডি সেভ', 'বকেয়া টাকার অ্যালার্ট', 'ভাউচার রসিদ জেনারেশন'],
+                color: 'bg-[#e7f4ea] text-[#1e7e34]',
+              },
+              {
+                icon: Globe2,
+                title: 'গেস্ট বুকিং ওয়েবসাইট',
+                text: 'আপনার হাউজবোটের ছবি, ভিডিও, কেবিনের বিবরণ, ভ্রমণসূচি ও খাবার মেনু সম্বলিত আল্ট্রা-ফাস্ট প্রিমিয়াম ওয়েবসাইট।',
+                points: ['মোবাইল ও ট্যাব ফ্রেন্ডলি', 'ওয়েবসাইট থেকেই বুকিং রিকোয়েস্ট', 'আপনার নিজস্ব ডোমেইন'],
+                color: 'bg-[#f4ebf8] text-[#6f338c]',
+              },
+              {
+                icon: CircleDollarSign,
+                title: 'উইকডে ছাড় ও অফার ইঞ্জিন',
+                text: 'রবিবার থেকে বুধবারের অফ-পিক দিনগুলোতে খালি কেবিন বিক্রি বাড়াতে স্বয়ংক্রিয় ডিসকাউন্ট ব্যানার ও প্রোমো কোড।',
+                points: ['উইকডে অটো ডিসকাউন্ট', 'বিশেষ দিনের রেট কন্ট্রোল', 'প্রোমোশনাল ব্যানার অন/অফ'],
+                color: 'bg-[#fff5e8] text-[#c05621]',
+              },
+            ].map((pillar, idx) => {
+              const Icon = pillar.icon;
+              return (
+                <div
+                  key={idx}
+                  className="group rounded-[28px] border border-[#123f3c]/[0.08] bg-[#fffdf8] p-7 shadow-[0_12px_40px_rgba(7,63,60,0.05)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(7,63,60,0.12)]"
+                >
+                  <span
+                    className={`grid h-12 w-12 place-items-center rounded-2xl ${pillar.color} transition-transform group-hover:scale-110`}
+                  >
+                    <Icon className="h-6 w-6" />
+                  </span>
+                  <h3 className="mt-5 text-xl font-black text-[#123f3c]">{pillar.title}</h3>
+                  <p className="mt-3 text-xs font-medium leading-6 text-[#627773]">{pillar.text}</p>
+                  <ul className="mt-5 space-y-2 border-t border-[#123f3c]/[0.08] pt-4">
+                    {pillar.points.map((pt, pIdx) => (
+                      <li key={pIdx} className="flex items-center gap-2 text-xs font-bold text-[#325a54]">
+                        <Check className="h-3.5 w-3.5 shrink-0 text-[#0b6f66]" />
+                        {pt}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 7. STORYTELLING SECTION: Why Own a Website? (Midnight 1:00 AM Viral Reels & 100% Anti-Scam Trust) */}
+      <section id="why-website" className="relative overflow-hidden bg-[#043431] px-5 py-20 text-white sm:py-28 lg:px-8">
         <div className="sales-water-lines pointer-events-none absolute inset-0 opacity-20" />
         <div className="relative mx-auto max-w-7xl">
-          <div className="mx-auto max-w-3xl text-center"><div className="sales-kicker-light">এক সিস্টেম, দুই আয়োজন</div><h2 className="sales-title-light mt-5">টাংগুয়ার হাওর হোক বা পদ্মা নদী—ওয়েবসাইট থাকবে প্রস্তুত</h2><p className="mx-auto mt-5 max-w-2xl text-base font-medium leading-8 text-white/[0.58]">গন্তব্য বদলালে অতিথির প্রয়োজনও বদলায়। তাই দুই ধরনের ট্রিপকে একই ছাঁচে না ফেলে, আলাদা কনটেন্ট ও বুকিং প্রবাহ রাখা হয়েছে।</p></div>
+          {/* Header */}
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="sales-kicker-light">
+              <Sparkles className="mr-1.5 h-3.5 w-3.5 text-[#f3b52f]" /> বাস্তব সংকট ও শতভাগ ডিজিটাল সুরক্ষা
+            </div>
+            <h2 className="sales-title-light mt-4">
+              রাত ১টায় রিলস দেখে বুকিং করতে চাইলে? আপনার ওয়েবসাইট একাই নিবে বুকিং
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base font-medium leading-8 text-white/75">
+              মেসেঞ্জারে উত্তরের অপেক্ষায় আগ্রহী অতিথিদের আর হারাতে হবে না। সাথে থাকবে ফেসবুক স্ক্যামারদের ভুয়া পেজ ও নকল বুকিং থেকে আপনার হাউজবোটের ১০০% অফিশিয়াল সুরক্ষা।
+            </p>
+          </div>
 
-          <div className="mt-14 grid gap-5 lg:grid-cols-2">
+          {/* 2 Big Graphic Story Cards */}
+          <div className="mt-14 grid gap-8 lg:grid-cols-2">
+            {/* Story Card 1: Midnight Guest Conversion */}
+            <div className="relative overflow-hidden rounded-[32px] border border-[#f4c65e]/25 bg-[#073f3c] p-7 shadow-2xl sm:p-10">
+              <div className="flex items-center justify-between border-b border-white/10 pb-5">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#f3b52f]/20 text-[#f3bd45]">
+                    <Moon className="h-6 w-6" />
+                  </span>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[#47d1dd]">
+                      দৃশ্যপট ০১ · রাত ০১:০০ টা
+                    </span>
+                    <h3 className="text-lg font-black text-white sm:text-xl">
+                      মধ্যরাতের আগ্রহী অতিথি ও ২৪/৭ অটোমেটিক বুকিং
+                    </h3>
+                  </div>
+                </div>
+                <span className="rounded-full bg-[#042d2a] px-3 py-1 text-[10px] font-black text-[#f3bd45]">
+                  অটোমেটেড সেলস
+                </span>
+              </div>
+
+              {/* Smartphone Mock Visual */}
+              <div className="mt-6 rounded-2xl border border-white/10 bg-[#032927] p-5">
+                <div className="flex items-center justify-between text-xs text-white/60">
+                  <span className="flex items-center gap-1.5 font-mono text-[#f3bd45]">
+                    <Clock className="h-3.5 w-3.5" /> ০১:১৪ AM · বিছানায় শুয়ে রিলস দেখছে
+                  </span>
+                  <span className="rounded bg-[#e8705b]/20 px-2 py-0.5 text-[9px] font-bold text-[#e8705b]">
+                    কল দেওয়া সম্ভব নয়
+                  </span>
+                </div>
+
+                <div className="mt-3 rounded-xl bg-white/5 p-3.5 text-xs text-white/80">
+                  <p className="leading-6">
+                    গেস্ট ফেসবুকে আপনার হাউজবোটের রোমাঞ্চকর রিলস দেখে ভ্রমণের জন্য দারুণ উৎসাহিত ও প্রস্তুত। কিন্তু এই গভীর রাতে কাউকে কল বা মেসেঞ্জারে পাওয়া সম্ভব নয়।
+                  </p>
+                </div>
+
+                {/* Instant Solution Steps */}
+                <div className="mt-4 space-y-2.5">
+                  <div className="flex items-center gap-3 rounded-xl border border-[#47d1dd]/20 bg-[#073f3c] p-2.5 text-xs text-[#9be4d8]">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[#47d1dd]" />
+                    <span>বায়োর লিংকে ক্লিক করে <b>লাইভ ক্যালেন্ডারে</b> ফাঁকা তারিখ দেখলো</span>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-xl border border-[#47d1dd]/20 bg-[#073f3c] p-2.5 text-xs text-[#9be4d8]">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[#47d1dd]" />
+                    <span>কেবিনের আসল ছবি, সুবিধা ও <b>প্যাকেজের মূল্য</b> দেখে নিশ্চিত হলো</span>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-xl border border-[#47d1dd]/20 bg-[#073f3c] p-2.5 text-xs text-[#9be4d8]">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[#47d1dd]" />
+                    <span>২ মিনিটে <b>বুকিং রিকোয়েস্ট</b> পাঠিয়ে নিশ্চিন্তে ঘুমিয়ে পড়লো!</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-xl bg-[#0b4b47] p-3 text-center text-xs font-black text-[#f3bd45]">
+                  ✨ সকালে ঘুম থেকে উঠে আপনি দেখতে পেলেন আপনার ড্যাশবোর্ডে নতুন বুকিং কনফার্ম!
+                </div>
+              </div>
+            </div>
+
+            {/* Story Card 2: 100% Anti-Scam Protection & Official Verification */}
+            <div className="relative overflow-hidden rounded-[32px] border border-[#f4c65e]/25 bg-[#073f3c] p-7 shadow-2xl sm:p-10">
+              <div className="flex items-center justify-between border-b border-white/10 pb-5">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#0b6f66] text-[#47d1dd]">
+                    <ShieldCheck className="h-6 w-6" />
+                  </span>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[#f3bd45]">
+                      দৃশ্যপট ০২ · স্ক্যামার সুরক্ষা
+                    </span>
+                    <h3 className="text-lg font-black text-white sm:text-xl">
+                      ভুয়া পেইজ ও স্ক্যামারদের হাত থেকে স্থায়ী মুক্তি
+                    </h3>
+                  </div>
+                </div>
+                <span className="rounded-full bg-[#0b6f66]/30 px-3 py-1 text-[10px] font-black text-[#47d1dd]">
+                  ১০০% ভেরিফাইড
+                </span>
+              </div>
+
+              {/* Anti-Scam Visual Breakdown */}
+              <div className="mt-6 rounded-2xl border border-white/10 bg-[#032927] p-5">
+                {/* The Danger */}
+                <div className="rounded-xl border border-[#e8705b]/30 bg-[#e8705b]/10 p-3.5 text-xs text-[#f8a89b]">
+                  <div className="flex items-center gap-2 font-black text-[#e8705b]">
+                    <AlertTriangle className="h-4 w-4" /> টাংগুয়ার হাওরে স্ক্যামারদের মারাত্মক উপদ্রব:
+                  </div>
+                  <p className="mt-1.5 leading-5 text-white/80">
+                    স্ক্যামাররা আসল বোটের ছবি ও ভিডিও চুরি করে ভুয়া পেজ খুলে কম টাকায় ফেক বুকিং নিয়ে টাকা মেরে দেয়। ঘাটে গিয়ে গেস্ট দেখে সে প্রতারিত হয়েছে!
+                  </p>
+                </div>
+
+                {/* The Floatbase Protection */}
+                <div className="mt-4 space-y-2.5">
+                  <div className="rounded-xl border border-white/10 bg-[#073f3c] p-3 text-xs">
+                    <div className="font-bold text-[#f3bd45]">🌐 আপনার অফিশিয়াল ডোমেইন:</div>
+                    <div className="mt-1 font-mono text-[11px] text-[#47d1dd]">
+                      https://www.yourhouseboat.com
+                    </div>
+                    <div className="mt-1 text-[10px] text-white/60">
+                      ফেসবুক বায়ো ও রিলসে ডোমেইন লিংক থাকবে—গেস্ট জানবে এটাই একমাত্র আসল সাইট।
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-white/10 bg-[#073f3c] p-3 text-xs">
+                    <div className="font-bold text-[#f3bd45]">🎫 ইউনিক ভাউচার ও বুকিং কোড:</div>
+                    <div className="mt-1 flex items-center justify-between text-[11px]">
+                      <span className="font-mono text-white">কোড: FB-260823-018</span>
+                      <span className="rounded bg-[#0b6f66] px-2 py-0.5 text-[9px] font-bold text-white">
+                        অফিশিয়াল ভেরিফাইড
+                      </span>
+                    </div>
+                    <div className="mt-1 text-[10px] text-white/60">
+                      ভুয়া রসিদ দিয়ে প্রতারণার কোনো সুযোগ নেই। সরাসরি সিস্টেম ভেরিফিকেশন।
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-xl bg-[#0b4b47] p-3 text-center text-xs font-black text-[#47d1dd]">
+                  🛡️ অতিথি পায় শতভাগ নিশ্চিন্ত আস্থা, আর আপনার হাউজবোট পায় প্রিমিয়াম ব্র্যান্ড ইমেজ!
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3 Core Trust Pillars */}
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
             {[
-              { image: '/hero-floatboat-houseboat.jpg', label: 'টাংগুয়ার হাওর', title: 'কেবিন অথবা সম্পূর্ণ হাউজবোট', text: 'রাতযাপন, কেবিন নির্বাচন, প্যাকেজ, খাবার ও তারিখভিত্তিক বুকিংয়ের জন্য সাজানো অভিজ্ঞতা।', tag: 'হাওর মোড' },
-              { image: '/images/padma/padma-bridge.jpg', label: 'পদ্মা নদী', title: 'ডে-লং, পরিবার ও কর্পোরেট ট্রিপ', text: 'অতিথির সংখ্যা, নির্বাচিত তারিখ এবং গ্রুপভিত্তিক আয়োজনের জন্য আলাদা বুকিং প্রবাহ।', tag: 'পদ্মা মোড' },
-            ].map((season) => <article key={season.label} className="overflow-hidden rounded-[30px] border border-[#f4c65e]/[0.18] bg-[#0b4b47]"><div className="relative aspect-[16/10]"><Image src={season.image} alt={season.label} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-[#042f2d]/90 via-transparent to-transparent" /><span className="absolute left-5 top-5 rounded-full border border-white/20 bg-[#063b38]/75 px-3 py-1.5 text-[10px] font-black text-[#f7d98e] backdrop-blur-md">{season.tag}</span></div><div className="p-7 sm:p-8"><div className="text-xs font-black tracking-[0.12em] text-[#47d1dd]">{season.label}</div><h3 className="mt-3 text-2xl font-black text-white">{season.title}</h3><p className="mt-3 text-sm font-medium leading-7 text-white/[0.55]">{season.text}</p></div></article>)}
+              {
+                icon: Zap,
+                title: '২৪/৭ অটোমেটেড সেলস',
+                desc: 'আপনি ঘুমালেও আপনার ওয়েবসাইট গেস্টকে তথ্য দেয় ও বুকিং সংগ্রহ করে।',
+              },
+              {
+                icon: ShieldCheck,
+                title: '১০০% স্ক্যামার মুক্ত ট্রাস্ট',
+                desc: 'অফিশিয়াল ডোমেইন ও বুকিং কোড থাকায় ফেক পেজের প্রতারণা শূন্য।',
+              },
+              {
+                icon: Smartphone,
+                title: 'মুহূর্তেই বন্ধুদের গ্রুপে শেয়ার',
+                desc: 'গেস্ট ওয়েবসাইটের লিংক কপি করে বন্ধুদের মেসেঞ্জার গ্রুপে শেয়ার করে সিদ্ধান্ত নেয়।',
+              },
+            ].map((p, idx) => {
+              const Icon = p.icon;
+              return (
+                <div
+                  key={idx}
+                  className="flex items-start gap-3.5 rounded-2xl border border-white/10 bg-[#052f2d] p-5"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f3b52f] text-[#073f3c]">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <div className="text-sm font-black text-white">{p.title}</div>
+                    <p className="mt-1 text-xs font-medium leading-5 text-white/65">{p.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
-          <div className="mx-auto mt-8 flex max-w-3xl items-center justify-center gap-3 rounded-2xl border border-[#f4c65e]/20 bg-[#052f2d] px-5 py-4 text-center text-sm font-bold text-[#f8dfa6]"><ToggleLeft className="h-5 w-5 shrink-0 text-[#47d1dd]" /> অ্যাডমিন প্যানেলে সিজন নির্বাচন করলেই ওয়েবসাইটের প্রাসঙ্গিক তথ্য বদলে যাবে।</div>
         </div>
       </section>
 
-      <section id="features" className="bg-[#f5f0e4] px-5 py-20 text-[#123f3c] sm:py-28 lg:px-8">
+      {/* 8. 12 Feature Suite Grid */}
+      <section id="all-features" className="bg-[#f5f0e4] px-5 py-20 text-[#123f3c] sm:py-28 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="grid items-end gap-8 lg:grid-cols-[1fr_0.7fr]"><div><div className="sales-kicker-dark">যা যা পরিচালনা করতে পারবেন</div><h2 className="sales-title-dark mt-5 max-w-3xl">দৈনন্দিন কাজের প্রতিটি গুরুত্বপূর্ণ জায়গা</h2></div><p className="text-base font-medium leading-8 text-[#5e756f] lg:text-right">অপ্রয়োজনীয় জটিলতা বাদ দিয়ে হাউজবোট চালাতে যে নিয়ন্ত্রণগুলো সত্যিই দরকার।</p></div>
-          <div className="mt-12 grid gap-px overflow-hidden rounded-[30px] border border-[#123f3c]/10 bg-[#123f3c]/10 sm:grid-cols-2 lg:grid-cols-3">
-            {compactFeatures.map((feature) => { const Icon = feature.icon; return <article key={feature.title} className="group bg-[#fffdf8] p-6 transition-colors hover:bg-[#f9f4e9] sm:p-7"><span className="grid h-11 w-11 place-items-center rounded-xl border border-[#0b6f66]/[0.12] bg-[#e7f1ed] text-[#0b6f66] transition-transform group-hover:-rotate-3 group-hover:scale-105"><Icon className="h-5 w-5" /></span><h3 className="mt-5 text-lg font-black">{feature.title}</h3><p className="mt-2 text-sm font-medium leading-6 text-[#657b76]">{feature.text}</p></article>; })}
+          <div className="grid items-end gap-8 lg:grid-cols-[1fr_0.8fr]">
+            <div>
+              <div className="sales-kicker-dark">সম্পূর্ণ ফিচার তালিকা</div>
+              <h2 className="sales-title-dark mt-4">
+                দৈনন্দিন অপারেশনের প্রতিটি অংশের জন্য ডেডিকেটেড ফিচার
+              </h2>
+            </div>
+            <p className="text-base font-medium leading-8 text-[#58716c] lg:text-right">
+              অপ্রয়োজনীয় জটিলতা ছাড়া হাউজবোট ব্যবসাকে পুরোপুরি স্বয়ংক্রিয় করতে যা যা সত্যিই প্রয়োজন।
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {allFeaturesList.map((feat, idx) => {
+              const Icon = feat.icon;
+              return (
+                <div
+                  key={idx}
+                  className="group rounded-2xl border border-[#123f3c]/[0.08] bg-[#fffdf8] p-5 shadow-sm transition hover:bg-[#f7f2e6] hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#e7f1ed] text-[#0b6f66] transition group-hover:scale-105">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="rounded-full bg-[#f4ebd9] px-2 py-0.5 text-[9px] font-black text-[#8e6012]">
+                      {feat.tag}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 text-base font-black text-[#123f3c]">{feat.title}</h3>
+                  <p className="mt-2 text-xs font-medium leading-5 text-[#657a75]">{feat.desc}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
+      {/* 9. Comparison Section (Traditional vs Floatbase) */}
+      <section className="border-y border-[#f4c65e]/20 bg-[#073f3c] px-5 py-20 sm:py-28 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="sales-kicker-light">কেন Floatbase বেছে নেবেন?</div>
+            <h2 className="sales-title-light mt-4">
+              প্রচলিত খাতা-কলম বনাম Floatbase ক্লাউড সিস্টেম
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base font-medium leading-8 text-white/70">
+              আধুনিক প্রযুক্তির সাহায্যে আপনার ব্যবসার প্রতিদিনের সময় ও লক্ষাধিক টাকার অপচয় বাঁচান।
+            </p>
+          </div>
+
+          <div className="mt-14 overflow-hidden rounded-[28px] border border-[#f4c65e]/25 bg-[#052f2d] shadow-2xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-[#f4c65e]/20 bg-[#032422] text-sm">
+                    <th className="p-4 font-black text-white sm:p-5">বিষয় / ফিচার</th>
+                    <th className="p-4 font-black text-[#e8705b] sm:p-5">প্রচলিত খাতা বা মেসেঞ্জার বুকিং</th>
+                    <th className="bg-[#0b4b47] p-4 font-black text-[#f3bd45] sm:p-5">Floatbase আধুনিক সিস্টেম</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.08]">
+                  {comparisonData.map((row, idx) => (
+                    <tr key={idx} className="transition hover:bg-white/[0.02]">
+                      <td className="p-4 font-black text-white sm:p-5">{row.feature}</td>
+                      <td className="p-4 text-white/60 sm:p-5">{row.traditional}</td>
+                      <td className="bg-[#0b4b47]/50 p-4 font-bold text-[#9be4d8] sm:p-5">
+                        <div className="flex items-center gap-2">
+                          <Check className="h-4 w-4 shrink-0 text-[#f3bd45]" />
+                          {row.floatbase}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 10. Simple 3-Step Setup Process */}
       <section className="bg-[#043431] px-5 py-20 sm:py-28 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="mx-auto max-w-3xl text-center"><div className="sales-kicker-light">শুরু করার প্রক্রিয়া</div><h2 className="sales-title-light mt-5">তথ্য দিন, সেটআপ বুঝে নিন, কাজ শুরু করুন</h2><p className="mx-auto mt-5 max-w-2xl text-base font-medium leading-8 text-white/[0.55]">প্রযুক্তিগত কিছু শেখার চাপ নেই। আপনার ব্যবসা কীভাবে চলে, সেটাই হবে সিস্টেম সাজানোর ভিত্তি।</p></div>
-          <div className="relative mt-14 grid gap-5 md:grid-cols-3"><div className="absolute left-[16%] right-[16%] top-9 hidden border-t border-dashed border-[#f4c65e]/25 md:block" />{setupSteps.map((item, index) => <article key={item.step} className="relative rounded-[26px] border border-[#f4c65e]/[0.18] bg-[#073f3c] p-7 text-center"><span className="relative z-10 mx-auto grid h-[72px] w-[72px] place-items-center rounded-full border border-[#f4c65e]/35 bg-[#052f2d] text-xl font-black text-[#f3bd45] shadow-lg">{item.step}</span><h3 className="mt-6 text-xl font-black text-white">{item.title}</h3><p className="mt-3 text-sm font-medium leading-7 text-white/[0.52]">{item.text}</p>{index < 2 && <ArrowRight className="absolute -right-4 top-[30px] z-20 hidden h-8 w-8 rounded-full bg-[#f3b52f] p-2 text-[#073f3c] md:block" />}</article>)}</div>
-        </div>
-      </section>
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="sales-kicker-light">সহজ অনবোর্ডিং</div>
+            <h2 className="sales-title-light mt-4">
+              মাত্র ৩টি পদক্ষেপে আপনার হাউজবোটের জন্য প্রস্তুত
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base font-medium leading-8 text-white/65">
+              কোনো টেকনিক্যাল জ্ঞান বা জটিল কোডিং শেখার দরকার নেই। সম্পূর্ণ সেটআপ আমাদের টিম করে দিবে।
+            </p>
+          </div>
 
-      <section id="pricing" className="relative overflow-hidden bg-[#f5f0e4] px-5 py-20 text-[#123f3c] sm:py-28 lg:px-8">
-        <div className="sales-cream-lines pointer-events-none absolute inset-0 opacity-30" />
-        <div className="relative mx-auto max-w-6xl">
-          <div className="mx-auto max-w-3xl text-center"><div className="sales-kicker-dark">একটি মূল্য, সম্পূর্ণ সিস্টেম</div><h2 className="sales-title-dark mt-5">সাবস্ক্রিপশন নয়—নিজের ব্যবসার জন্য নিজের সিস্টেম</h2><p className="mx-auto mt-5 max-w-2xl text-base font-medium leading-8 text-[#5f756f]">মূল্য নিয়ে কোনো স্তর বা লুকানো প্যাকেজ নেই। আপনার ব্র্যান্ডে সম্পূর্ণ সেটআপের জন্য একটিই নির্ধারিত মূল্য।</p></div>
-          <div className="mx-auto mt-12 grid max-w-5xl overflow-hidden rounded-[34px] border border-[#123f3c]/10 bg-[#fffdf8] shadow-[0_30px_90px_rgba(7,63,60,0.12)] lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="relative overflow-hidden bg-[#073f3c] p-8 text-white sm:p-11"><div className="sales-water-lines absolute inset-0 opacity-15" /><div className="relative"><span className="inline-flex items-center gap-2 rounded-full bg-[#f3b52f] px-3 py-1.5 text-[11px] font-black text-[#073f3c]"><Star className="h-3.5 w-3.5 fill-current" /> এককালীন মূল্য</span><div className="mt-8 text-sm font-bold text-white/50">সম্পূর্ণ সেটআপ ও লাইসেন্স</div><div className="mt-2 flex items-start gap-1"><span className="mt-2 text-2xl font-black text-[#f4c65e]">৳</span><span className="text-6xl font-black tracking-[-0.06em] sm:text-7xl">৪০,০০০</span></div><div className="mt-4 flex items-center gap-2 text-sm font-bold text-[#9ee0d6]"><BadgeCheck className="h-4 w-4" /> একবার পেমেন্ট · আজীবন ব্যবহার</div><div className="my-8 h-px bg-[#f4c65e]/20" /><p className="text-sm font-medium leading-7 text-white/[0.58]">সফটওয়্যার লাইসেন্সের জন্য ভবিষ্যতে কোনো মাসিক বা বার্ষিক সাবস্ক্রিপশন নেই।</p><a href={whatsappUrl} target="_blank" rel="noreferrer" className="group mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-[#f3b52f] px-6 py-4 text-sm font-black text-[#073f3c] hover:bg-[#ffd067]">আমার হাউজবোটের জন্য চাই <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></a></div></div>
-            <div className="p-8 sm:p-11"><div className="text-xs font-black tracking-[0.14em] text-[#9a6b16]">এই মূল্যে যা যা থাকছে</div><div className="mt-6 grid gap-4 sm:grid-cols-2">{includedItems.map((item) => <div key={item} className="flex gap-3 text-sm font-bold leading-6 text-[#365d57]"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#e5f1ed] text-[#0b6f66]"><Check className="h-3 w-3" /></span>{item}</div>)}</div><div className="mt-8 flex items-start gap-3 rounded-2xl border border-[#e9bd55]/35 bg-[#fff7df] p-4 text-xs font-semibold leading-6 text-[#755b27]"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#9a6b16]" /><span><b className="text-[#513d13]">আপনার ব্র্যান্ডেই থাকবে:</b> ওয়েবসাইটে অতিথি আপনার হাউজবোটের নামই দেখবে; Floatbase থাকবে সিস্টেমের নির্মাতা হিসেবে।</span></div></div>
+          <div className="relative mt-14 grid gap-6 md:grid-cols-3">
+            {[
+              {
+                step: '০১',
+                title: 'তথ্য ও ছবি দিন',
+                desc: 'আপনার হাউজবোটের নাম, লোগো, কেবিনের ছবি, প্যাকেজ রেট এবং খাবারের মেনু আমাদের শেয়ার করুন।',
+              },
+              {
+                step: '০২',
+                title: 'নিজস্ব ডোমেইনে ফুল সেটআপ',
+                desc: 'আমরা আপনার ব্র্যান্ডে ওয়েবসাইট, ক্লাউড ডাটাবেজ এবং অ্যাডমিন ড্যাশবোর্ড ৭ থেকে ১০ দিনে রেডি করব।',
+              },
+              {
+                step: '০৩',
+                title: 'টিম ট্রেনিং ও কাজ শুরু',
+                desc: 'ভিডিও কলে আপনি ও আপনার টিমকে সম্পূর্ণ কাজ বুঝিয়ে দেওয়া হবে, যাতে প্রথম দিন থেকেই আত্মবিশ্বাসের সাথে চালাতে পারেন।',
+              },
+            ].map((stepItem, idx) => (
+              <div
+                key={idx}
+                className="relative rounded-[28px] border border-[#f4c65e]/20 bg-[#073f3c] p-8 text-center"
+              >
+                <span className="mx-auto grid h-16 w-16 place-items-center rounded-full border border-[#f4c65e]/40 bg-[#042d2a] text-2xl font-black text-[#f3bd45] shadow-lg">
+                  {stepItem.step}
+                </span>
+                <h3 className="mt-6 text-xl font-black text-white">{stepItem.title}</h3>
+                <p className="mt-3 text-xs font-medium leading-6 text-white/70">{stepItem.desc}</p>
+                {idx < 2 && (
+                  <ChevronRight className="absolute -right-3.5 top-14 z-20 hidden h-7 w-7 rounded-full bg-[#f3b52f] p-1 text-[#073f3c] md:block" />
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section id="faq" className="bg-[#073f3c] px-5 py-20 sm:py-28 lg:px-8">
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
-          <div><div className="sales-kicker-light">সাধারণ জিজ্ঞাসা</div><h2 className="sales-title-light mt-5">সিদ্ধান্ত নেওয়ার আগে পরিষ্কার উত্তর</h2><p className="mt-5 text-base font-medium leading-8 text-white/[0.55]">আরও কিছু জানতে চাইলে হোয়াটসঅ্যাপে সরাসরি কথা বলতে পারেন।</p><a href={whatsappUrl} target="_blank" rel="noreferrer" className="mt-7 inline-flex items-center gap-2 rounded-full border border-[#f4c65e]/25 px-5 py-3 text-sm font-black text-[#f7d98e] hover:bg-white/[0.05]"><MessageCircle className="h-4 w-4" /> প্রশ্ন করুন</a></div>
-          <div className="overflow-hidden rounded-[28px] border border-[#f4c65e]/[0.18] bg-[#052f2d]">{faqs.map((faq, index) => { const expanded = openFaq === index; return <div key={faq.question} className="border-b border-[#f4c65e]/[0.12] last:border-0"><button type="button" onClick={() => setOpenFaq(expanded ? -1 : index)} className="flex w-full items-center justify-between gap-5 px-5 py-5 text-left sm:px-7 sm:py-6" aria-expanded={expanded}><span className="font-black leading-6 text-white">{faq.question}</span><span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full transition ${expanded ? 'rotate-180 bg-[#f3b52f] text-[#073f3c]' : 'bg-white/[0.07] text-[#f6d381]'}`}><ChevronDown className="h-4 w-4" /></span></button>{expanded && <div className="px-5 pb-6 pr-14 text-sm font-medium leading-7 text-white/[0.52] sm:px-7 sm:pr-20">{faq.answer}</div>}</div>; })}</div>
+      {/* 11. Transparent Pricing Section */}
+      <section id="pricing" className="relative overflow-hidden bg-[#f5f0e4] px-5 py-20 text-[#123f3c] sm:py-28 lg:px-8">
+        <div className="sales-cream-lines pointer-events-none absolute inset-0 opacity-35" />
+        <div className="relative mx-auto max-w-5xl">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="sales-kicker-dark">এককালীন লাইসেন্স মূল্য</div>
+            <h2 className="sales-title-dark mt-4">
+              কোনো মাসিক ফি নেই—নিজের ব্যবসার জন্য নিজের আজীবন সিস্টেম
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base font-medium leading-8 text-[#58716c]">
+              কোনো হিডেন চার্জ বা সাবস্ক্রিপশন ট্র্যাপ নেই। একবার পেমেন্ট করে আজীবন সম্পূর্ণ নিয়ন্ত্রণ উপভোগ করুন।
+            </p>
+          </div>
+
+          <div className="mx-auto mt-14 grid overflow-hidden rounded-[34px] border border-[#123f3c]/15 bg-[#fffdf8] shadow-[0_30px_90px_rgba(7,63,60,0.12)] lg:grid-cols-[0.9fr_1.1fr]">
+            {/* Left Price Box */}
+            <div className="relative overflow-hidden bg-[#073f3c] p-8 text-white sm:p-12">
+              <div className="sales-water-lines absolute inset-0 opacity-20" />
+              <div className="relative">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f3b52f] px-3.5 py-1.5 text-xs font-black text-[#073f3c]">
+                  <Star className="h-3.5 w-3.5 fill-current" /> সম্পূর্ণ সেটআপ ও লাইসেন্স
+                </span>
+
+                <div className="mt-8 text-xs font-bold text-white/55">এককালীন সর্বমোট মূল্য</div>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className="text-2xl font-black text-[#f4c65e]">৳</span>
+                  <span className="text-6xl font-black tracking-tight sm:text-7xl">৪০,০০০</span>
+                </div>
+
+                <div className="mt-4 flex items-center gap-2 text-xs font-bold text-[#9ee0d6]">
+                  <BadgeCheck className="h-4 w-4" /> একবার পেমেন্ট · আজীবন ব্যবহার · নো মাসিক ফি
+                </div>
+
+                <div className="my-8 h-px bg-[#f4c65e]/20" />
+
+                <p className="text-xs font-medium leading-6 text-white/70">
+                  ভবিষ্যতে সফটওয়্যার ব্যবহারের জন্য কোনো মাসিক বা বার্ষিক সাবস্ক্রিপশন চার্জ প্রযোজ্য নয়।
+                </p>
+
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-[#f3b52f] px-6 py-4 text-sm font-black text-[#073f3c] transition hover:bg-[#ffd067]"
+                >
+                  আমার হাউজবোটের জন্য চাই{' '}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </a>
+              </div>
+            </div>
+
+            {/* Right Inclusions List */}
+            <div className="p-8 sm:p-12">
+              <div className="text-xs font-black tracking-[0.14em] text-[#9a6b16]">
+                এই মূল্যের মধ্যে যা যা অন্তর্ভুক্ত থাকছে
+              </div>
+              <div className="mt-6 grid gap-3.5 sm:grid-cols-2">
+                {[
+                  'আপনার নিজস্ব ডোমেইনে বুকিং ওয়েবসাইট',
+                  'মোবাইল ও কম্পিউটারের জন্য অ্যাডমিন প্যানেল',
+                  'টাংগুয়ার হাওর ও পদ্মা নদী ডুয়াল সিজন মোড',
+                  'কেবিন ও ফুল বোট রিয়েল-টাইম বুকিং ক্যালেন্ডার',
+                  'ট্রিপ অনুযায়ী তেল, বাজার ও নিট লাভ খাতা',
+                  'অগ্রিম ও বকেয়া পেমেন্ট ট্র্যাকিং (bKash/Bank)',
+                  'প্যাকেজ, গ্যালারি, রিভিউ ও ফুড মেনু কন্ট্রোল',
+                  'উইকডে ডিসকাউন্ট ও কুপন কোড সিস্টেম',
+                  'আপনার নিজস্ব নাম, লোগো ও ব্র্যান্ড কালার',
+                  'টিমের জন্য সম্পূর্ণ ভিডিও ও লাইভ প্রশিক্ষণ',
+                  'আজকের পর থেকে আজীবন সফটওয়্যার লাইসেন্স',
+                  'ডেডিকেটেড ক্লাউড ডাটাবেজ ব্যাকআপ',
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5 text-xs font-bold text-[#325b55]">
+                    <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[#e5f1ed] text-[#0b6f66]">
+                      <Check className="h-2.5 w-2.5" />
+                    </span>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 flex items-start gap-3 rounded-2xl border border-[#e9bd55]/35 bg-[#fff7df] p-4 text-xs font-semibold leading-6 text-[#755b27]">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#9a6b16]" />
+                <span>
+                  <strong className="text-[#513d13]">সম্পূর্ণ আপনার ব্র্যান্ডে: </strong>
+                  ওয়েবসাইটে অতিথি কেবল আপনার হাউজবোটের নামই দেখবে। Floatbase থাকবে আপনার বিশ্বস্ত প্রযুক্তি সহযোগী হিসেবে।
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="bg-[#073f3c] px-5 pb-8 lg:px-8"><div className="relative mx-auto max-w-7xl overflow-hidden rounded-[34px] bg-[#f3b52f] px-7 py-12 text-[#073f3c] sm:px-12 sm:py-14 lg:flex lg:items-center lg:justify-between"><div className="absolute -right-10 -top-24 h-72 w-72 rounded-full border-[55px] border-white/[0.18]" /><div className="relative max-w-3xl"><div className="flex items-center gap-2 text-xs font-black tracking-[0.14em] text-[#6b4b0b]"><Clock3 className="h-4 w-4" /> এখন হিসাব গুছিয়ে নেওয়ার সময়</div><h2 className="mt-4 text-3xl font-black leading-tight tracking-[-0.035em] sm:text-5xl">হাউজবোট চালান তথ্য দেখে,<br className="hidden sm:block" /> আন্দাজে নয়।</h2><p className="mt-4 max-w-2xl text-sm font-semibold leading-7 text-[#684f1e] sm:text-base">আপনার বর্তমান কাজের ধরন বুঝে কীভাবে সিস্টেমটি সাজানো হবে, সেটি নিয়ে কথা বলুন।</p></div><div className="relative mt-8 flex flex-col gap-3 sm:flex-row lg:mt-0 lg:flex-col"><a href={whatsappUrl} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-full bg-[#073f3c] px-7 py-4 text-sm font-black text-white shadow-xl shadow-black/15 hover:bg-[#0b5550]"><MessageCircle className="h-4 w-4" /> হোয়াটসঅ্যাপে কথা বলুন</a><Link href="/demo" className="flex items-center justify-center gap-2 rounded-full border border-[#073f3c]/[0.18] bg-white/30 px-7 py-4 text-sm font-black hover:bg-white/50">লাইভ ডেমো দেখুন <ExternalLink className="h-4 w-4" /></Link></div></div></section>
+      {/* 12. FAQ Section */}
+      <section id="faq" className="bg-[#073f3c] px-5 py-20 sm:py-28 lg:px-8">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
+          <div>
+            <div className="sales-kicker-light">সাধারণ জিজ্ঞাসা</div>
+            <h2 className="sales-title-light mt-4">সিদ্ধান্ত নেওয়ার আগে পরিষ্কার উত্তর</h2>
+            <p className="mt-4 text-sm font-medium leading-7 text-white/70">
+              আপনার মনে কোনো নির্দিষ্ট প্রশ্ন থাকলে সরাসরি আমাদের হোয়াটসঅ্যাপে মেসেজ দিন বা কথা বলুন।
+            </p>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#f4c65e]/30 bg-white/5 px-5 py-3 text-xs font-black text-[#f7d98e] transition hover:bg-white/10"
+            >
+              <MessageCircle className="h-4 w-4" /> সরাসরি প্রশ্ন করুন
+            </a>
+          </div>
 
-      <footer className="bg-[#032c2a] px-5 pb-28 pt-14 sm:pb-8 lg:px-8"><div className="mx-auto max-w-7xl"><div className="grid gap-10 border-b border-[#f4c65e]/15 pb-10 md:grid-cols-[1.25fr_0.75fr_0.75fr]"><div className="max-w-sm"><SalesLogo light /><p className="mt-6 text-sm font-medium leading-7 text-white/[0.48]">বাংলাদেশের হাউজবোট ব্যবসার বুকিং, হিসাব ও দৈনন্দিন পরিচালনা সহজ করার জন্য তৈরি সম্পূর্ণ ডিজিটাল সিস্টেম।</p></div><div><div className="text-xs font-black tracking-[0.15em] text-[#f3bd45]">দ্রুত লিংক</div><div className="mt-4 grid gap-3 text-sm font-bold text-white/[0.55]"><Link href="#system" className="hover:text-[#f3bd45]">সিস্টেমটি দেখুন</Link><Link href="#features" className="hover:text-[#f3bd45]">সুবিধাসমূহ</Link><Link href="#pricing" className="hover:text-[#f3bd45]">মূল্য</Link></div></div><div><div className="text-xs font-black tracking-[0.15em] text-[#f3bd45]">ডেমো</div><div className="mt-4 grid gap-3 text-sm font-bold text-white/[0.55]"><Link href="/demo" className="flex items-center gap-2 hover:text-[#f3bd45]">বুকিং ওয়েবসাইট <ExternalLink className="h-3.5 w-3.5" /></Link><Link href="/admin/login" className="flex items-center gap-2 hover:text-[#f3bd45]">অ্যাডমিন প্যানেল <ExternalLink className="h-3.5 w-3.5" /></Link></div></div></div><div className="flex flex-col gap-3 pt-6 text-xs font-semibold text-white/30 sm:flex-row sm:items-center sm:justify-between"><div>© ২০২৬ Floatbase. সর্বস্বত্ব সংরক্ষিত।</div><div>বাংলাদেশের হাউজবোট ব্যবসার জন্য তৈরি।</div></div></div></footer>
+          <div className="overflow-hidden rounded-[28px] border border-[#f4c65e]/20 bg-[#052f2d]">
+            {faqs.map((faq, index) => {
+              const expanded = openFaq === index;
+              return (
+                <div key={index} className="border-b border-[#f4c65e]/15 last:border-0">
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(expanded ? -1 : index)}
+                    className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left sm:px-7 sm:py-6"
+                    aria-expanded={expanded}
+                  >
+                    <span className="text-sm font-black text-white sm:text-base">{faq.question}</span>
+                    <span
+                      className={`grid h-7 w-7 shrink-0 place-items-center rounded-full transition ${
+                        expanded ? 'rotate-180 bg-[#f3b52f] text-[#073f3c]' : 'bg-white/10 text-[#f6d381]'
+                      }`}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </span>
+                  </button>
+                  {expanded && (
+                    <div className="px-5 pb-6 text-xs font-medium leading-7 text-white/75 sm:px-7 sm:text-sm">
+                      {faq.answer}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
-      <div className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-2 gap-2 rounded-2xl border border-[#e9bd55]/25 bg-[#fffaf0]/95 p-2 shadow-[0_16px_50px_rgba(0,25,23,0.28)] backdrop-blur-xl sm:hidden"><Link href="/demo" className="flex items-center justify-center gap-1.5 rounded-xl bg-[#e7f1ed] px-3 py-3 text-xs font-black text-[#073f3c]"><ExternalLink className="h-3.5 w-3.5" /> ডেমো দেখুন</Link><a href={whatsappUrl} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 rounded-xl bg-[#073f3c] px-3 py-3 text-xs font-black text-white"><MessageCircle className="h-3.5 w-3.5" /> কথা বলুন</a></div>
+      {/* 13. High-Impact Final Call to Action */}
+      <section className="bg-[#073f3c] px-5 pb-12 lg:px-8">
+        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[34px] bg-[#f3b52f] px-7 py-12 text-[#073f3c] sm:px-12 sm:py-16 lg:flex lg:items-center lg:justify-between">
+          <div className="absolute -right-10 -top-24 h-72 w-72 rounded-full border-[55px] border-white/20" />
+          <div className="relative max-w-3xl">
+            <div className="flex items-center gap-2 text-xs font-black tracking-widest text-[#6b4b0b]">
+              <Clock3 className="h-4 w-4" /> সময় এসেছে হিসাব গুছিয়ে নেওয়ার
+            </div>
+            <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-5xl">
+              হাউজবোট চালান নিখুঁত তথ্য দেখে,<br className="hidden sm:block" /> আন্দাজে বা অনুমানে নয়।
+            </h2>
+            <p className="mt-4 max-w-2xl text-xs font-bold leading-6 text-[#684f1e] sm:text-base">
+              আপনার বর্তমান কাজের পদ্ধতি অনুযায়ী সিস্টেমটি কীভাবে কাজ করবে তা লাইভ ডেমোতে দেখে নিন।
+            </p>
+          </div>
+          <div className="relative mt-8 flex flex-col gap-3 sm:flex-row lg:mt-0 lg:flex-col">
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 rounded-full bg-[#073f3c] px-7 py-4 text-sm font-black text-white shadow-xl transition hover:bg-[#0b5550]"
+            >
+              <MessageCircle className="h-4 w-4" /> হোয়াটসঅ্যাপে কথা বলুন
+            </a>
+            <Link
+              href="/demo"
+              className="flex items-center justify-center gap-2 rounded-full border border-[#073f3c]/20 bg-white/30 px-7 py-4 text-sm font-black transition hover:bg-white/50"
+            >
+              লাইভ ডেমো দেখুন <ExternalLink className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 14. Footer */}
+      <footer className="bg-[#032c2a] px-5 pb-28 pt-14 sm:pb-10 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-10 border-b border-[#f4c65e]/15 pb-10 md:grid-cols-[1.3fr_0.7fr_0.7fr_0.7fr]">
+            <div className="max-w-sm">
+              <SalesLogo light />
+              <p className="mt-5 text-xs font-medium leading-6 text-white/60">
+                বাংলাদেশের হাউজবোট ব্যবসার বুকিং, হিসাব খাতা, সিজনাল রূপান্তর ও দৈনন্দিন পরিচালনা সহজ করার জন্য তৈরি সম্পূর্ণ ডিজিটাল সিস্টেম।
+              </p>
+            </div>
+            <div>
+              <div className="text-xs font-black tracking-wider text-[#f3bd45]">দ্রুত লিংক</div>
+              <div className="mt-4 grid gap-2.5 text-xs font-bold text-white/70">
+                <Link href="#system" className="hover:text-[#f3bd45]">
+                  ড্যাশবোর্ড
+                </Link>
+                <Link href="#season-switch" className="hover:text-[#f3bd45]">
+                  সিজন সুইচ
+                </Link>
+                <Link href="#why-website" className="hover:text-[#f3bd45]">
+                  কেন ওয়েবসাইট?
+                </Link>
+                <Link href="#pricing" className="hover:text-[#f3bd45]">
+                  মূল্য ও লাইসেন্স
+                </Link>
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-black tracking-wider text-[#f3bd45]">সরাসরি ডেমো</div>
+              <div className="mt-4 grid gap-2.5 text-xs font-bold text-white/70">
+                <Link href="/demo" className="flex items-center gap-1.5 hover:text-[#f3bd45]">
+                  গেস্ট বুকিং ওয়েবসাইট <ExternalLink className="h-3 w-3" />
+                </Link>
+                <Link href="/admin/login" className="flex items-center gap-1.5 hover:text-[#f3bd45]">
+                  অ্যাডমিন ড্যাশবোর্ড <ExternalLink className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-black tracking-wider text-[#f3bd45]">যোগাযোগ</div>
+              <div className="mt-4 grid gap-2.5 text-xs font-bold text-white/70">
+                <a href={whatsappUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-[#f3bd45]">
+                  <MessageCircle className="h-3 w-3 text-[#25D366]" /> 01343-411792
+                </a>
+                <a href="tel:01343411792" className="flex items-center gap-1.5 hover:text-[#f3bd45]">
+                  <PhoneCall className="h-3 w-3 text-[#f3bd45]" /> কল করুন
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 pt-6 text-[11px] font-semibold text-white/40 sm:flex-row sm:items-center sm:justify-between">
+            <div>© ২০২৬ Floatbase. সর্বস্বত্ব সংরক্ষিত।</div>
+            <div>বাংলাদেশের হাউজবোট ব্যবসার জন্য নিবেদিত।</div>
+          </div>
+        </div>
+      </footer>
+
+      {/* 15. Mobile Sticky Bottom Quick Action Bar */}
+      <div className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-2 gap-2 rounded-2xl border border-[#e9bd55]/30 bg-[#fffaf0]/95 p-2 shadow-[0_16px_50px_rgba(0,25,23,0.35)] backdrop-blur-xl sm:hidden">
+        <Link
+          href="/demo"
+          className="flex items-center justify-center gap-1.5 rounded-xl bg-[#e7f1ed] px-3 py-3 text-xs font-black text-[#073f3c]"
+        >
+          <ExternalLink className="h-3.5 w-3.5" /> লাইভ ডেমো
+        </Link>
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-center gap-1.5 rounded-xl bg-[#073f3c] px-3 py-3 text-xs font-black text-white shadow-md"
+        >
+          <MessageCircle className="h-3.5 w-3.5 text-[#25D366]" /> কথা বলুন
+        </a>
+      </div>
     </main>
   );
 }
